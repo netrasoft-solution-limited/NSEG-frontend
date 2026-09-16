@@ -1,0 +1,82 @@
+/* @import url() FONT IMPORTS MUST ALWAYS BE AT THE VERY TOP OF THIS FILE, ABOVE THE TAILWIND IMPORTS — DO NOT DELETE THIS COMMENT */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* CRITICAL: THE FOLLOWING TAILWIND IMPORTS MUST NEVER BE DELETED OR REORDERED — DO NOT DELETE THIS COMMENT */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* END TAILWIND IMPORTS — ALL OTHER CSS MUST GO BELOW THIS LINE */
+
+:root {
+  color-scheme: dark;
+  --color-ink: 8 9 10;
+  --color-ink-800: 16 19 21;
+  --color-ink-700: 24 28 32;
+  --color-ink-600: 34 40 45;
+  --color-ink-500: 50 58 65;
+  --color-chalk: 242 245 244;
+  --color-chalk-muted: 154 165 171;
+  --color-chalk-dim: 100 111 118;
+  --color-gate-soft: 140 227 182;
+  --color-gold: 245 181 68;
+  --color-sky: 90 169 248;
+  --color-hairline: 255 255 255;
+}
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-ink: 250 250 249;
+  --color-ink-800: 255 255 255;
+  --color-ink-700: 244 244 242;
+  --color-ink-600: 233 233 230;
+  --color-ink-500: 200 200 196;
+  --color-chalk: 20 22 23;
+  --color-chalk-muted: 90 98 103;
+  --color-chalk-dim: 130 138 143;
+  --color-gate-soft: 12 124 68;
+  --color-gold: 146 98 10;
+  --color-sky: 28 111 209;
+  --color-hairline: 0 0 0;
+}
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+}
+body {
+  background-color: rgb(var(--color-ink));
+  background-image:
+    radial-gradient(1100px 700px at 12% -8%, rgb(22 179 100 / 0.14), transparent 60%),
+    radial-gradient(900px 620px at 100% 15%, rgb(245 181 68 / 0.08), transparent 60%),
+    radial-gradient(1000px 700px at 8% 100%, rgb(90 169 248 / 0.07), transparent 60%);
+  background-attachment: fixed, fixed, fixed;
+  color: rgb(var(--color-chalk));
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.15s ease-out, color 0.15s ease-out;
+}
+::selection {
+  background: #16b364;
+  color: #04130b;
+}
+.hairline-grid {
+  background-image: linear-gradient(to right, rgb(var(--color-hairline) / 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(var(--color-hairline) / 0.045) 1px, transparent 1px);
+  background-size: 72px 72px;
+}
+.marquee-track {
+  animation: marquee-scroll 38s linear infinite;
+}
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
