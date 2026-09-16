@@ -19,6 +19,7 @@ import { signals } from '../data/signals';
 import { shortlists } from '../data/shortlists';
 import { readinessSubmissions } from '../data/readinessSubmissions';
 import { regulatoryRequirements } from '../data/regulations';
+import { useOfficerProfile } from '../lib/officerProfile';
 
 const activity = [
 { id: 'a1', text: 'Qualified a signal from Rotterdam, Netherlands', when: '2 hours ago' },
@@ -33,13 +34,13 @@ const quickLinks = [
 { to: '/console/opportunities', icon: BriefcaseIcon, label: 'Opportunities', desc: 'Signal intake, shortlist approval' },
 { to: '/console/readiness', icon: CompassIcon, label: 'Readiness', desc: 'Self-assessments, evidence gaps, assertions' },
 { to: '/console/compliance', icon: ShieldCheckIcon, label: 'Compliance', desc: 'Regulatory requirements register' },
-{ to: '/console/observatory', icon: ActivityIcon, label: 'Observatory', desc: 'Reconciliation, regional & inclusion data' }];
-
-
-const comingSoon = [{ icon: SettingsIcon, label: 'Settings' }];
+{ to: '/console/observatory', icon: ActivityIcon, label: 'Observatory', desc: 'Reconciliation, regional & inclusion data' },
+{ to: '/console/settings', icon: SettingsIcon, label: 'Settings', desc: 'Profile and notification preferences' }];
 
 
 export function ConsoleDashboard() {
+  const { profile } = useOfficerProfile();
+  const firstName = profile.name.split(' ')[0];
   const pendingSignals = signals.length;
   const pendingShortlists = shortlists.length;
   const pendingReadiness = readinessSubmissions.filter((submission) => submission.assertionStatus === 'pending').length;
@@ -49,7 +50,7 @@ export function ConsoleDashboard() {
     <ConsoleLayout breadcrumb="Dashboard">
       <div>
         <h1 className="font-display text-[26px] font-semibold tracking-[-0.01em] text-gray-900">
-          Good to see you, Ada
+          Good to see you, {firstName}
         </h1>
         <p className="mt-1 text-[13.5px] text-gray-500">Here's what needs your attention across the Gateway.</p>
       </div>
@@ -92,7 +93,7 @@ export function ConsoleDashboard() {
       <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
         <div className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
           <h2 className="text-[16px] font-semibold text-gray-900">Jump into a section</h2>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {quickLinks.map((link) => {
               const Icon = link.icon;
               return (
@@ -115,22 +116,6 @@ export function ConsoleDashboard() {
                     <span className="text-[12.5px] text-gray-400">{link.desc}</span>
                   </span>
                 </Link>);
-
-            })}
-          </div>
-
-          <h2 className="mt-6 text-[13px] font-semibold text-gray-400">Coming soon</h2>
-          <div className="mt-3 flex flex-wrap gap-3">
-            {comingSoon.map((item) => {
-              const Icon = item.icon;
-              return (
-                <div
-                  key={item.label}
-                  className="flex w-28 flex-col items-center gap-2 rounded-xl border border-dashed border-gray-200 p-3 text-center">
-
-                  <Icon className="h-4 w-4 text-gray-300" aria-hidden="true" />
-                  <span className="text-[11.5px] text-gray-400">{item.label}</span>
-                </div>);
 
             })}
           </div>

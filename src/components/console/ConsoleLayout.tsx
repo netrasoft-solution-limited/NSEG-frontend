@@ -16,6 +16,8 @@ import {
   UsersIcon } from
 'lucide-react';
 import type { IconComponent } from '../../types/icons';
+import { useOfficerProfile } from '../../lib/officerProfile';
+import { initialsOf } from '../../lib/initials';
 
 interface SidebarItem {
   icon: IconComponent;
@@ -30,7 +32,7 @@ const sidebarItems: SidebarItem[] = [
 { icon: CompassIcon, label: 'Readiness', href: '/console/readiness' },
 { icon: ActivityIcon, label: 'Observatory', href: '/console/observatory' },
 { icon: ShieldCheckIcon, label: 'Compliance', href: '/console/compliance' },
-{ icon: SettingsIcon, label: 'Settings' }];
+{ icon: SettingsIcon, label: 'Settings', href: '/console/settings' }];
 
 
 interface ConsoleLayoutProps {
@@ -41,6 +43,7 @@ interface ConsoleLayoutProps {
 
 export function ConsoleLayout({ breadcrumb, onExport, children }: ConsoleLayoutProps) {
   const location = useLocation();
+  const { profile } = useOfficerProfile();
 
   return (
     <div className="flex min-h-screen w-full bg-gray-50 text-gray-900">
@@ -151,11 +154,11 @@ export function ConsoleLayout({ breadcrumb, onExport, children }: ConsoleLayoutP
             </button>
             <span className="ml-1 flex items-center gap-2 rounded-full border border-gray-200 py-1 pl-1 pr-3">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-900 text-[11px] font-semibold text-white">
-                AC
+                {initialsOf(profile.name)}
               </span>
               <span className="hidden text-left leading-tight sm:block">
-                <span className="block text-[12.5px] font-semibold text-gray-900">Ada Chukwu</span>
-                <span className="block text-[11px] text-gray-400">NATEP Desk Officer</span>
+                <span className="block text-[12.5px] font-semibold text-gray-900">{profile.name}</span>
+                <span className="block text-[11px] text-gray-400">{profile.title}</span>
               </span>
             </span>
           </div>

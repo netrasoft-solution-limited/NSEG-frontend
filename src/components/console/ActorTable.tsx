@@ -3,22 +3,13 @@ import { ChevronDownIcon, MoreVerticalIcon, SearchIcon } from 'lucide-react';
 import type { Actor } from '../../data/actors';
 import { trustTiers } from '../../data/trustTiers';
 import { formatLastActive, type ActorFilterState } from '../../lib/actorFilters';
+import { initialsOf } from '../../lib/initials';
 
 interface ActorTableProps {
   actors: Actor[];
   total: number;
   filters: ActorFilterState;
   onChange: (filters: ActorFilterState) => void;
-}
-
-function initials(name: string): string {
-  return name.
-  split(' ').
-  filter(Boolean).
-  slice(0, 2).
-  map((part) => part[0]).
-  join('').
-  toUpperCase();
 }
 
 function StatusPill({ actor }: {actor: Actor;}) {
@@ -136,7 +127,7 @@ export function ActorTable({ actors, total, filters, onChange }: ActorTableProps
                 <td className="py-3 pr-3">
                   <div className="flex items-center gap-2.5">
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-[11px] font-semibold text-gray-600">
-                      {initials(actor.name)}
+                      {initialsOf(actor.name)}
                     </span>
                     <div className="min-w-0">
                       <p className="truncate font-medium text-gray-900">{actor.name}</p>
