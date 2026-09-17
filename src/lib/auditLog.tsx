@@ -5,6 +5,7 @@ export type AuditCategory =
 'buyers' |
 'opportunities' |
 'engagements' |
+'outcomes' |
 'readiness' |
 'compliance' |
 'incentives' |

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   ActivityIcon,
+  BanknoteIcon,
   BellIcon,
   BriefcaseIcon,
   BuildingIcon,
@@ -37,6 +38,7 @@ const sidebarItems: SidebarItem[] = [
 { icon: BuildingIcon, label: 'Buyers', href: '/console/buyers' },
 { icon: BriefcaseIcon, label: 'Opportunities', href: '/console/opportunities' },
 { icon: HandshakeIcon, label: 'Engagements', href: '/console/engagements' },
+{ icon: BanknoteIcon, label: 'Outcomes', href: '/console/outcomes' },
 { icon: CompassIcon, label: 'Readiness', href: '/console/readiness' },
 { icon: ActivityIcon, label: 'Observatory', href: '/console/observatory' },
 { icon: ShieldCheckIcon, label: 'Compliance', href: '/console/compliance' },

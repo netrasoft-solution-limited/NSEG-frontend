@@ -14,8 +14,8 @@ export interface Engagement {
 
 export const engagements: Engagement[] = [
 { id: 'eng-01', opportunityId: 'opp-04', consentGrantId: 'cg-01', stage: 'referral-sent' },
-{ id: 'eng-02', opportunityId: 'opp-08', consentGrantId: 'cg-02', stage: 'interview-scheduled' },
+{ id: 'eng-02', opportunityId: 'opp-08', consentGrantId: 'cg-02', stage: 'commenced' },
 { id: 'eng-03', opportunityId: 'opp-11', consentGrantId: 'cg-03', stage: 'buyer-reviewing' },
 { id: 'eng-04', opportunityId: 'opp-12', consentGrantId: 'cg-04', stage: 'buyer-reviewing' },
-{ id: 'eng-05', opportunityId: 'opp-13', consentGrantId: 'cg-05', stage: 'contract-signed' },
+{ id: 'eng-05', opportunityId: 'opp-13', consentGrantId: 'cg-05', stage: 'commenced' },
 { id: 'eng-06', opportunityId: 'opp-15', consentGrantId: 'cg-06', stage: 'buyer-reviewing' }];

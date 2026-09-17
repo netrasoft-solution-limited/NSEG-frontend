@@ -124,6 +124,7 @@ matrix, non-goals, precedence order) constrain every module below.
 | 3.5 | Market Access Intelligence & Regulatory Insights | ⬜ | Not started (demand-side market playbooks / intelligence briefings) |
 | 3.6 | Symmetric Trust Badging & Progressive Feature Unlocking | 🟡 | [trustTiers.ts](src/data/trustTiers.ts), [buyerTiers.ts](src/data/buyerTiers.ts) drive badges shown in tables; no feature-unlock gating logic |
 | 3.7 | Cross-Border Settlement & Verified Escrow | 🚫 | Constrained by Module 1 Non-Goal 1 — see §5. Track as milestone metadata only (already how `ConsoleEngagements` stages `contract-signed`/`commenced`) |
+| — | Outcome / Attribution Event (Canonical Information Package #8) | ✅ | [ConsoleOutcomes.tsx](src/pages/ConsoleOutcomes.tsx), [OutcomeLedger.tsx](src/components/console/OutcomeLedger.tsx), [outcomes.ts](src/data/outcomes.ts) — self-reported outcomes start Provisional, an officer independently verifies, and same-engagement duplicate self-reports are flagged for single-count decisions before anything would feed the Observatory |
 
 ### Module 4 — Portal 2: Supply, Readiness, Certification & Incentives Domain
 | # | Subsystem | Status | Where in repo |
@@ -209,8 +210,9 @@ Dispute Resolution) in any form yet.
 ## 7. Recommended build order for remaining prototype work
 
 **Near-term — extends current console, low scope risk:**
-1. Outcome Verification & Attribution — close the loop `ConsoleEngagements` starts (`commenced` →
-   reported/verified export value), completing Module 3's demand lifecycle end to end.
+1. ~~Outcome Verification & Attribution~~ — done: `ConsoleOutcomes` closes the loop `ConsoleEngagements`
+   starts (`commenced` → self-reported → independently verified export value), including duplicate-report
+   detection when both exporter and buyer self-report the same engagement.
 2. Disclosure Package viewer (Module 2.6) — a concrete "view package" surface off
    `ConsoleEngagements`/`ConsoleConsent` showing exactly what was bundled and sent.
 3. Sectoral certification issuance workflow (Module 4.2) — extends `ConsoleCompliance` with an
@@ -257,3 +259,7 @@ Dispute Resolution) in any form yet.
 - **2026-09-17** — Initial PRD drafted from a full-text extraction of the 162-page BRD/FRD (all 8
   modules, reconciled to the most complete draft of each — see §1), cross-referenced against repo
   state as of commit `0d83093` (Engagements module).
+- **2026-09-17** — Added `ConsoleOutcomes` (Outcome / Attribution Event package): self-reported
+  export value starts Provisional, requires independent officer verification, and same-engagement
+  duplicate self-reports (exporter + buyer both reporting) are flagged so only one is ever counted.
+  Build order item 1 (§7) is now done.

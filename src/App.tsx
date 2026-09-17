@@ -6,6 +6,7 @@ import { ConsoleDashboard } from './pages/ConsoleDashboard';
 import { ConsoleExporters } from './pages/ConsoleExporters';
 import { ConsoleOpportunities } from './pages/ConsoleOpportunities';
 import { ConsoleEngagements } from './pages/ConsoleEngagements';
+import { ConsoleOutcomes } from './pages/ConsoleOutcomes';
 import { ConsoleReadiness } from './pages/ConsoleReadiness';
 import { ConsoleCompliance } from './pages/ConsoleCompliance';
 import { ConsoleObservatory } from './pages/ConsoleObservatory';
@@ -31,6 +32,7 @@ function Console() {
       <Route path="buyers" element={<ConsoleBuyers />} />
       <Route path="opportunities" element={<ConsoleOpportunities />} />
       <Route path="engagements" element={<ConsoleEngagements />} />
+      <Route path="outcomes" element={<ConsoleOutcomes />} />
       <Route path="readiness" element={<ConsoleReadiness />} />
       <Route path="compliance" element={<ConsoleCompliance />} />
       <Route path="observatory" element={<ConsoleObservatory />} />
