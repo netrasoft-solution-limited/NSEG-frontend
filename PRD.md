@@ -1,361 +1,429 @@
 # NSEG Portal — Prototype Product Requirements Document
 
-**Status:** Living document. Update the change log (§9) whenever scope or build status changes.
-**Source of truth:** `Copy of NATEP BRD_FRD Modules Specs (1).pdf` (162 pages) at the repo root — the
-Business Requirements Document / Functional Requirements Document for the Nigeria Service
-Export Gateway (NATEP / NCMSE). This PRD is a derived, prototype-scoped reading of that BRD; the
-BRD itself remains authoritative for the full production system.
+**Status:** Living document. Update the change log (§11) whenever scope or build status changes.
+**Baseline:** `NATEP Gateway PRD v1.0.pdf` (34 pages) at the repo root — the programme's own
+product definition, covering the full BRD scope (Foundation plus six portals). It explicitly
+supersedes the competing readings of the source pack, so it outranks every earlier reading in this
+file.
+**Underlying source:** `Copy of NATEP BRD_FRD Modules Specs (1).pdf` (162 pages). Go to the BRD only
+for detail PRD v1.0 carries forward unchanged; where the two disagree, PRD v1.0 wins.
 
 ---
 
 ## 0. Purpose & how to use this document
 
 This repo is a **frontend prototype** (React + Vite, static mock data, no backend, no real auth) of a
-subset of a much larger national platform. The source BRD describes a full enterprise system —
-real IAM, encryption, microservices, escrow, cross-border arbitration. Every session that opens this
-repo needs an answer to "what does the BRD ask for, what already exists, and what's next" without
-re-reading 162 pages each time. That's what this document is for:
+national platform. PRD v1.0 is written for the production build — real IAM, encryption, licensed
+settlement partners, agency integrations. This file translates it into prototype terms so every session
+can answer "what does the baseline ask for, what already exists, and what's next" without re-reading
+both PDFs:
 
-- §4 is the **complete subsystem inventory** — every module and subsystem the BRD defines, with a
-  build-status column and the exact files that implement it (or don't).
-- §5 flags **real contradictions inside the BRD itself** that need a human decision, not an assumption.
-- §7 is the **recommended build order** for what's left, kept in priority order.
+- §5 is the **complete requirement inventory**, using PRD v1.0's requirement IDs, with a build-status
+  column and the exact files that implement each one (or don't).
+- §4 tracks the **segregation-of-duties acceptance criteria**, which PRD v1.0 says are enforced in
+  software, not policy.
+- §8 is the **recommended build order**, kept in priority order.
+- §10 mirrors PRD v1.0's **open decisions register** and notes which decisions shape prototype work.
 
-Read §4 and §7 before starting new console work. Update this file in the same commit as the work
-that changes its status.
-
----
-
-## 1. A note on the BRD's draft history
-
-The PDF is a concatenation of multiple drafts, not one clean document. Two things to know before
-trusting any single page of it in isolation:
-
-1. **The "Architecture Outline" (PDF pages 1–6) describes an earlier, smaller 3-portal model**
-   (Portal 1 Demand, Portal 2 Regulatory Trust & Exporter Readiness, Portal 3 Supply Ecosystem &
-   Competitiveness, plus a National Observatory). The **detailed Module 1–8 BRD/FRD sections that
-   follow it describe a superseding, larger 6-portal model** where "Portal 2" and "Portal 3" mean
-   different things than they did in the outline (see §4 module map). This PRD is built from the
-   detailed Module 1–8 sections, since they're the ones with FRD-level subsystems, API contracts,
-   and acceptance criteria — the outline is background context only.
-2. **Module 3 (Portal 1: Demand) and Module 4 (Portal 2: Supply) each appear more than once** in the
-   file, as different drafts with different subsystem counts (Module 3 has a 5-subsystem draft and a
-   later 7-subsystem draft that adds Trust Badging and Cross-Border Settlement; Module 4's two
-   passes are materially the same). This PRD uses the **most complete draft of each** — the 7-subsystem
-   version of Module 3. This also matches the terminology the previous build session already used
-   (e.g. "Hybrid JIT Verification" only appears in the later draft), so it's the one already partially built.
+Read §5 and §8 before starting new work. Update this file in the same commit as the work that
+changes its status.
 
 ---
 
-## 2. Program context (condensed from BRD Module 1)
+## 1. Naming & requirement IDs
 
-- **Parent programme:** Nigeria Service Export Gateway (NATEP / NCMSE), under the Federal Ministry
-  of Industry, Trade and Investment (FMITI).
-- **Precedence order** (highest first): Applicable Law → Executive Decisions → Integrated TOR → BRD
-  Module 1 → BRD Module 2 → BRD Module 3 → BRD Module 4 → FRD/SRS specs. **Module 1 outranks
-  every other module** — this matters directly in §5.
-- **The Single-Platform Mandate:** portals are strictly forbidden from building siloed databases,
-  duplicate auth, local file storage, or independent audit logs. Everything sits on one shared
-  foundation (Module 2). The prototype's `AuditLogProvider` / `OfficerProfileProvider` pattern in
-  [App.tsx](src/App.tsx) is the closest analogue to this in a frontend-only context.
-- **Release plan:** 26-week, 3-release, 7-gate rollout (G0–G6). Gate G3 (Week 10) calls for "Shared
-  Foundation operational, Portal 1 intake/qualification engine active, initial Portal 2/3 alphas." Gate
-  G4 (Week 16) calls for "inter-portal API contracts functioning, consented capability transfer
-  verified, Observatory fact engine active." This prototype is roughly at a G3→G4 milestone in
-  scope (see §4).
+The source pack reuses portal numbers for different domains ("Portal 2" is Regulatory Trust in the
+BRD's Module 1 and Supply in Module 4). PRD v1.0 therefore names domains instead of numbering them,
+and this document follows it:
+
+| Domain | BRD module | Portal number in BRD Modules 3–8 | Requirement ID prefix |
+|---|---|---|---|
+| Foundation | Module 2 | — (shared layer) | `FND` |
+| Demand | Module 3 | Portal 1 | `DEM` |
+| Supply | Module 4 | Portal 2 | `SUP` |
+| Regulatory Trust | Module 1 / TOR (capability, delivered inside Supply) | — | `REG` |
+| Observatory | Module 5 | Portal 3 | `OBS` |
+| Promotion | Module 6 | Portal 4 | `PRO` |
+| Financing | Module 7 | Portal 5 | `FIN` |
+| Disputes | Module 8 | Portal 6 | `DSP` |
+
+**Regulatory Trust is a capability, not a portal.** Module 1 and the TOR require a requirements register,
+a personalised wizard, change alerts and readiness assertions; Modules 3–8 never specify them. PRD v1.0
+restores them (REG-01 to REG-06) inside Supply, consumed by Demand, and Gate G2 needs a live read-only
+register by week 4.
+
+The BRD's own IDs (FR-M2-04 and so on) are inconsistent across its drafts; PRD v1.0 replaces them.
+A source-to-new ID mapping is a G1 deliverable (D-15). Older commit messages and code comments in this
+repo still cite BRD section numbers (e.g. "Module 3.6") — read them through the table above.
 
 ---
 
-## 3. Platform-wide non-goals (binding on every module below)
+## 2. Programme context
 
-Verbatim from BRD Module 1 §1.3.2 — these override anything in a lower-precedence module that
-conflicts with them (see §5 for where that actually happens):
-
-1. **No stand-alone payment gateway, escrow, or direct commercial settlement engine.** Payment
-   settlement happens through commercial banking/FX channels; the platform records transaction
-   *metadata* only, for export verification and trade accounting.
-2. **No unmoderated public directory.** No open-search listing of individuals or raw supplier lists;
-   access to supplier capability profiles is consent-gated and mediated through qualified demand.
-3. **No autonomous algorithmic contract award.** Matching/scoring is decision support only —
-   automation must never award contracts, issue binding referrals, or disqualify actors without
-   human review.
-4. **No direct legal contracting.** The platform tracks milestone events (Contract Awarded,
-   Commencement Confirmed) and reference hashes of executed agreements, but is not an
-   e-signature tool.
-5. **No creation of statutory obligations.** The Regulatory Trust domain compiles, explains, versions,
-   and routes guidance from competent authorities — it has zero legal authority to create new
-   statutory duties or levy fines.
-
-The existing console already reflects several of these by construction: `ShortlistReview` requires
-human approval before a match is acted on (non-goal 3); `IncentiveQueue`'s `canApprove` gate
-requires a designated administrator sign-off rather than automatic disbursement; `ConsoleEngagements`
-tracks `contract-signed` / `commenced` as milestone events, not an e-signature flow (non-goal 4).
+- **Programme:** Nigeria Service Export Gateway (NATEP / NCMSE). Executive sponsor FMITI; business
+  owner the NATEP / NCMSE Secretariat; technical authority ADSPA.
+- **Precedence** (highest first): Applicable Law → Executive Decisions → Integrated TOR → BRD Module 1
+  → later modules. Applicable Law sitting on top is why regulated activity is delivered as an
+  integration boundary (§3.1).
+- **Single-Platform Mandate:** one identity store, actor registry, evidence vault, consent engine, audit
+  chain, notification service and settlement instruction service. No domain builds its own. In this
+  prototype, the app-wide `OfficerProfileProvider` and `AuditLogProvider` in [App.tsx](src/App.tsx)
+  are the closest frontend analogue.
+- **Release plan:** 26 weeks, gates G0–G6. G2 (week 4): public landing page, read-only requirements
+  register with starter content, identity and taxonomy services. G3 (week 10): Foundation including
+  settlement instruction service; Demand intake/qualification/lifecycle; Supply onboarding,
+  credentialing and entitlements; Regulatory authoring. G4 (week 16): cross-domain contracts,
+  matchmaking, escrow instruction in partner sandbox, Observatory pipeline and agency workspaces,
+  Promotion showcase. G5 is week 22 (Module 1's timing; Modules 5–8's "week 20" is superseded).
 
 ---
 
-## 4. Full module & subsystem inventory
+## 3. Boundaries (binding on every requirement in §5)
 
-Status legend: ✅ Built · 🟡 Partial · ⬜ Not started · 🚫 Out of scope (see §5)
+### 3.1 Regulated activity — integration boundaries, not scope cuts
+Three capabilities are regulated and cannot be performed by the platform itself. They are **in scope**,
+but the platform holds the evidence and the instruction while a licensed partner holds the money or the
+legal authority:
 
-### Module 1 — Core Governance, Scope & Single-Platform Principles
-Policy/architecture only; no FRD subsystems, no direct UI. Its rules (Single-Platform Mandate, SoR
-matrix, non-goals, precedence order) constrain every module below.
-
-### Module 2 — Shared Platform Foundation Services (Canonical Common Layer)
-| # | Subsystem | Status | Where in repo |
-|---|---|---|---|
-| 2.1 | Unified Identity & Access Management (IAM) | 🟡 | No real login/SSO — but [officerProfile.tsx](src/lib/officerProfile.tsx)'s role switch now simulates ROLE_ADSPA_OFFICER as a console-wide read-only mode via [permissions.ts](src/lib/permissions.ts)'s `canMutate`, applied across every mutating action in the console (see §8 decision 3). `ROLE_DATA_STEWARD`/`ROLE_ENTITY_ADMIN`/`ROLE_ACTOR_USER` are not represented — the latter two are exporter/buyer-side roles this officer console has no surface for |
-| 2.2 | Canonical Actor Registry & Identity Verification | 🟡 | [ActorTable.tsx](src/components/console/ActorTable.tsx), [BuyerTable.tsx](src/components/console/BuyerTable.tsx), [VerificationQueue.tsx](src/components/console/VerificationQueue.tsx), [verification.ts](src/lib/verification.ts) — per-portal actor/buyer views exist; no unified cross-portal registry or dedup UI |
-| 2.3 | Organization Delegation & Multi-Tenant Context | ✅ | [ConsoleDelegations.tsx](src/pages/ConsoleDelegations.tsx), [DelegationRegistry.tsx](src/components/console/DelegationRegistry.tsx), [delegations.ts](src/data/delegations.ts) — each exporter/buyer account modeled as an org with named delegates (employee/contractor/branch officer), 365-day recertification cap surfaced as a 30-day warning, officer revoke reserved for compliance action |
-| 2.4 | Shared Evidence & Zero-Duplicate Document Vault | ✅ | [ConsoleVault.tsx](src/pages/ConsoleVault.tsx), [EvidenceVault.tsx](src/components/console/EvidenceVault.tsx), [vaultDocuments.ts](src/data/vaultDocuments.ts) |
-| 2.5 | Granular User Consent & Privacy (NDPA 2023) | ✅ | [ConsoleConsent.tsx](src/pages/ConsoleConsent.tsx), [ConsentRegister.tsx](src/components/console/ConsentRegister.tsx), [consentGrants.ts](src/data/consentGrants.ts) |
-| 2.6 | Immutable Disclosure Package | ✅ | [DisclosurePackageViewer.tsx](src/components/console/DisclosurePackageViewer.tsx), [disclosurePackage.ts](src/lib/disclosurePackage.ts) — built as a derived artifact (not stored), so revoking or expiring the underlying consent grant instantly voids it; surfaced from both `ConsoleConsent` and `ConsoleEngagements`; each view is audit-logged |
-| 2.7 | Controlled Taxonomies & Master Data | ✅ | [ConsoleTaxonomies.tsx](src/pages/ConsoleTaxonomies.tsx), [TaxonomyRegistry.tsx](src/components/console/TaxonomyRegistry.tsx), [taxonomies.ts](src/data/taxonomies.ts) — read-only version/deprecation metadata layered over the live code tables ([sectors.ts](src/data/sectors.ts), `supplyModes`, [trustTiers.ts](src/data/trustTiers.ts), [buyerTiers.ts](src/data/buyerTiers.ts)) rather than duplicating them; deliberately no edit actions, since version supersession is a TWG-lead decision, not a desk officer one |
-| 2.8 | Configurable Workflow & Task Engine | 🟡 | Each portal has its own ad hoc queue ([SignalQueue.tsx](src/components/console/SignalQueue.tsx), [IncentiveQueue.tsx](src/components/console/IncentiveQueue.tsx), etc.) but no generic/SLA-aware task engine |
-| 2.9 | Event Bus, Universal Gateway & Tamper-Evident Audit | 🟡 | [auditLog.tsx](src/lib/auditLog.tsx), [ConsoleAudit.tsx](src/pages/ConsoleAudit.tsx) cover the audit trail; event bus/API gateway are backend concerns, N/A for a frontend prototype |
-
-### Module 3 — Portal 1: Demand, Market Access & Buyer Matchmaking Domain
-| # | Subsystem | Status | Where in repo |
-|---|---|---|---|
-| 3.1 | Global Buyer Onboarding & Hybrid JIT Verification | ✅ | [ConsoleBuyers.tsx](src/pages/ConsoleBuyers.tsx), [buyers.ts](src/data/buyers.ts) |
-| 3.2 | Service Demand Opportunity & RFP Publishing | 🟡 | [ConsoleOpportunities.tsx](src/pages/ConsoleOpportunities.tsx), [opportunities.ts](src/data/opportunities.ts) — officer-side qualification exists; no buyer-facing RFP creation form |
-| 3.3 | Automated Matchmaking & Supplier Discovery | ✅ | [ShortlistReview.tsx](src/components/console/ShortlistReview.tsx), [shortlists.ts](src/data/shortlists.ts) |
-| 3.4 | Proposal Submission & Bid Management | 🟡 | [ConsoleEngagements.tsx](src/pages/ConsoleEngagements.tsx) tracks referral→interview→contract stages; no actual proposal/bid document submission |
-| 3.5 | Market Access Intelligence & Regulatory Insights | ✅ | [ConsoleMarketIntelligence.tsx](src/pages/ConsoleMarketIntelligence.tsx), [MarketIntelligenceLibrary.tsx](src/components/console/MarketIntelligenceLibrary.tsx), [marketIntelligence.ts](src/data/marketIntelligence.ts) — destination-market briefs indexed by country/sector/mode with a draft→under-review→published authoring workflow |
-| 3.6 | Symmetric Trust Badging & Progressive Feature Unlocking | ✅ | [ConsoleTrustBadging.tsx](src/pages/ConsoleTrustBadging.tsx), [trustBadging.ts](src/lib/trustBadging.ts) — surfaces both tier ladders side by side with each tier's unlocked capabilities and the BRD-required "Next Unlock Prompt," plus a per-exporter breakdown sorted by profile completion. Read-only by design: this is oversight/explainability, not an officer decision. No feature-unlock *gating* is implemented (nothing in the prototype is actually locked behind a tier) |
-| 3.7 | Cross-Border Settlement & Verified Escrow | 🚫 | Constrained by Module 1 Non-Goal 1 — see §5. Track as milestone metadata only (already how `ConsoleEngagements` stages `contract-signed`/`commenced`) |
-| — | Outcome / Attribution Event (Canonical Information Package #8) | ✅ | [ConsoleOutcomes.tsx](src/pages/ConsoleOutcomes.tsx), [OutcomeLedger.tsx](src/components/console/OutcomeLedger.tsx), [outcomes.ts](src/data/outcomes.ts) — self-reported outcomes start Provisional, an officer independently verifies, and same-engagement duplicate self-reports are flagged for single-count decisions before anything would feed the Observatory |
-
-### Module 4 — Portal 2: Supply, Readiness, Certification & Incentives Domain
-| # | Subsystem | Status | Where in repo |
-|---|---|---|---|
-| 4.1 | Exporter Onboarding & Profile Readiness | ✅ | [ConsoleExporters.tsx](src/pages/ConsoleExporters.tsx), [ActorTable.tsx](src/components/console/ActorTable.tsx), [actors.ts](src/data/actors.ts) |
-| 4.2 | Sectoral Regulatory Validation & Certification | ✅ | [ConsoleCertifications.tsx](src/pages/ConsoleCertifications.tsx), [CertificationRegistry.tsx](src/components/console/CertificationRegistry.tsx), [certification.ts](src/lib/certification.ts) — a dedicated view over the Evidence Vault's `sector-license`/`iso-certificate` documents (professional credentials, distinct from `ConsoleCompliance`'s rules register), with issue/reject and 30-day renewal-warning reminders |
-| 4.3 | Export Readiness Assessment & Diagnostic | ✅ | [ConsoleReadiness.tsx](src/pages/ConsoleReadiness.tsx), [ReadinessQueue.tsx](src/components/console/ReadinessQueue.tsx), [readinessScore.ts](src/lib/readinessScore.ts) |
-| 4.4 | Export Incentives & Trade Facilitation | ✅ | [ConsoleIncentives.tsx](src/pages/ConsoleIncentives.tsx), [IncentiveQueue.tsx](src/components/console/IncentiveQueue.tsx), [incentives.ts](src/data/incentives.ts) |
-
-### Module 5 — Portal 3: National Services Export Observatory, Governance & Policy Intelligence
-| # | Subsystem | Status | Where in repo |
-|---|---|---|---|
-| 5.1 | Real-Time Macroeconomic Trade Observatory | 🟡 | [ConsoleObservatory.tsx](src/pages/ConsoleObservatory.tsx), [observatory.ts](src/data/observatory.ts), [ShareBarList.tsx](src/components/console/ShareBarList.tsx) — static demo metrics, not real-time |
-| 5.2 | Inter-Agency Governance & Compliance Gateway | 🟡 | [ReconciliationPanel.tsx](src/components/console/ReconciliationPanel.tsx) — double-counting reconciliation across NEPC/NEXIM/CBN |
-| 5.3 | Predictive Policy Simulation & Modeling | ✅ | [PolicySimulator.tsx](src/components/console/PolicySimulator.tsx), [policySimulation.ts](src/lib/policySimulation.ts), [policyScenarios.ts](src/data/policyScenarios.ts) — a sandbox over the three BRD-specified policy variables producing immutable 12/24/36-month projections; the math is illustrative (not real econometrics), but deterministic and transparently derived from the inputs |
-| 5.4 | Automated Incentive Audit & Anti-Leakage | ✅ | [IncentiveAuditLedger.tsx](src/components/console/IncentiveAuditLedger.tsx), [incentiveAudit.ts](src/lib/incentiveAudit.ts) — runs all three BRD conditions (standing, trade volume, compliance flags) independently of `ConsoleIncentives`'s own `autoPreQualified` flag, issuing an AVT or a coded rejection; catches a suspended-but-otherwise-qualified exporter that the shallower check lets through (see `incentives.ts`'s `inc-07` seed) |
-
-### Module 6 — Portal 4: Global Promotion, Investment Facilitation & Delegation Matchmaking
-| # | Subsystem | Status |
+| Capability | Platform's role | Licensed party |
 |---|---|---|
-| 6.1 | Investor Concierge & Landing Pad | 🚫 Out of scope — see §8 decision 1 |
-| 6.2 | International Trade Mission & Delegation Matchmaking | 🚫 Out of scope — see §8 decision 1 |
+| Escrow and settlement (Demand, Financing) | Instruct, record, verify | CBN-licensed partner holds funds |
+| Factoring, outcomes-based capital, income share (Financing) | Originate, score, record | Licensed lender books the facility |
+| Binding arbitration (Disputes) | Case management, evidence custody, award registration | Accredited institution administers |
 
-Descoped from this prototype (2026-09-17): absent from the Architecture Outline's original 3-portal
-framing, and building it would dilute effort against validating the core Portals 1–3 + Observatory
-loop. Revisit only if the programme explicitly confirms this is next-priority.
+**Prototype rule:** build these as instruction/status trackers — typed instructions (hold, fund, release,
+refund, lien, sweep) with a partner acknowledgement and outcome. Never a payment, lending or
+tribunal feature. This is the same pattern `ConsoleEngagements` already uses for `contract-signed` /
+`commenced`.
 
-### Module 7 — Portal 5: Financing, Outcomes-Based Capital & Escrow
-| # | Subsystem | Status |
+### 3.2 Retained boundaries from Module 1
+PRD v1.0 assumes the Steering Committee formally amends Module 1's non-goals to permit escrow,
+financing, arbitration and a public directory (D-01). Three non-goals survive the amendment because
+they protect the platform's legal position:
+
+1. **No autonomous award.** Scoring, matching and pre-qualification are decision support. No contract
+   awarded, actor disqualified or grant approved without a recorded human decision at the point of effect.
+2. **No direct legal contracting.** The platform records contract metadata and document hashes;
+   execution happens outside it.
+3. **No opaque quality rating.** Every badge and tier states what was verified, by whom and when.
+   Names implying government endorsement of quality are replaced (D-06). **The prototype currently
+   violates this** — see §5 SUP-06 and §8.
+
+Also out of scope (PRD v1.0 §2.2): historical agency data migration, modifying agencies' own systems,
+the Gateway holding or moving funds, creating statutory obligations, and hardware/connectivity.
+
+---
+
+## 4. Segregation of duties (PRD v1.0 §3.3 — acceptance criteria)
+
+| Action | Initiated by | Independent decision by | System guard | Prototype |
+|---|---|---|---|---|
+| Demand signal submission | Buyer or partner | Demand officer | Auto-promotion blocked; Pending Qualification | ✅ [SignalQueue.tsx](src/components/console/SignalQueue.tsx) — no rationale captured (DEM-04) |
+| Match scoring | Matching engine | Demand officer | Output advisory; auto-transmission disabled | ✅ [ShortlistReview.tsx](src/components/console/ShortlistReview.tsx) |
+| Disclosure of supplier data | Referral workflow | The data subject | 403 without active consent | ✅ [disclosurePackage.ts](src/lib/disclosurePackage.ts) |
+| Outcome report | Exporter or buyer | Independent verification officer | Self-reported value Provisional; excluded from Observatory | ✅ [OutcomeLedger.tsx](src/components/console/OutcomeLedger.tsx) |
+| Regulatory content change | Content drafter | Competent authority focal | Stays Draft until signed off | ⬜ No Draft state or sign-off (REG-02) |
+| Actor merge | Deduplication engine | Data steward | Blocked in the 70–84% match band | ⬜ No dedup or steward queue (FND-02) |
+| Audit log export | System administrator | ADSPA officer | Dual-key; unilateral extraction blocked | ⬜ [ConsoleAudit.tsx](src/pages/ConsoleAudit.tsx) has no dual-key export |
+| Incentive disbursal | Rules engine pre-qualification | NATEP/NEPC administrator | Automated pass alone never disburses | ✅ [IncentiveQueue.tsx](src/components/console/IncentiveQueue.tsx) `canApprove` gate |
+| Escrow release | Buyer approval or award | Licensed settlement partner | Platform instructs; partner executes | ⬜ No settlement instructions (FND-11) |
+| Exporter suspension | Sanctions engine | Compliance officer or tribunal award | Automated suspension blocked without recorded decision | 🟡 [ActorTable.tsx](src/components/console/ActorTable.tsx) — manual and audit-logged, but no reason captured |
+
+---
+
+## 5. Requirement inventory
+
+Status legend: ✅ Built · 🟡 Partial · ⬜ Not started · N/A Backend-only, no meaningful prototype surface
+
+"Built" means the prototype demonstrates the requirement's workflow and decision boundary against
+static data — never the production non-functional detail (Argon2id, AES-256-GCM, circuit breakers).
+
+### 5.1 Foundation
+| ID | Requirement | Status | Where in repo / gap |
+|---|---|---|---|
+| FND-01 | Identity and access (OIDC, MFA, context switching) | 🟡 | [officerProfile.tsx](src/lib/officerProfile.tsx) simulates three roles (desk officer, administrator, ADSPA auditor); [permissions.ts](src/lib/permissions.ts) `canMutate` puts the console in read-only mode for the auditor. No context switching between affiliated entities; none of PRD v1.0's other institutional roles (§3.2: data steward, verifier, agency analyst, arbitrator, system administrator…) |
+| FND-02 | Canonical actor registry and deduplication | 🟡 | [ActorTable.tsx](src/components/console/ActorTable.tsx), [BuyerTable.tsx](src/components/console/BuyerTable.tsx), [VerificationQueue.tsx](src/components/console/VerificationQueue.tsx), [verification.ts](src/lib/verification.ts). Gaps: no UAID; no lifecycle Provisional → Pending Verification → Verified → Suspended → Archived (+ Rejected, reinstatement); no dedup with 85% block / 70–84% steward queue; separate exporter and buyer registries rather than one |
+| FND-03 | Organisation delegation | ✅ | [ConsoleDelegations.tsx](src/pages/ConsoleDelegations.tsx), [DelegationRegistry.tsx](src/components/console/DelegationRegistry.tsx), [delegations.ts](src/data/delegations.ts), [delegationLookup.ts](src/lib/delegationLookup.ts) — 365-day cap surfaced as a 30-day warning |
+| FND-04 | Evidence vault | ✅ | [ConsoleVault.tsx](src/pages/ConsoleVault.tsx), [EvidenceVault.tsx](src/components/console/EvidenceVault.tsx), [vaultDocuments.ts](src/data/vaultDocuments.ts) — mock SHA-256 reuse by reference, malware scan status. D-05's steward-only global hash index not represented |
+| FND-05 | Consent engine | ✅ | [ConsoleConsent.tsx](src/pages/ConsoleConsent.tsx), [ConsentRegister.tsx](src/components/console/ConsentRegister.tsx), [consentGrants.ts](src/data/consentGrants.ts) — purpose, field list, revocation |
+| FND-06 | Disclosure packages | ✅ | [DisclosurePackageViewer.tsx](src/components/console/DisclosurePackageViewer.tsx), [disclosurePackage.ts](src/lib/disclosurePackage.ts) — derived, voids instantly on revoke/expire (410 equivalent). TTL per purpose (D-07) not modelled |
+| FND-07 | Taxonomies and master data | 🟡 | [ConsoleTaxonomies.tsx](src/pages/ConsoleTaxonomies.tsx), [TaxonomyRegistry.tsx](src/components/console/TaxonomyRegistry.tsx), [taxonomies.ts](src/data/taxonomies.ts) over [sectors.ts](src/data/sectors.ts) (UN CPC), `supplyModes`, [trustTiers.ts](src/data/trustTiers.ts), [buyerTiers.ts](src/data/buyerTiers.ts). Missing occupations, jurisdictions, currencies and ISIC Rev. 4 mapping |
+| FND-08 | Workflow and SLA engine | 🟡 | Each domain has its own queue; no SLA timers on a business calendar, no 80% warning, no escalation |
+| FND-09 | Notification service | 🟡 | [ConsoleSettings.tsx](src/pages/ConsoleSettings.tsx) has per-user preferences only; header bell is decorative; no in-app inbox, quiet hours or delivery tracking |
+| FND-10 | API gateway, event bus, tamper-evident audit | 🟡 | [auditLog.tsx](src/lib/auditLog.tsx), [ConsoleAudit.tsx](src/pages/ConsoleAudit.tsx) — session-scoped log. No hash chain, no pre/post-state, no dual-key export. Gateway and event bus N/A |
+| FND-11 | Settlement instruction service | ⬜ | Nothing yet. Needed by DEM-10, FIN-01/02, DSP-01/02/05 |
+
+### 5.2 Demand
+| ID | Requirement | Status | Where in repo / gap |
+|---|---|---|---|
+| DEM-01 | Buyer onboarding and just-in-time verification | ✅ | [ConsoleBuyers.tsx](src/pages/ConsoleBuyers.tsx), [BuyerTable.tsx](src/components/console/BuyerTable.tsx), [buyers.ts](src/data/buyers.ts), [buyerTiers.ts](src/data/buyerTiers.ts). Buyer tier names need the D-06 check ("states what was verified") |
+| DEM-02 | Opportunity and RFP lifecycle | 🟡 | [opportunities.ts](src/data/opportunities.ts) uses `qualified / matched / consented` only. Missing the audited state machine Draft → Published → Matching Active → Shortlisting → Awarded → Fulfilled → Closed, required fields (budget range, target completion) and deadline expiry |
+| DEM-03 | Signal intake | 🟡 | [SignalQueue.tsx](src/components/console/SignalQueue.tsx), [signals.ts](src/data/signals.ts) record a route, but the seeded routes don't map to PRD v1.0's four (public form, assisted officer capture, external API, secure batch upload) |
+| DEM-04 | Qualification | 🟡 | Qualify/reject is audit-logged to a named officer. No rationale, checklist, dedup against open signals or risk-tier escalation |
+| DEM-05 | Opportunity Criteria Package | 🟡 | Criteria typed mandatory/preferred/negotiable/informational in [opportunities.ts](src/data/opportunities.ts). No versioning or impact analysis |
+| DEM-06 | Explainable matchmaking | 🟡 | [ShortlistReview.tsx](src/components/console/ShortlistReview.tsx), [shortlists.ts](src/data/shortlists.ts) — factor weights already match PRD v1.0 (30/30/20/20). Missing plain-language exclusion reasons, bias checks, and reason-required manual adjustment. D-09 multiplier not modelled |
+| DEM-07 | Entitlement-gated bidding | ⬜ | Public marketplace gates detail *visibility* by tier ([accessControl.ts](src/lib/accessControl.ts)); nothing gates *response rights* or explains how to unlock |
+| DEM-08 | Human shortlisting | ✅ | [ShortlistReview.tsx](src/components/console/ShortlistReview.tsx) — nothing transmits without officer approval |
+| DEM-09 | Consented disclosure and engagement | 🟡 | [ConsoleEngagements.tsx](src/pages/ConsoleEngagements.tsx), [EngagementTracker.tsx](src/components/console/EngagementTracker.tsx), [engagementStage.ts](src/lib/engagementStage.ts). No proposal lifecycle |
+| DEM-10 | Escrow instruction and milestones | ⬜ | Engagement stages stop at `commenced`. No milestone schedule, funding instruction, funding-confirmation gate or release instruction |
+| DEM-11 | Conversion and outcome verification | ✅ | [ConsoleOutcomes.tsx](src/pages/ConsoleOutcomes.tsx), [OutcomeLedger.tsx](src/components/console/OutcomeLedger.tsx), [outcomes.ts](src/data/outcomes.ts), [outcomeVerification.ts](src/lib/outcomeVerification.ts) — Provisional until independently verified, same-engagement duplicates flagged. Partner attribution lineage not modelled |
+
+### 5.3 Supply
+| ID | Requirement | Status | Where in repo / gap |
+|---|---|---|---|
+| SUP-01 | Onboarding and capability profiling | 🟡 | [ConsoleExporters.tsx](src/pages/ConsoleExporters.tsx), [ActorTable.tsx](src/components/console/ActorTable.tsx), [actors.ts](src/data/actors.ts). No capability portfolio bound to UN CPC / ISIC; no individual (non-CAC) track (D-06) |
+| SUP-02 | Capacity and freshness | ⬜ | No quantified capacity or stale-declaration exclusion |
+| SUP-03 | Supply pools | ⬜ | — |
+| SUP-04 | Regulatory credentialing | ✅ | [ConsoleCertifications.tsx](src/pages/ConsoleCertifications.tsx), [CertificationRegistry.tsx](src/components/console/CertificationRegistry.tsx), [certification.ts](src/lib/certification.ts) — issue/reject, 30-day renewal warning |
+| SUP-05 | Readiness diagnostics and tiering | ✅ | [ConsoleReadiness.tsx](src/pages/ConsoleReadiness.tsx), [ReadinessQueue.tsx](src/components/console/ReadinessQueue.tsx), [readinessScore.ts](src/lib/readinessScore.ts) — weights (25/20/20/20/15) and bands (under 50 / 50–79 / 80+) already match PRD v1.0. No recalculation-on-change or downgrade notice |
+| SUP-06 | Entitlements | 🟡 | [ConsoleTrustBadging.tsx](src/pages/ConsoleTrustBadging.tsx), [trustBadging.ts](src/lib/trustBadging.ts), [TierReferenceCard.tsx](src/components/console/TierReferenceCard.tsx) — read-only; nothing gated. **Conflicts with D-06:** [trustTiers.ts](src/data/trustTiers.ts) runs a second ladder on profile completion %, alongside the readiness score, and uses quality-rating names ("Top-Rated Export Partner") |
+| SUP-07 | Intervention mapping | ⬜ | — |
+| SUP-08 | Incentives and trade facilitation | ✅ | [ConsoleIncentives.tsx](src/pages/ConsoleIncentives.tsx), [IncentiveQueue.tsx](src/components/console/IncentiveQueue.tsx), [incentives.ts](src/data/incentives.ts) — pre-qualification then administrator sign-off. D-10 (any-channel evidence, single base currency) not modelled |
+
+### 5.4 Regulatory Trust (delivered within Supply) — G2 critical
+| ID | Requirement | Status | Where in repo / gap |
+|---|---|---|---|
+| REG-01 | Requirements register | 🟡 | [ConsoleCompliance.tsx](src/pages/ConsoleCompliance.tsx), [ComplianceRegister.tsx](src/components/console/ComplianceRegister.tsx), [regulations.ts](src/data/regulations.ts) — the five categories match. Record lacks plain-language summary, official channel, applicability criteria, evidence expectations, source citation, effective date and review date |
+| REG-02 | Institutional authoring and validation | ⬜ | Statuses are `current / under-review / superseded`. No Draft, no per-agency queue, no competent-authority sign-off; the officer can mark content reviewed unilaterally |
+| REG-03 | Wizard and pathway engine | ⬜ | Exporter-facing questionnaire (archetype, service type, mode, destination market) producing an ordered pathway |
+| REG-04 | Exporter readiness workspace | ⬜ | Exporter-facing and private by default; no exporter-side surface exists in this repo yet |
+| REG-05 | Change alert and invalidation | 🟡 | [ComplianceRegister.tsx](src/components/console/ComplianceRegister.tsx) computes an "Affects" count against live opportunities. No review tasks, notifications, or flagging of dependent assertions for revalidation |
+| REG-06 | Readiness assertions | 🟡 | [ReadinessQueue.tsx](src/components/console/ReadinessQueue.tsx) issues/withholds an assertion, but the assertion doesn't state what was verified, by which authority, when, scope limits, expiry or what isn't covered |
+
+### 5.5 Observatory
+| ID | Requirement | Status | Where in repo / gap |
+|---|---|---|---|
+| OBS-01 | Indicator pipeline | 🟡 | Static data by design (§9, P-2). Provisional-value exclusion lives in Outcomes, not surfaced in the Observatory |
+| OBS-02 | Multi-dimensional aggregation | 🟡 | [ConsoleObservatory.tsx](src/pages/ConsoleObservatory.tsx), [ShareBarList.tsx](src/components/console/ShareBarList.tsx), [observatory.ts](src/data/observatory.ts) — fixed breakdowns; no dimension selection (mode, CPC, corridor, tier, period) |
+| OBS-03 | Reconciliation and single count | 🟡 | [ReconciliationPanel.tsx](src/components/console/ReconciliationPanel.tsx) covers NEPC, NEXIM, CBN, FIRS. Missing NBS and FMITI; variance per source not shown |
+| OBS-04 | Agency workspaces | ⬜ | Scoped read-only views for CBN, FIRS, NEPC, NEXIM, NBS, FMITI |
+| OBS-05 | Anomaly detection | ⬜ | Declared vs verified vs filed discrepancies raising cases — a flag is a case, never a sanction |
+| OBS-06 | Incentive audit and anti-leakage | ✅ | [IncentiveAuditLedger.tsx](src/components/console/IncentiveAuditLedger.tsx), [incentiveAudit.ts](src/lib/incentiveAudit.ts) — independent re-check of all conditions; `inc-07` seed shows a case the shallower check misses |
+| OBS-07 | Policy simulation | ✅ | [PolicySimulator.tsx](src/components/console/PolicySimulator.tsx), [policySimulation.ts](src/lib/policySimulation.ts), [policyScenarios.ts](src/data/policyScenarios.ts) — isolated sandbox, immutable 12/24/36-month scenario reports |
+| OBS-08 | Inclusion and bottleneck analytics | 🟡 | Regional and inclusion breakdowns exist; no pipeline funnel showing where actors are lost |
+| OBS-09 | Disclosure control | ⬜ | No small-population suppression or dominance check |
+| OBS-10 | Statistical integrity | ⬜ | Figures aren't labelled as platform-observed, reconciled national, or projection |
+
+### 5.6 Promotion
+| ID | Requirement | Status | Notes |
+|---|---|---|---|
+| PRO-01 | Investor concierge and landing pad | ⬜ | Per-agency clearance status (NIPC, NEPZA, FIRS) in one view; agency failures surfaced, not hidden |
+| PRO-02 | Trade missions and delegations | ⬜ | Mission creation, delegate matching against verified supply, B2B schedules |
+| PRO-03 | MOU and commitment tracking | ⬜ | — |
+| PRO-04 | Ecosystem showcase | ⬜ | Opt-in, per-field public listing (D-13). The existing public [Marketplace.tsx](src/pages/Marketplace.tsx) lists *opportunities*, not suppliers, so it isn't this |
+
+### 5.7 Financing (originate-score-record; a licensed lender books every facility)
+| ID | Requirement | Status | Notes |
+|---|---|---|---|
+| FIN-01 | Factoring origination | ⬜ | Needs DEM-10 (confirmed hold) and FND-11 (lien instruction) first |
+| FIN-02 | Repayment sweep | ⬜ | Instruction with confirmed outcome; partial/failed sweeps raise a case |
+| FIN-03 | Outcomes-based capital | ⬜ | — |
+| FIN-04 | Placement verification | ⬜ | — |
+| FIN-05 | Capital provider gateway | ⬜ | Read-only; exporter-level data only under active consent |
+| FIN-06 | Portfolio risk engine | ⬜ | Scores inform a lender's decision, never an automated credit decision |
+
+### 5.8 Disputes (the platform never constitutes the tribunal)
+| ID | Requirement | Status | Notes |
+|---|---|---|---|
+| DSP-01 | Case filing and hold | ⬜ | Needs FND-11 (hold instruction) |
+| DSP-02 | Structured negotiation | ⬜ | Assisted proposals advisory and labelled |
+| DSP-03 | Escalation and arbitrator appointment | ⬜ | Records appointment under institution rules; no random-rotation assignment (D-16) |
+| DSP-04 | Evidence custody | ⬜ | Reuses FND-04 with access logging |
+| DSP-05 | Award registration and execution | ⬜ | Immutable once registered; execution as release/refund instruction |
+| DSP-06 | Sanctions and integrity register | ⬜ | Effects on standing require a recorded compliance decision; ties into §4's suspension row |
+
+### Public-facing surface
+[Landing.tsx](src/pages/Landing.tsx) and [Marketplace.tsx](src/pages/Marketplace.tsx) are the public
+side. G2 requires the public landing page; the Marketplace's tier-gated opportunity browsing touches
+DEM-07's intent. PRD v1.0 §7.5 requires WCAG 2.1 AA and mobile-first for public and exporter-facing
+interfaces — the officer console is exempt from mobile-first but the public pages are not.
+
+---
+
+## 6. Cross-domain data contracts (PRD v1.0 §6)
+
+No domain reads another domain's records directly. In a frontend prototype, the practical analogue is a
+typed derivation function (like `disclosurePackage.ts`) that one page produces and another consumes,
+returning an explicit typed failure instead of partial data.
+
+| Contract | Producer | Prototype |
 |---|---|---|
-| 7.1 | Export Contract & Invoice Factoring | 🚫 Out of scope — see §8 decision 2 |
-| 7.2 | Outcomes-Based Capital & Upskilling Bond | 🚫 Out of scope — see §8 decision 2 |
-
-Descoped from this prototype (2026-09-17), not just deprioritized: this portal's whole premise is
-financial-instrument administration (factoring liens, capital bonds), which conflicts with Module 1's
-Non-Goal 1 more directly than a "track milestones only" framing can responsibly paper over (unlike
-Module 3.7, which is narrow enough to stay in scope as metadata tracking). Treat this as likely scope
-creep from a later BRD draft rather than a requirement to reconcile.
-
-### Module 8 — Portal 6: Dispute Resolution, Cross-Border Contract Enforcement
-| # | Subsystem | Status |
-|---|---|---|
-| 8.1 | Online Dispute Resolution (ODR) & Mediation | 🚫 Out of scope — see §8 decision 1 |
-| 8.2 | Digital Cross-Border Arbitration Tribunal | 🚫 Out of scope — see §8 decision 1 |
-
-Descoped from this prototype (2026-09-17), same reasoning as Module 6: absent from the original
-framing, lowest validated priority of everything in the BRD.
-
-### Public-facing surface (not a numbered BRD subsystem, but part of the delivered app)
-[Landing.tsx](src/pages/Landing.tsx) and [Marketplace.tsx](src/pages/Marketplace.tsx) provide the
-public-facing views that touch Module 3's opportunity browsing and Module 4's exporter visibility
-non-goals (consent-gated, no raw directory exposure).
+| Opportunity Criteria Package | Demand | 🟡 criteria in `opportunities.ts`, unversioned |
+| Regulatory Requirement Link | Regulatory | ⬜ |
+| Readiness Assertion | Regulatory | 🟡 issue/withhold only (REG-06) |
+| Potential Fit Evaluation | Supply | 🟡 `shortlists.ts` factor breakdown, no exclusions |
+| Capability Package | Supply | ⬜ |
+| Consent Request / Grant | Foundation | ✅ `consentGrants.ts` |
+| Shared Disclosure Package | Foundation | ✅ `disclosurePackage.ts` |
+| Outcome / Attribution Event | Demand, verifier | 🟡 no attribution lineage |
+| Settlement Instruction / Outcome | Foundation (FND-11) | ⬜ |
+| Entitlement State | Supply | ⬜ |
+| Sanction Notice | Disputes | ⬜ |
 
 ---
 
-## 5. Resolved scope conflicts & judgment calls
+## 7. What this prototype is and isn't
 
-**Escrow/payment processing (Module 1 Non-Goal 1 vs. Module 3.7 and all of Module 7):** Module 1's
-own precedence rule (§2) puts it above every other module. Where Module 3's "Cross-Border
-Settlement & Verified Escrow" subsystem or Module 7's entire financing/escrow portal would imply
-the platform *itself* moving money, Non-Goal 1 wins: **the platform may only track settlement/financing
-milestones and metadata, never execute the transaction.** This is already the pattern used in
-`ConsoleIncentives` (sign-off tracking, not fund disbursement) and `ConsoleEngagements` (`contract-signed`
-/ `commenced` as milestone events). Any future work on Module 3.7 or Module 7 should follow the
-same pattern — a status tracker referencing an external settlement, not a payment feature.
+**Is:** a static-data, no-backend UI prototype of the officer-facing Console plus a public
+Landing/Marketplace, demonstrating the workflows, data relationships and human decision points PRD v1.0
+specifies — verification queues, consent-gated disclosure, audit trails, sign-off gates, and (once built)
+settlement and arbitration as instruction trackers.
 
-**3-portal outline vs. 6-portal detailed modules:** The Architecture Outline (§1) never mentions
-Portals 4–6 (Global Promotion/Investment, Financing/Escrow, Dispute Resolution). **Decided
-2026-09-17 (§8, decision 1): out of scope for this prototype.** They read as a later scope
-expansion the outline was never updated to reflect, not a validated core requirement — see §8 for
-the full reasoning and §4's Module 6/7/8 tables for status.
+**Isn't:** a working OIDC/MFA system, a real vault (files aren't stored or scanned), a real settlement,
+lending or arbitration engine (those are licensed partners even in production), a live data pipeline into
+NEPC/NEXIM/CBN/FIRS/NBS/FMITI, or an implementation of PRD v1.0 §7's non-functional targets
+(uptime, latency, encryption, NDPA statutory clocks).
 
 ---
 
-## 6. What this prototype is and isn't
+## 8. Recommended build order
 
-**Is:** a static-data (no backend) UI prototype of the officer-facing Console plus a public
-Landing/Marketplace, demonstrating the workflows, data relationships, and decision boundaries the
-BRD specifies — verification queues, consent-gated disclosure, audit trails, sign-off gates.
+Ordered by gate criticality in PRD v1.0 and by what unblocks later work. Earlier completed work is in
+the change log (§11).
 
-**Isn't:** a working IAM/SSO system, a real document vault (files aren't actually stored/scanned), a
-real payment/escrow engine (explicitly out of scope per Module 1 regardless), a live data pipeline
-into NEPC/NEXIM/CBN, or an implementation of Modules 6–8 (Investment Facilitation, Financing,
-Dispute Resolution) — decided out of scope entirely, not just unbuilt so far (§8).
+**Priority 1 — correct what now conflicts with the baseline**
+1. **Single tier ladder and honest tier names (D-06, SUP-05/06, §3.2).** Drive exporter tiers from the
+   readiness diagnostic (`readinessScore.ts` already uses the right bands) instead of profile completion
+   %, and rename tiers to state what was verified. Add the individual track (NIN + professional credential
+   + verified delivery history in place of CAC + TIN). Touches `trustTiers.ts`, `buyerTiers.ts`,
+   `trustBadging.ts`, `ConsoleTrustBadging`, `ActorTable`, and the public `TrustLadder` / Marketplace.
+2. **Regulatory authoring with sign-off (REG-01, REG-02).** Add Draft status and the missing record
+   fields; content stays Draft until a competent-authority focal signs off; supersede, never delete.
+   Closes the §4 "regulatory content change" row. This is G2-critical.
 
----
+**Priority 2 — Regulatory Trust capability set (G2/G3)**
+3. **Change alerts and assertion revalidation (REG-05, REG-06).** Publishing a new requirement version
+   raises review tasks and flags dependent readiness assertions for revalidation; assertions state what
+   was verified, by whom, when, scope and expiry.
+4. **Wizard and pathway (REG-03).** Needs a decision on where exporter-facing surfaces live (see §9, P-3).
 
-## 7. Recommended build order for remaining prototype work
+**Priority 3 — G3 Foundation and Demand gaps**
+5. **Settlement instruction service (FND-11).** A shared instruction ledger (hold, fund, release, refund,
+   lien, sweep) with partner acknowledgement and outcome, and a blocked state when unacknowledged.
+   Prerequisite for DEM-10, Financing and Disputes.
+6. **Opportunity lifecycle and escrow milestones (DEM-02, DEM-10).** The full state machine, then
+   milestone schedules whose work-commencement is gated on the funding-confirmation event.
+7. **Actor lifecycle and deduplication (FND-02).** Five-state lifecycle, and a data-steward queue showing
+   near-duplicates side by side in the 70–84% band. Closes the §4 "actor merge" row.
+8. **Qualification rationale and suspension reasons (DEM-04, §4).** Required recorded rationale on
+   reject/qualify and on suspension/reinstatement.
 
-**Near-term — extends current console, low scope risk:**
-1. ~~Outcome Verification & Attribution~~ — done: `ConsoleOutcomes` closes the loop `ConsoleEngagements`
-   starts (`commenced` → self-reported → independently verified export value), including duplicate-report
-   detection when both exporter and buyer self-report the same engagement.
-2. ~~Disclosure Package viewer~~ — done: a "view package" surface on both `ConsoleEngagements` and
-   `ConsoleConsent` shows exactly what was bundled and sent, and instantly reflects Void when the
-   underlying consent grant is revoked or expired.
-3. ~~Sectoral certification issuance workflow~~ — done: `ConsoleCertifications` filters the Evidence
-   Vault to professional/sectoral credentials, with issue/reject actions and 30-day renewal-warning
-   reminders, kept separate from `ConsoleCompliance`'s rules-register scope.
-4. ~~Market Access Intelligence & Regulatory Insights~~ — done: `ConsoleMarketIntelligence` is a
-   searchable library of destination-market briefs (country/sector/mode-indexed) with a
-   draft→under-review→published authoring workflow.
-5. ~~Taxonomies & Master Data reference view~~ — done: given its own page rather than folding into
-   `ConsoleSettings`, since Settings is explicitly scoped to personal profile/notification
-   preferences, not platform administration (see its own subtitle) — the same boundary that keeps
-   `ConsoleCompliance` from being exporter-facing.
+**Priority 4 — G4 Observatory and Promotion**
+9. **Observatory integrity (OBS-03/04/09/10).** Add NBS and FMITI to reconciliation with per-source
+   variance, basis labels on every figure, small-population suppression, then scoped agency workspaces.
+10. **Promotion (PRO-01 to PRO-04).** Investor landing pad with per-agency clearance, trade missions,
+    MOU tracking, opt-in ecosystem showcase.
 
-**Mid-term — net-new, moderate scope:**
-6. ~~Organization Delegation / multi-tenant context~~ — done: `ConsoleDelegations` models each
-   exporter/buyer as an org with named delegates, surfaces the 365-day recertification cap as a
-   30-day warning, and reserves revocation for officer compliance action, not routine self-service.
-7. ~~Predictive Policy Simulation and Automated Incentive Audit & Anti-Leakage~~ — done: both extend
-   `ConsoleObservatory`. The simulator runs a deterministic sandbox over the BRD's three policy
-   variables into immutable scenario reports; the audit ledger independently re-checks every
-   incentive application against all three BRD conditions (not just `ConsoleIncentives`'s own
-   `autoPreQualified` threshold), catching cases the shallower check misses.
-8. ~~Simulated multi-role login~~ — done, at reduced scope from the original plan: added a single
-   `adspa-auditor` role (BRD `ROLE_ADSPA_OFFICER`) to `officerProfile.tsx` rather than all five named
-   roles. Selecting it puts the entire console into read-only mode via a shared `canMutate(role)`
-   check ([permissions.ts](src/lib/permissions.ts)) — every mutating button across all 14 pages with
-   officer decisions renders an "Audit view only" badge instead, while viewing, filtering, exporting,
-   and disclosure-package viewing stay available. A global banner in `ConsoleLayout`'s header makes
-   the mode visible from anywhere. `ROLE_SYS_ADMIN` and `ROLE_DATA_STEWARD` were scoped out of this
-   pass (see §8 decision 3) — `ROLE_ENTITY_ADMIN`/`ROLE_ACTOR_USER` don't apply to an officer console
-   at all, since they're exporter/buyer-side roles.
+**Priority 5 — G5 partner-dependent domains** (depend on items 5–6)
+11. **Financing (FIN-01 to FIN-06)** as originate-score-record trackers.
+12. **Disputes (DSP-01 to DSP-06)** as case management with hold/release instructions and an
+    award/sanctions register.
 
-**Completed beyond the original mid-term list:**
-9. ~~Symmetric Trust Badging & Progressive Feature Unlocking~~ (Module 3.6) — `ConsoleTrustBadging`
-   surfaces both tier ladders' unlocked capabilities and next-step prompts side by side, plus a
-   per-exporter completion breakdown. Read-only oversight, not a decision queue.
-
-**Out of scope for this prototype (see §8):**
-- Portal 4 (Global Promotion & Investment Facilitation) — Module 6. Decision 1.
-- Portal 5 (Financing & Escrow) — Module 7. Decision 2 — descoped outright, not deferred.
-- Portal 6 (Dispute Resolution) — Module 8. Decision 1.
-- Real production IAM/SSO/RBAC (Module 2.1) — only meaningful once there's a real backend; the
-  simulated role switcher above (item 8) covers what a prototype can usefully show instead.
-- Wiring the Observatory to any live data source (Module 5.1's "real-time" framing) — decision 4:
-  static/demo data is a permanent property of this prototype, not a gap to close.
+**Supporting, schedule as capacity allows:** SLA timers on queues (FND-08), in-app notification inbox
+(FND-09), hash-chained audit with dual-key export (FND-10), capacity/freshness and supply pools
+(SUP-02/03), intervention mapping (SUP-07), NDPA subject-access and retention views (§7.3).
 
 ---
 
-## 8. Scope decisions
+## 9. Scope decisions
 
-Four questions this PRD originally left open, resolved 2026-09-17. Revisit any of these if
-circumstances change — they're calls made with the information available at the time, not permanent
-constraints.
+### 9.1 Superseded by PRD v1.0 (2026-09-17)
+The four decisions recorded earlier the same day are replaced:
 
-1. **Are Portals 4–6 (Investment Facilitation, Financing/Escrow, Dispute Resolution) in scope?**
-   **Decision: no, out of scope.** None appear in the Architecture Outline's original 3-portal
-   framing — only in later, far more backend-heavy drafts (investor concierge, arbitration
-   tribunals, invoice factoring). Building UI mockups for them is technically easy, but doing so
-   would dilute effort against validating the core demand-to-outcome loop (Shared Foundation +
-   Portals 1–3 + Observatory) rather than speculatively building three new domains that haven't been
-   confirmed as real priorities. See §4's Module 6/8 tables.
-2. **Should Module 7 (Financing/Escrow) be built at all?** **Decision: no — descoped outright, not
-   just deferred like Modules 6/8.** Unlike Module 3.7 (narrow enough to stay in scope as
-   milestone-only metadata tracking), Module 7's entire premise is financial-instrument
-   administration — invoice factoring liens, outcomes-based capital bonds. That's a harder conflict
-   with Module 1's Non-Goal 1 than a "track it, don't process it" framing can responsibly cover.
-   Treat it as likely scope creep from a later BRD revision rather than a requirement to reconcile.
-   See §4's Module 7 table.
-3. **Is a simulated multi-role login worth building?** **Decision: yes, implemented at reduced
-   scope.** `ConsoleSettings` already simulated a desk-officer/administrator toggle that
-   `IncentiveQueue` reacted to via its `canApprove` gate. Rather than modeling all five BRD roles,
-   this added one more — `adspa-auditor` (`ROLE_ADSPA_OFFICER`) — and used it to put the entire
-   console into read-only mode, since that's the single clearest, highest-value segregation-of-duties
-   demonstration available (inspect everything, modify nothing). `ROLE_SYS_ADMIN` (would require
-   masking personal/business data across every page — high effort, lower narrative payoff) and
-   `ROLE_DATA_STEWARD` (a narrower scoped-allow-list role) were left out of this pass.
-   `ROLE_ENTITY_ADMIN`/`ROLE_ACTOR_USER` don't apply here at all — they're exporter/buyer-side roles
-   with no surface in an officer console. See §7, mid-term item 8.
-4. **Should the Observatory's "real-time" framing be a permanent prototype non-goal?** **Decision:
-   yes.** There's no live NEPC/NEXIM/CBN feed for a frontend-only prototype to wire up, and
-   "real-time" only becomes meaningful once a real backend exists — that's a future project's
-   concern, not something to simulate here. Static/demo data in `ConsoleObservatory` stays
-   indefinitely.
+1. ~~Portals 4–6 (Promotion, Disputes) out of scope~~ → **In scope.** PRD v1.0 covers the full BRD.
+   Disputes is delivered as case management and instruction tracking; the accredited institution
+   administers arbitration.
+2. ~~Module 7 (Financing) descoped outright~~ → **In scope** as originate-score-record. The earlier
+   objection (conflict with Module 1's Non-Goal 1) is resolved by PRD v1.0's D-01 amendment plus the
+   licensed-lender boundary (§3.1).
+3. **Simulated roles — still valid, now under-scoped.** The three-role switch stays. PRD v1.0 §3.2 names
+   more institutional roles, and §4's dual-key and steward rows need at least a data steward and a system
+   administrator to be demonstrable.
+4. ~~Observatory "real-time" is a permanent non-goal~~ → **Production requirement, prototype constraint.**
+   OBS-01 is real-time in production. The prototype keeps static data (P-2 below), which stays honest
+   only once OBS-10 labelling is built.
+
+### 9.2 Current prototype decisions
+- **P-1 — Build partner-dependent domains as trackers.** Escrow, factoring and arbitration appear as
+  typed instructions and statuses with a partner acknowledgement, never as money movement or a tribunal.
+- **P-2 — Static data is permanent.** No live agency feeds. Every Observatory figure must carry an
+  OBS-10 basis label once that work lands.
+- **P-3 — Exporter-facing surfaces are open.** REG-03 (wizard) and REG-04 (readiness workspace) are
+  exporter-facing and private; this repo has only the officer console and public pages. Decide whether to
+  add an exporter workspace or to demonstrate those flows from the officer side.
 
 ---
 
-## 9. Change log
+## 10. Open decisions register (PRD v1.0 §10)
+
+Programme decisions; this prototype can't close them, but several shape how it's built. "Prototype
+default" is what to assume until the programme decides.
+
+| ID | Decision | Owner / needed by | Prototype default |
+|---|---|---|---|
+| D-01 | Amend Module 1 non-goals to permit escrow, financing, arbitration, public directory | Steering Committee / G1 | Assume amended (§3.2) |
+| D-02 | Licensed partner selection | Ministry / week 6 | Generic "settlement partner" / "lender of record" labels |
+| D-03 | Demand volume and regional inclusion targets | Secretariat / G1 | Show as unset, don't invent targets |
+| D-04 | Public identifier format | ADSPA / G1 | Option A (`NT-I26-8942A`) with entity-type character per actor type; current `NT-B26-94821` is close |
+| D-05 | Cross-tenant dedup exposure | ADSPA / G2 | Dedup within actor scope; global index steward-only |
+| D-06 | Single tier ladder, individual track, badge naming | Secretariat / TWG / G3 | Diagnostic-driven ladder with individual track (§8 item 1) |
+| D-07 | Disclosure package TTL per purpose | ADSPA / G3 | 7 days for shortlist review, 15 minutes for one-time admin views |
+| D-08 | Canonical event envelope | ADSPA / G1 | N/A (no event bus); use `eventId`, `eventType`, `eventTimestamp`, `actor`, `data` naming if simulated |
+| D-09 | Readiness multiplier in match scoring | Demand TWG / G3 | Fold into verification-depth factor |
+| D-10 | Incentive eligibility basis and FX rule | Secretariat / NEPC / G3 | Any-channel verified evidence; single base currency at stored CBN rate |
+| D-11 | Register starter content for G2 | Secretariat / week 3 | Seeded `regulations.ts` stands in |
+| D-12 | Inter-agency reconciliation rules | Secretariat + agencies / G3 | Show variance, don't claim a signed rule set |
+| D-13 | Public listing consent model | ADSPA / Secretariat / G4 | Opt-in per supplier and per field, revocable |
+| D-14 | Lender of record, consumer protection | Ministry / counsel / G4 | Terms disclosed before acceptance; no auto cross-default |
+| D-15 | Requirement ID mapping | Delivery team / G1 | This file uses PRD v1.0 IDs (§1) |
+| D-16 | Arbitration agreement, seat, institution | Counsel / G4 | Named institution placeholder; party autonomy over appointment |
+| D-17 | Data residency | ADSPA / G1 | N/A to a frontend prototype |
+| D-18 | Language coverage | Secretariat / G1 | English; avoid hardcoding strings where cheap |
+
+---
+
+## 11. Change log
 
 - **2026-09-17** — Initial PRD drafted from a full-text extraction of the 162-page BRD/FRD (all 8
-  modules, reconciled to the most complete draft of each — see §1), cross-referenced against repo
-  state as of commit `0d83093` (Engagements module).
+  modules, reconciled to the most complete draft of each), cross-referenced against repo state as of
+  commit `0d83093` (Engagements module).
 - **2026-09-17** — Added `ConsoleOutcomes` (Outcome / Attribution Event package): self-reported
   export value starts Provisional, requires independent officer verification, and same-engagement
   duplicate self-reports (exporter + buyer both reporting) are flagged so only one is ever counted.
-  Build order item 1 (§7) is now done.
 - **2026-09-17** — Added the Disclosure Package viewer (Module 2.6): a derived, on-demand package
   view (not a stored record) shown from `ConsoleConsent` and `ConsoleEngagements`, so revoking the
-  underlying consent grant voids it instantly with no separate cleanup. Build order item 2 (§7) is now
-  done.
+  underlying consent grant voids it instantly with no separate cleanup.
 - **2026-09-17** — Added `ConsoleCertifications` (Module 4.2): filters the Evidence Vault to
   professional/sectoral credentials (COREN, ISO 27001, etc.), separate from `ConsoleCompliance`'s
-  rules-register scope, with issue/reject actions and 30-day renewal-warning reminders. Build order
-  item 3 (§7) is now done.
+  rules-register scope, with issue/reject actions and 30-day renewal-warning reminders.
 - **2026-09-17** — Added `ConsoleMarketIntelligence` (Module 3.5): a destination-market brief
   library indexed by country/sector/WTO-GATS mode, with a draft→under-review→published authoring
-  workflow for NATEP Administrators. Build order item 4 (§7) is now done — only item 5 (Taxonomies
-  & Master Data) remains in the near-term list.
+  workflow for NATEP Administrators.
 - **2026-09-17** — Added `ConsoleTaxonomies` (Module 2.7): a read-only registry of the platform's
   controlled vocabularies (sectors, WTO/GATS modes, trust tiers) with version and deprecation
-  metadata, deliberately excluded from `ConsoleSettings` per that page's own personal-settings-only
-  scope note. All five near-term build-order items (§7) are now done; next is the mid-term list
-  (Organization Delegation, Predictive Policy Simulation, Automated Incentive Audit).
-- **2026-09-17** — Resolved all four §8 open questions: Portals 4/6 (Investment Facilitation,
-  Dispute Resolution) and Module 7 (Financing/Escrow) are out of scope for this prototype — Module 7
-  descoped outright rather than deferred, given its direct conflict with Module 1's Non-Goal 1. A
-  simulated multi-role login is in scope as a mid-term item. The Observatory's "real-time" framing
-  is a permanent non-goal, not a gap. §4, §5, and §7 updated to reflect these decisions.
+  metadata, deliberately excluded from `ConsoleSettings` per that page's personal-settings-only scope.
+- **2026-09-17** — Resolved the four open scope questions: Portals 4/6 and Module 7 out of scope,
+  simulated multi-role login in scope, Observatory "real-time" a permanent non-goal. *(Superseded later
+  the same day — see the PRD v1.0 entry below and §9.1.)*
 - **2026-09-17** — Added `ConsoleDelegations` (Module 2.3): models each exporter/buyer account as
-  an organization with named delegates rather than a single login, surfaces the BRD's 365-day
-  delegation cap as a 30-day expiry warning, and keeps revocation an officer-oversight action
-  mirroring `ConsentRegister`. Build order item 6 (§7) is now done.
+  an organization with named delegates, surfaces the 365-day delegation cap as a 30-day expiry
+  warning, and keeps revocation an officer-oversight action mirroring `ConsentRegister`.
 - **2026-09-17** — Extended `ConsoleObservatory` with the Policy Simulation sandbox (Module 5.3)
-  and the Incentive Audit & Anti-Leakage ledger (Module 5.4). The audit ledger deliberately
-  re-derives all three BRD conditions independently of `ConsoleIncentives`'s own `autoPreQualified`
-  flag — added `inc-07` (a suspended exporter with otherwise-sufficient trade volume) to
-  `incentives.ts` specifically to demonstrate a case the shallower check passes but the deeper audit
-  correctly rejects. Build order item 7 (§7) is now done; only item 8 (simulated multi-role login)
-  remains in the mid-term list.
-- **2026-09-17** — Added the simulated `adspa-auditor` role (BRD `ROLE_ADSPA_OFFICER`) to
-  `officerProfile.tsx`, with a shared `canMutate(role)` check in [permissions.ts](src/lib/permissions.ts)
-  gating every mutating action across all 14 console pages with officer decisions, a shared
-  `AuditOnlyBadge` component standing in for disabled actions, and a global "Read-only audit mode"
-  banner in `ConsoleLayout`. Scoped down from the original plan (all 5 BRD roles) to just this one —
-  see §8 decision 3 for why. This completes all mid-term build-order items (§7); only the explicitly
-  out-of-scope long-term items remain (§8 decisions 1-2).
-- **2026-09-17** — Added `ConsoleTrustBadging` (Module 3.6): both exporter and buyer trust-tier
-  ladders shown side by side with their unlocked capabilities and next-step prompts (added a
-  `nextStep` field to `buyerTiers.ts` to match `trustTiers.ts`'s existing one, completing the BRD's
-  "symmetric" pairing), plus a per-exporter completion breakdown. Read-only — no tier-gating logic
-  was added, since nothing in the prototype is actually locked behind a tier today.
+  and the Incentive Audit & Anti-Leakage ledger (Module 5.4). The audit ledger re-derives all three
+  conditions independently of `ConsoleIncentives`'s `autoPreQualified` flag; `inc-07` in
+  `incentives.ts` demonstrates a case the shallower check passes but the deeper audit rejects.
+- **2026-09-17** — Added the simulated `adspa-auditor` role to `officerProfile.tsx`, with a shared
+  `canMutate(role)` check in `permissions.ts` gating every mutating action across the console, a shared
+  `AuditOnlyBadge`, and a global "Read-only audit mode" banner in `ConsoleLayout`.
+- **2026-09-17** — Added `ConsoleTrustBadging` (Module 3.6): exporter and buyer tier ladders side by
+  side with unlocked capabilities and next-step prompts (added `nextStep` to `buyerTiers.ts`), plus a
+  per-exporter completion breakdown. Read-only; no tier-gating logic.
+- **2026-09-17** — **Rebaselined on `NATEP Gateway PRD v1.0.pdf`.** Adopted its domain naming and
+  requirement IDs (FND/DEM/SUP/REG/OBS/PRO/FIN/DSP) and re-mapped every built module onto them
+  (§5). Reversed the earlier scope decisions: Promotion, Financing and Disputes are in scope as
+  instruction/record trackers behind licensed-partner boundaries (§3.1, §9.1). Restored Regulatory Trust
+  (REG-01 to REG-06) as a G2-critical capability. Added the segregation-of-duties coverage table (§4),
+  cross-domain contract coverage (§6) and the open decisions register with prototype defaults (§10).
+  Flagged that the current tier ladders violate PRD v1.0's "no opaque quality rating" boundary and
+  D-06's single-ladder default. New build order (§8) leads with the tier ladder fix and regulatory
+  authoring sign-off.
