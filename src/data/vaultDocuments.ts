@@ -117,4 +117,14 @@ export const vaultDocuments: VaultDocument[] = [
   uploadedOn: '2026-08-27',
   malwareScan: 'clean',
   verification: 'pending'
+},
+{
+  id: 'doc-13',
+  actorId: 'act-02',
+  kind: 'sector-license',
+  fileName: 'lagos-delivery-haulage-safety-cert.pdf',
+  sha256: '5a7c9e1f3b5d7f9a1c3e5f7a9c1e3f5a7c9e1f3a5c7e9f1a3c5e7f9a1c3e5f7a',
+  uploadedOn: '2026-09-13',
+  malwareScan: 'clean',
+  verification: 'pending'
 }];

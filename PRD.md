@@ -130,7 +130,7 @@ matrix, non-goals, precedence order) constrain every module below.
 | # | Subsystem | Status | Where in repo |
 |---|---|---|---|
 | 4.1 | Exporter Onboarding & Profile Readiness | ✅ | [ConsoleExporters.tsx](src/pages/ConsoleExporters.tsx), [ActorTable.tsx](src/components/console/ActorTable.tsx), [actors.ts](src/data/actors.ts) |
-| 4.2 | Sectoral Regulatory Validation & Certification | 🟡 | [ConsoleCompliance.tsx](src/pages/ConsoleCompliance.tsx), [ComplianceRegister.tsx](src/components/console/ComplianceRegister.tsx), [regulations.ts](src/data/regulations.ts) — register exists; no certification issuance/renewal workflow |
+| 4.2 | Sectoral Regulatory Validation & Certification | ✅ | [ConsoleCertifications.tsx](src/pages/ConsoleCertifications.tsx), [CertificationRegistry.tsx](src/components/console/CertificationRegistry.tsx), [certification.ts](src/lib/certification.ts) — a dedicated view over the Evidence Vault's `sector-license`/`iso-certificate` documents (professional credentials, distinct from `ConsoleCompliance`'s rules register), with issue/reject and 30-day renewal-warning reminders |
 | 4.3 | Export Readiness Assessment & Diagnostic | ✅ | [ConsoleReadiness.tsx](src/pages/ConsoleReadiness.tsx), [ReadinessQueue.tsx](src/components/console/ReadinessQueue.tsx), [readinessScore.ts](src/lib/readinessScore.ts) |
 | 4.4 | Export Incentives & Trade Facilitation | ✅ | [ConsoleIncentives.tsx](src/pages/ConsoleIncentives.tsx), [IncentiveQueue.tsx](src/components/console/IncentiveQueue.tsx), [incentives.ts](src/data/incentives.ts) |
 
@@ -216,8 +216,9 @@ Dispute Resolution) in any form yet.
 2. ~~Disclosure Package viewer~~ — done: a "view package" surface on both `ConsoleEngagements` and
    `ConsoleConsent` shows exactly what was bundled and sent, and instantly reflects Void when the
    underlying consent grant is revoked or expired.
-3. Sectoral certification issuance workflow (Module 4.2) — extends `ConsoleCompliance` with an
-   actual issue/renew/revoke certification flow, not just the register.
+3. ~~Sectoral certification issuance workflow~~ — done: `ConsoleCertifications` filters the Evidence
+   Vault to professional/sectoral credentials, with issue/reject actions and 30-day renewal-warning
+   reminders, kept separate from `ConsoleCompliance`'s rules-register scope.
 4. Market Access Intelligence & Regulatory Insights (Module 3.5) — a demand-side playbooks/briefings
    view, the one clearly-scoped Module 3 subsystem with zero coverage.
 5. Taxonomies & Master Data reference view (Module 2.7) — lightweight, likely folds into
@@ -268,3 +269,7 @@ Dispute Resolution) in any form yet.
   view (not a stored record) shown from `ConsoleConsent` and `ConsoleEngagements`, so revoking the
   underlying consent grant voids it instantly with no separate cleanup. Build order item 2 (§7) is now
   done.
+- **2026-09-17** — Added `ConsoleCertifications` (Module 4.2): filters the Evidence Vault to
+  professional/sectoral credentials (COREN, ISO 27001, etc.), separate from `ConsoleCompliance`'s
+  rules-register scope, with issue/reject actions and 30-day renewal-warning reminders. Build order
+  item 3 (§7) is now done.
