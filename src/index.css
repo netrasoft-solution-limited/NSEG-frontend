@@ -744,3 +744,14 @@ body {
     color-mix(in srgb, var(--auth-accent) 7%, white);
   border-bottom: 1px solid color-mix(in srgb, var(--auth-accent) 14%, transparent);
 }
+
+/* The console's "work waiting on you" band: the galaxy ground, held to one panel. */
+.console-command {
+  position: relative;
+  background-color: #0a100d;
+  background-image:
+    radial-gradient(120% 140% at 0% 0%, rgb(11 110 79 / 0.55), transparent 60%),
+    radial-gradient(90% 120% at 100% 20%, rgb(201 146 47 / 0.22), transparent 62%),
+    linear-gradient(140deg, #073d2c 0%, #0a100d 60%, #052a1e 100%);
+  box-shadow: 0 30px 60px -32px rgb(5 42 30 / 0.7);
+}
