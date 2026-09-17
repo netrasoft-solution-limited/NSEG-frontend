@@ -4,8 +4,7 @@ import { ArrowRightIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { CorridorMap } from './CorridorMap';
 import { EASE } from '../motion/Reveal';
-import { opportunities } from '../../data/opportunities';
-import { headlineMetric } from '../../data/observatory';
+import { headlineMetric, supportingMetrics } from '../../data/observatory';
 import { competentAuthorities } from '../../data/regulations';
 import { useRegulatoryRegister } from '../../lib/regulatoryRegister';
 
@@ -49,12 +48,15 @@ function RotatingWord({ reduced }: {reduced: boolean;}) {
 
 }
 
-/** Live figures for the strip under the hero, read from the same records the console uses. */
+const qualifiedLive = supportingMetrics.find((metric) => metric.label === 'Qualified opportunities live')?.value ?? '—';
+
+/** Live figures for the strip under the hero: the register is read from the live records, the
+ * national totals from what the Observatory publishes. */
 function useGatewayFigures() {
   const { requirements } = useRegulatoryRegister();
   return [
   { label: 'Published requirements', value: requirements.filter((item) => item.status === 'current').length.toString() },
-  { label: 'Live opportunities', value: opportunities.length.toString() },
+  { label: 'Live opportunities', value: qualifiedLive },
   { label: 'Verified export value', value: `$${headlineMetric.value}M` },
   { label: 'Validating institutions', value: competentAuthorities.length.toString() }];
 
