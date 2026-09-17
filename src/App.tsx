@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useEffect } from 'react';
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { Landing } from './pages/Landing';
 import { ExporterSessionProvider } from './lib/exporterSession';
 import { BuyerSessionProvider } from './lib/buyerSession';
@@ -85,14 +85,25 @@ interface AppProps {
   liveDemos?: boolean;
 }
 
+/** A saved link to an exporter's record under the old address keeps working. */
+function RedirectExporterRecord() {
+  const { actorId } = useParams<{actorId: string;}>();
+  return <Navigate to={`/console/registry/exporters/${actorId}`} replace />;
+}
+
 function Console() {
   usePreload([ConsoleDashboard, ConsoleExporters, ConsoleOpportunities, ConsoleEngagements, ConsoleOutcomes, ConsoleReadiness, ConsoleCompliance, ConsoleObservatory, ConsoleBuyers, ConsoleConsent, ConsoleAudit, ConsoleSettings]);
   return (
     <Routes>
       <Route index element={<ConsoleDashboard />} />
-      <Route path="exporters" element={<ConsoleExporters />} />
-      <Route path="exporters/:actorId" element={<ConsoleExporterDetail />} />
-      <Route path="buyers" element={<ConsoleBuyers />} />
+      <Route path="registry" element={<Navigate to="/console/registry/exporters" replace />} />
+      <Route path="registry/exporters" element={<ConsoleExporters />} />
+      <Route path="registry/exporters/:actorId" element={<ConsoleExporterDetail />} />
+      <Route path="registry/buyers" element={<ConsoleBuyers />} />
+      <Route path="registry/readiness" element={<ConsoleReadiness />} />
+      <Route path="registry/evidence" element={<ConsoleVault />} />
+      <Route path="registry/evidence/certifications" element={<ConsoleCertifications />} />
+      <Route path="registry/delegations" element={<ConsoleDelegations />} />
       <Route path="trust-badging" element={<ConsoleTrustBadging />} />
       <Route path="opportunities" element={<ConsoleOpportunities />} />
       <Route path="market-intelligence" element={<ConsoleMarketIntelligence />} />
@@ -100,16 +111,19 @@ function Console() {
       <Route path="engagements/consent" element={<ConsoleConsent />} />
       <Route path="engagements/outcomes" element={<ConsoleOutcomes />} />
       <Route path="engagements/incentives" element={<ConsoleIncentives />} />
-      <Route path="readiness" element={<ConsoleReadiness />} />
-      <Route path="certifications" element={<ConsoleCertifications />} />
+      <Route path="exporters" element={<Navigate to="/console/registry/exporters" replace />} />
+      <Route path="exporters/:actorId" element={<RedirectExporterRecord />} />
+      <Route path="buyers" element={<Navigate to="/console/registry/buyers" replace />} />
+      <Route path="readiness" element={<Navigate to="/console/registry/readiness" replace />} />
+      <Route path="vault" element={<Navigate to="/console/registry/evidence" replace />} />
+      <Route path="certifications" element={<Navigate to="/console/registry/evidence/certifications" replace />} />
+      <Route path="delegations" element={<Navigate to="/console/registry/delegations" replace />} />
       <Route path="compliance" element={<ConsoleCompliance />} />
       <Route path="observatory" element={<ConsoleObservatory />} />
       {/* Earlier addresses, kept so saved links still land in the right place. */}
       <Route path="incentives" element={<Navigate to="/console/engagements/incentives" replace />} />
       <Route path="outcomes" element={<Navigate to="/console/engagements/outcomes" replace />} />
       <Route path="consent" element={<Navigate to="/console/engagements/consent" replace />} />
-      <Route path="vault" element={<ConsoleVault />} />
-      <Route path="delegations" element={<ConsoleDelegations />} />
       <Route path="taxonomies" element={<ConsoleTaxonomies />} />
       <Route path="audit" element={<ConsoleAudit />} />
       <Route path="settings" element={<ConsoleSettings />} />

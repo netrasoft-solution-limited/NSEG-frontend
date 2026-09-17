@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { ArrowLeftIcon, BanIcon, CheckIcon } from 'lucide-react';
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
+import { registryTabs } from '../components/console/consoleTabs';
 import { EvidenceVault } from '../components/console/EvidenceVault';
 import { ReadinessQueue } from '../components/console/ReadinessQueue';
 import { ConsentRegister } from '../components/console/ConsentRegister';
@@ -44,7 +45,7 @@ export function ConsoleExporterDetail() {
   useRegistryDecisions();
 
   const actor = accounts.exporters.find((item) => item.id === actorId);
-  if (!actor) return <Navigate to="/console/exporters" replace />;
+  if (!actor) return <Navigate to="/console/registry/exporters" replace />;
 
   const mutable = canMutate(profile.role);
   const actorsById = new Map([[actor.id, actor]]);
@@ -65,9 +66,9 @@ export function ConsoleExporterDetail() {
   const activeGrants = theirGrants.filter((grant) => grant.status === 'active').length;
 
   return (
-    <ConsoleLayout breadcrumb={`Exporters · ${actor.name}`}>
+    <ConsoleLayout breadcrumb={`Registry · ${actor.name}`} tabs={registryTabs}>
       <Link
-        to="/console/exporters"
+        to="/console/registry/exporters"
         className="inline-flex min-h-[44px] items-center gap-1.5 text-[13px] font-medium text-gray-600 hover:text-gray-900">
 
         <ArrowLeftIcon className="h-4 w-4" aria-hidden="true" />

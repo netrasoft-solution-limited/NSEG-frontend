@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertTriangleIcon, AwardIcon, BadgeCheckIcon, HourglassIcon } from 'lucide-react';
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
+import { registryTabs } from '../components/console/consoleTabs';
 import { StatCard } from '../components/console/StatCard';
 import { CertificationRegistry } from '../components/console/CertificationRegistry';
 import { actors } from '../data/actors';
@@ -45,7 +46,7 @@ export function ConsoleCertifications() {
   };
 
   return (
-    <ConsoleLayout breadcrumb="Certifications" onExport={handleExport}>
+    <ConsoleLayout breadcrumb="Registry · Certifications" onExport={handleExport} tabs={registryTabs}>
       <div>
         <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-gray-900 sm:text-[34px]">Certifications</h1>
         <p className="mt-1.5 text-[14.5px] text-gray-600">

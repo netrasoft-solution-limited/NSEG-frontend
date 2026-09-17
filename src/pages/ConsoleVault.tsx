@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertTriangleIcon, CheckCircleIcon, ClockIcon, FileTextIcon } from 'lucide-react';
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
+import { registryTabs } from '../components/console/consoleTabs';
 import { StatCard } from '../components/console/StatCard';
 import { EvidenceVault } from '../components/console/EvidenceVault';
 import { documentKindLabels } from '../data/vaultDocuments';
@@ -40,7 +41,7 @@ export function ConsoleVault() {
   };
 
   return (
-    <ConsoleLayout breadcrumb="Vault" onExport={handleExport}>
+    <ConsoleLayout breadcrumb="Registry · Evidence" onExport={handleExport} tabs={registryTabs}>
       <div>
         <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-gray-900 sm:text-[34px]">Evidence Vault</h1>
         <p className="mt-1.5 text-[14.5px] text-gray-600">

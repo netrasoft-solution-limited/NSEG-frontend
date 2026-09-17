@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BadgeCheckIcon, BuildingIcon, DownloadIcon, ShieldAlertIcon } from 'lucide-react';
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
+import { registryTabs } from '../components/console/consoleTabs';
 import { StatCard } from '../components/console/StatCard';
 import { BuyerTable } from '../components/console/BuyerTable';
 import { VerificationQueue, type VerificationDecision } from '../components/console/VerificationQueue';
@@ -45,7 +46,7 @@ export function ConsoleBuyers() {
   };
 
   return (
-    <ConsoleLayout breadcrumb="Buyers" onExport={handleExport}>
+    <ConsoleLayout breadcrumb="Registry · Buyers" onExport={handleExport} tabs={registryTabs}>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-gray-900 sm:text-[34px]">Buyers</h1>

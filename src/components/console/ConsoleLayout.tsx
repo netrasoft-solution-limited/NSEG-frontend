@@ -8,16 +8,12 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import {
   ActivityIcon,
   ArrowLeftIcon,
-  AwardIcon,
   BriefcaseIcon,
-  BuildingIcon,
   CalendarIcon,
   ChevronDownIcon,
-  CompassIcon,
   CrownIcon,
   DownloadIcon,
   EyeIcon,
-  FileTextIcon,
   GlobeIcon,
   HandshakeIcon,
   HistoryIcon,
@@ -28,7 +24,6 @@ import {
   SettingsIcon,
   ShieldCheckIcon,
   UsersIcon,
-  UsersRoundIcon,
   XIcon } from
 'lucide-react';
 import type { IconComponent } from '../../types/icons';
@@ -336,17 +331,12 @@ export function ConsoleLayout({ breadcrumb, onExport, tabs, children }: ConsoleL
   { icon: LayoutGridIcon, label: 'Dashboard', href: '/console', end: true, group: 'Case management' },
   { icon: BriefcaseIcon, label: 'Opportunities', href: '/console/opportunities', count: pendingSignals, group: 'Case management' },
   { icon: HandshakeIcon, label: 'Engagements', href: '/console/engagements', count: provisionalOutcomes, group: 'Case management' },
-  { icon: UsersIcon, label: 'Exporters', href: '/console/exporters', group: 'Registries' },
-  { icon: BuildingIcon, label: 'Buyers', href: '/console/buyers', group: 'Registries' },
+  { icon: UsersIcon, label: 'Registry', href: '/console/registry', group: 'Registries' },
   { icon: CrownIcon, label: 'Trust & badging', href: '/console/trust-badging', group: 'Registries' },
-  { icon: CompassIcon, label: 'Readiness', href: '/console/readiness', group: 'Registries' },
-  { icon: AwardIcon, label: 'Certifications', href: '/console/certifications', group: 'Registries' },
   { icon: ShieldCheckIcon, label: 'Compliance', href: '/console/compliance', group: 'Policy and reference' },
   { icon: LayersIcon, label: 'Taxonomies', href: '/console/taxonomies', group: 'Policy and reference' },
   { icon: GlobeIcon, label: 'Market intelligence', href: '/console/market-intelligence', group: 'Policy and reference' },
   { icon: ActivityIcon, label: 'Observatory', href: '/console/observatory', group: 'Policy and reference' },
-  { icon: FileTextIcon, label: 'Vault', href: '/console/vault', group: 'Records' },
-  { icon: UsersRoundIcon, label: 'Delegations', href: '/console/delegations', group: 'Records' },
   { icon: HistoryIcon, label: 'Audit log', href: '/console/audit', group: 'Records' },
   { icon: SettingsIcon, label: 'Settings', href: '/console/settings', group: 'Account' }];
 

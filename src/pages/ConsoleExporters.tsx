@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BanIcon, DownloadIcon, ShieldAlertIcon, UserCheckIcon, UserPlusIcon, UsersIcon } from 'lucide-react';
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
+import { registryTabs } from '../components/console/consoleTabs';
 import { StatCard } from '../components/console/StatCard';
 import { ActorTable } from '../components/console/ActorTable';
 import { VerificationQueue, type VerificationDecision } from '../components/console/VerificationQueue';
@@ -54,7 +55,7 @@ export function ConsoleExporters() {
   };
 
   return (
-    <ConsoleLayout breadcrumb="Exporters" onExport={handleExport}>
+    <ConsoleLayout breadcrumb="Registry · Exporters" onExport={handleExport} tabs={registryTabs}>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-gray-900 sm:text-[34px]">Exporters</h1>
@@ -147,7 +148,7 @@ export function ConsoleExporters() {
           total={actors.length}
           filters={filters}
           onChange={setFilters}
-          hrefFor={(id) => `/console/exporters/${id}`}
+          hrefFor={(id) => `/console/registry/exporters/${id}`}
           canMutate={mutable}
           onSuspendToggle={(id, nextSuspended) => {
             setSuspended(id, nextSuspended);
