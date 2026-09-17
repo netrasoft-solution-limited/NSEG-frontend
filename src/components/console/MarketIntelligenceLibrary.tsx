@@ -3,6 +3,7 @@ import { ChevronDownIcon, GlobeIcon, SearchIcon } from 'lucide-react';
 import type { IntelligenceStatus, MarketIntelligenceBrief } from '../../data/marketIntelligence';
 import { sectorLabel, modeLabel } from '../../lib/marketplaceLookups';
 import type { MarketIntelligenceFilterState } from '../../lib/marketIntelligenceFilters';
+import { AuditOnlyBadge } from './AuditOnlyBadge';
 
 interface MarketIntelligenceLibraryProps {
   briefs: MarketIntelligenceBrief[];
@@ -14,6 +15,7 @@ interface MarketIntelligenceLibraryProps {
   statuses: Record<string, IntelligenceStatus>;
   onPublish: (id: string) => void;
   onFlagForReview: (id: string) => void;
+  canMutate: boolean;
 }
 
 const statusStyles: Record<IntelligenceStatus, string> = {
@@ -37,7 +39,8 @@ export function MarketIntelligenceLibrary({
   onFilterChange,
   statuses,
   onPublish,
-  onFlagForReview
+  onFlagForReview,
+  canMutate
 }: MarketIntelligenceLibraryProps) {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
@@ -128,7 +131,8 @@ export function MarketIntelligenceLibrary({
                 </div>
 
                 <div className="flex shrink-0 items-center gap-2">
-                  {status !== 'published' &&
+                  {!canMutate && <AuditOnlyBadge />}
+                  {canMutate && status !== 'published' &&
                   <button
                     type="button"
                     onClick={() => onPublish(brief.id)}
@@ -137,7 +141,7 @@ export function MarketIntelligenceLibrary({
                       Publish
                     </button>
                   }
-                  {status === 'published' &&
+                  {canMutate && status === 'published' &&
                   <button
                     type="button"
                     onClick={() => onFlagForReview(brief.id)}

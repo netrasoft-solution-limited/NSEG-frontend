@@ -12,6 +12,7 @@ import { engagementStageLabels, isTerminalStage, nextStage, type EngagementStage
 import { downloadCsv } from '../lib/exportCsv';
 import { useOfficerProfile } from '../lib/officerProfile';
 import { useAuditLog } from '../lib/auditLog';
+import { canMutate } from '../lib/permissions';
 
 const opportunitiesById = new Map(opportunities.map((opportunity) => [opportunity.id, opportunity]));
 const consentGrantsById = new Map(consentGrants.map((grant) => [grant.id, grant]));
@@ -20,6 +21,7 @@ const actorsById = new Map(actors.map((actor) => [actor.id, actor]));
 export function ConsoleEngagements() {
   const { profile } = useOfficerProfile();
   const { logEvent } = useAuditLog();
+  const mutable = canMutate(profile.role);
   const [stages, setStages] = useState<Record<string, EngagementStage>>({});
 
   const stageOf = (id: string, fallback: EngagementStage) => stages[id] ?? fallback;
@@ -116,6 +118,7 @@ export function ConsoleEngagements() {
           actorsById={actorsById}
           vaultDocuments={vaultDocuments}
           stages={stages}
+          canMutate={mutable}
           onAdvance={(id) => {
             const engagement = engagements.find((item) => item.id === id);
             if (!engagement) return;

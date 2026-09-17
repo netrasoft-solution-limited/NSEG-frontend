@@ -104,7 +104,7 @@ matrix, non-goals, precedence order) constrain every module below.
 ### Module 2 — Shared Platform Foundation Services (Canonical Common Layer)
 | # | Subsystem | Status | Where in repo |
 |---|---|---|---|
-| 2.1 | Unified Identity & Access Management (IAM) | ⬜ | [officerProfile.tsx](src/lib/officerProfile.tsx) is a single mocked profile, no login/RBAC |
+| 2.1 | Unified Identity & Access Management (IAM) | 🟡 | No real login/SSO — but [officerProfile.tsx](src/lib/officerProfile.tsx)'s role switch now simulates ROLE_ADSPA_OFFICER as a console-wide read-only mode via [permissions.ts](src/lib/permissions.ts)'s `canMutate`, applied across every mutating action in the console (see §8 decision 3). `ROLE_DATA_STEWARD`/`ROLE_ENTITY_ADMIN`/`ROLE_ACTOR_USER` are not represented — the latter two are exporter/buyer-side roles this officer console has no surface for |
 | 2.2 | Canonical Actor Registry & Identity Verification | 🟡 | [ActorTable.tsx](src/components/console/ActorTable.tsx), [BuyerTable.tsx](src/components/console/BuyerTable.tsx), [VerificationQueue.tsx](src/components/console/VerificationQueue.tsx), [verification.ts](src/lib/verification.ts) — per-portal actor/buyer views exist; no unified cross-portal registry or dedup UI |
 | 2.3 | Organization Delegation & Multi-Tenant Context | ✅ | [ConsoleDelegations.tsx](src/pages/ConsoleDelegations.tsx), [DelegationRegistry.tsx](src/components/console/DelegationRegistry.tsx), [delegations.ts](src/data/delegations.ts) — each exporter/buyer account modeled as an org with named delegates (employee/contractor/branch officer), 365-day recertification cap surfaced as a 30-day warning, officer revoke reserved for compliance action |
 | 2.4 | Shared Evidence & Zero-Duplicate Document Vault | ✅ | [ConsoleVault.tsx](src/pages/ConsoleVault.tsx), [EvidenceVault.tsx](src/components/console/EvidenceVault.tsx), [vaultDocuments.ts](src/data/vaultDocuments.ts) |
@@ -241,11 +241,15 @@ Dispute Resolution) — decided out of scope entirely, not just unbuilt so far (
    variables into immutable scenario reports; the audit ledger independently re-checks every
    incentive application against all three BRD conditions (not just `ConsoleIncentives`'s own
    `autoPreQualified` threshold), catching cases the shallower check misses.
-8. Simulated multi-role login (Module 2.1) — decided in scope (§8, decision 3): extend
-   `officerProfile.tsx`'s existing desk-officer/administrator toggle into a full role switcher
-   (`ROLE_SYS_ADMIN` / `ROLE_ADSPA_OFFICER` / `ROLE_DATA_STEWARD` / `ROLE_ENTITY_ADMIN` /
-   `ROLE_ACTOR_USER`) so segregation-of-duties is demonstrable in the UI, not just implied by
-   `IncentiveQueue`'s `canApprove` gate.
+8. ~~Simulated multi-role login~~ — done, at reduced scope from the original plan: added a single
+   `adspa-auditor` role (BRD `ROLE_ADSPA_OFFICER`) to `officerProfile.tsx` rather than all five named
+   roles. Selecting it puts the entire console into read-only mode via a shared `canMutate(role)`
+   check ([permissions.ts](src/lib/permissions.ts)) — every mutating button across all 14 pages with
+   officer decisions renders an "Audit view only" badge instead, while viewing, filtering, exporting,
+   and disclosure-package viewing stay available. A global banner in `ConsoleLayout`'s header makes
+   the mode visible from anywhere. `ROLE_SYS_ADMIN` and `ROLE_DATA_STEWARD` were scoped out of this
+   pass (see §8 decision 3) — `ROLE_ENTITY_ADMIN`/`ROLE_ACTOR_USER` don't apply to an officer console
+   at all, since they're exporter/buyer-side roles.
 
 **Out of scope for this prototype (see §8):**
 - Portal 4 (Global Promotion & Investment Facilitation) — Module 6. Decision 1.
@@ -278,11 +282,16 @@ constraints.
    with Module 1's Non-Goal 1 than a "track it, don't process it" framing can responsibly cover.
    Treat it as likely scope creep from a later BRD revision rather than a requirement to reconcile.
    See §4's Module 7 table.
-3. **Is a simulated multi-role login worth building?** **Decision: yes.** `ConsoleSettings` already
-   simulates a desk-officer/administrator toggle that `IncentiveQueue` reacts to via its
-   `canApprove` gate — extending that same pattern to the BRD's other roles (Data Steward, Entity
-   Admin, Actor User) is low effort and makes segregation-of-duties, a major BRD theme, visibly
-   demonstrable rather than only implied. See §7, mid-term item 8.
+3. **Is a simulated multi-role login worth building?** **Decision: yes, implemented at reduced
+   scope.** `ConsoleSettings` already simulated a desk-officer/administrator toggle that
+   `IncentiveQueue` reacted to via its `canApprove` gate. Rather than modeling all five BRD roles,
+   this added one more — `adspa-auditor` (`ROLE_ADSPA_OFFICER`) — and used it to put the entire
+   console into read-only mode, since that's the single clearest, highest-value segregation-of-duties
+   demonstration available (inspect everything, modify nothing). `ROLE_SYS_ADMIN` (would require
+   masking personal/business data across every page — high effort, lower narrative payoff) and
+   `ROLE_DATA_STEWARD` (a narrower scoped-allow-list role) were left out of this pass.
+   `ROLE_ENTITY_ADMIN`/`ROLE_ACTOR_USER` don't apply here at all — they're exporter/buyer-side roles
+   with no surface in an officer console. See §7, mid-term item 8.
 4. **Should the Observatory's "real-time" framing be a permanent prototype non-goal?** **Decision:
    yes.** There's no live NEPC/NEXIM/CBN feed for a frontend-only prototype to wire up, and
    "real-time" only becomes meaningful once a real backend exists — that's a future project's
@@ -333,3 +342,10 @@ constraints.
   `incentives.ts` specifically to demonstrate a case the shallower check passes but the deeper audit
   correctly rejects. Build order item 7 (§7) is now done; only item 8 (simulated multi-role login)
   remains in the mid-term list.
+- **2026-09-17** — Added the simulated `adspa-auditor` role (BRD `ROLE_ADSPA_OFFICER`) to
+  `officerProfile.tsx`, with a shared `canMutate(role)` check in [permissions.ts](src/lib/permissions.ts)
+  gating every mutating action across all 14 console pages with officer decisions, a shared
+  `AuditOnlyBadge` component standing in for disabled actions, and a global "Read-only audit mode"
+  banner in `ConsoleLayout`. Scoped down from the original plan (all 5 BRD roles) to just this one —
+  see §8 decision 3 for why. This completes all mid-term build-order items (§7); only the explicitly
+  out-of-scope long-term items remain (§8 decisions 1-2).

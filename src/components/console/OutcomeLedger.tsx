@@ -10,6 +10,7 @@ import {
   hasCompetingProvisionalSibling,
   hasConfirmedSibling } from
 '../../lib/outcomeVerification';
+import { AuditOnlyBadge } from './AuditOnlyBadge';
 
 interface OutcomeLedgerProps {
   reports: OutcomeReport[];
@@ -19,6 +20,7 @@ interface OutcomeLedgerProps {
   actorsById: Map<string, Actor>;
   decisions: Record<string, OutcomeVerificationStatus>;
   onDecide: (id: string, status: OutcomeVerificationStatus) => void;
+  canMutate: boolean;
 }
 
 const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
@@ -35,7 +37,8 @@ export function OutcomeLedger({
   consentGrantsById,
   actorsById,
   decisions,
-  onDecide
+  onDecide,
+  canMutate
 }: OutcomeLedgerProps) {
   const grouped = groupReportsByEngagement(reports);
 
@@ -114,7 +117,8 @@ export function OutcomeLedger({
                 </div>
 
                 <div className="flex shrink-0 items-center gap-2">
-                  {status === 'provisional' &&
+                  {status === 'provisional' && !canMutate && <AuditOnlyBadge />}
+                  {status === 'provisional' && canMutate &&
                   <>
                       <button
                       type="button"

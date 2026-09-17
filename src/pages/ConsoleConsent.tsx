@@ -9,12 +9,14 @@ import { vaultDocuments } from '../data/vaultDocuments';
 import { downloadCsv } from '../lib/exportCsv';
 import { useOfficerProfile } from '../lib/officerProfile';
 import { useAuditLog } from '../lib/auditLog';
+import { canMutate } from '../lib/permissions';
 
 const actorsById = new Map(actors.map((actor) => [actor.id, actor]));
 
 export function ConsoleConsent() {
   const { profile } = useOfficerProfile();
   const { logEvent } = useAuditLog();
+  const mutable = canMutate(profile.role);
   const [overrides, setOverrides] = useState<Record<string, ConsentStatus>>({});
 
   const statusOf = (id: string, fallback: ConsentStatus) => overrides[id] ?? fallback;
@@ -88,6 +90,7 @@ export function ConsoleConsent() {
           actorsById={actorsById}
           vaultDocuments={vaultDocuments}
           overrides={overrides}
+          canMutate={mutable}
           onRevoke={(id) => {
             setOverrides((current) => ({ ...current, [id]: 'revoked' }));
             const grant = consentGrants.find((item) => item.id === id);

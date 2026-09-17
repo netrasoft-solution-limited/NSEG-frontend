@@ -2,12 +2,14 @@ import React from 'react';
 import { AlertTriangleIcon, CheckIcon, ShieldCheckIcon, XIcon } from 'lucide-react';
 import type { Actor } from '../../data/actors';
 import { documentKindLabels, type DocumentVerificationStatus, type VaultDocument } from '../../data/vaultDocuments';
+import { AuditOnlyBadge } from './AuditOnlyBadge';
 
 interface EvidenceVaultProps {
   documents: VaultDocument[];
   actorsById: Map<string, Actor>;
   decisions: Record<string, DocumentVerificationStatus>;
   onDecide: (documentId: string, status: DocumentVerificationStatus) => void;
+  canMutate: boolean;
 }
 
 const malwareStyles: Record<VaultDocument['malwareScan'], string> = {
@@ -16,7 +18,7 @@ const malwareStyles: Record<VaultDocument['malwareScan'], string> = {
   flagged: 'bg-rose-50 text-rose-700'
 };
 
-export function EvidenceVault({ documents, actorsById, decisions, onDecide }: EvidenceVaultProps) {
+export function EvidenceVault({ documents, actorsById, decisions, onDecide, canMutate }: EvidenceVaultProps) {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
       <div>
@@ -67,7 +69,8 @@ export function EvidenceVault({ documents, actorsById, decisions, onDecide }: Ev
                 </div>
 
                 <div className="flex shrink-0 items-center gap-2">
-                  {status === 'pending' &&
+                  {status === 'pending' && !canMutate && <AuditOnlyBadge />}
+                  {status === 'pending' && canMutate &&
                   <>
                       <button
                     type="button"

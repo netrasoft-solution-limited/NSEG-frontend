@@ -2,6 +2,7 @@ import React from 'react';
 import { CheckIcon, LockIcon, SparklesIcon, XIcon } from 'lucide-react';
 import type { Actor } from '../../data/actors';
 import { incentiveTypeLabels, type IncentiveApplication, type IncentiveReviewStatus } from '../../data/incentives';
+import { AuditOnlyBadge } from './AuditOnlyBadge';
 
 interface IncentiveQueueProps {
   applications: IncentiveApplication[];
@@ -12,11 +13,12 @@ interface IncentiveQueueProps {
    * reserved for a designated NATEP/NEPC Administrator. Declining isn't a grant of
    * funds, so any officer can still decline. */
   canApprove: boolean;
+  canMutate: boolean;
 }
 
 const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 
-export function IncentiveQueue({ applications, actorsById, decisions, onDecide, canApprove }: IncentiveQueueProps) {
+export function IncentiveQueue({ applications, actorsById, decisions, onDecide, canApprove, canMutate }: IncentiveQueueProps) {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
       <div>
@@ -64,7 +66,8 @@ export function IncentiveQueue({ applications, actorsById, decisions, onDecide, 
                 </div>
 
                 <div className="flex shrink-0 items-center gap-2">
-                  {status === 'pending' &&
+                  {status === 'pending' && !canMutate && <AuditOnlyBadge />}
+                  {status === 'pending' && canMutate &&
                   <>
                       {canApprove ?
                     <button

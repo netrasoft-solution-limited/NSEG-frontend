@@ -12,6 +12,7 @@ import { groupReportsByEngagement } from '../lib/outcomeVerification';
 import { downloadCsv } from '../lib/exportCsv';
 import { useOfficerProfile } from '../lib/officerProfile';
 import { useAuditLog } from '../lib/auditLog';
+import { canMutate } from '../lib/permissions';
 
 const engagementsById = new Map(engagements.map((engagement) => [engagement.id, engagement]));
 const opportunitiesById = new Map(opportunities.map((opportunity) => [opportunity.id, opportunity]));
@@ -114,6 +115,7 @@ export function ConsoleOutcomes() {
           opportunitiesById={opportunitiesById}
           consentGrantsById={consentGrantsById}
           actorsById={actorsById}
+          canMutate={canMutate(profile.role)}
           decisions={decisions}
           onDecide={(id, status) => {
             setDecisions((current) => ({ ...current, [id]: status }));

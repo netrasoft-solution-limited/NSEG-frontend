@@ -8,6 +8,7 @@ import { filterBriefs, type MarketIntelligenceFilterState } from '../lib/marketI
 import { downloadCsv } from '../lib/exportCsv';
 import { useOfficerProfile } from '../lib/officerProfile';
 import { useAuditLog } from '../lib/auditLog';
+import { canMutate } from '../lib/permissions';
 
 const emptyFilters: MarketIntelligenceFilterState = { search: '', country: 'all', sectorCode: 'all' };
 const countries = Array.from(new Set(marketIntelligenceBriefs.map((brief) => brief.targetCountry))).sort();
@@ -16,6 +17,7 @@ const sectorCodes = Array.from(new Set(marketIntelligenceBriefs.map((brief) => b
 export function ConsoleMarketIntelligence() {
   const { profile } = useOfficerProfile();
   const { logEvent } = useAuditLog();
+  const mutable = canMutate(profile.role);
   const [filters, setFilters] = useState<MarketIntelligenceFilterState>(emptyFilters);
   const [statuses, setStatuses] = useState<Record<string, IntelligenceStatus>>({});
 
@@ -102,6 +104,7 @@ export function ConsoleMarketIntelligence() {
           filters={filters}
           onFilterChange={setFilters}
           statuses={statuses}
+          canMutate={mutable}
           onPublish={(id) => {
             setStatuses((current) => ({ ...current, [id]: 'published' }));
             const brief = marketIntelligenceBriefs.find((item) => item.id === id);

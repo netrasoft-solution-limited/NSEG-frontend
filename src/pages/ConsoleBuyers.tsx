@@ -9,12 +9,14 @@ import { filterBuyers, type BuyerFilterState } from '../lib/buyerFilters';
 import { downloadCsv } from '../lib/exportCsv';
 import { useOfficerProfile } from '../lib/officerProfile';
 import { useAuditLog } from '../lib/auditLog';
+import { canMutate } from '../lib/permissions';
 
 const emptyFilters: BuyerFilterState = { search: '', tier: 'all' };
 
 export function ConsoleBuyers() {
   const { profile } = useOfficerProfile();
   const { logEvent } = useAuditLog();
+  const mutable = canMutate(profile.role);
   const [filters, setFilters] = useState<BuyerFilterState>(emptyFilters);
   const [verificationDecisions, setVerificationDecisions] = useState<Record<string, VerificationDecision>>({});
 
@@ -98,6 +100,7 @@ export function ConsoleBuyers() {
         <VerificationQueue
           entities={buyers}
           decisions={verificationDecisions}
+          canMutate={mutable}
           onDecide={(id, decision) => {
             setVerificationDecisions((current) => ({ ...current, [id]: decision }));
             const buyer = buyers.find((item) => item.id === id);

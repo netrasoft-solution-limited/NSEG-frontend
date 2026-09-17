@@ -3,6 +3,7 @@ import { AlertTriangleIcon, BadgeCheckIcon, BellIcon, CheckIcon, XIcon } from 'l
 import type { Actor } from '../../data/actors';
 import { documentKindLabels, type DocumentVerificationStatus, type VaultDocument } from '../../data/vaultDocuments';
 import { certifyingBodyFor, renewalUrgency } from '../../lib/certification';
+import { AuditOnlyBadge } from './AuditOnlyBadge';
 
 interface CertificationRegistryProps {
   documents: VaultDocument[];
@@ -11,6 +12,7 @@ interface CertificationRegistryProps {
   remindersSent: Record<string, boolean>;
   onDecide: (id: string, status: DocumentVerificationStatus) => void;
   onSendReminder: (id: string) => void;
+  canMutate: boolean;
 }
 
 const urgencyStyles = {
@@ -25,7 +27,8 @@ export function CertificationRegistry({
   decisions,
   remindersSent,
   onDecide,
-  onSendReminder
+  onSendReminder,
+  canMutate
 }: CertificationRegistryProps) {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
@@ -71,7 +74,8 @@ export function CertificationRegistry({
                 </div>
 
                 <div className="flex shrink-0 items-center gap-2">
-                  {status === 'pending' &&
+                  {status === 'pending' && !canMutate && <AuditOnlyBadge />}
+                  {status === 'pending' && canMutate &&
                   <>
                       <button
                       type="button"
@@ -91,7 +95,7 @@ export function CertificationRegistry({
                       </button>
                     </>
                   }
-                  {status === 'verified' && urgency !== 'none' &&
+                  {status === 'verified' && urgency !== 'none' && canMutate &&
                   <button
                     type="button"
                     onClick={() => onSendReminder(document.id)}

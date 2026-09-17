@@ -11,6 +11,7 @@ import { supportingMetrics } from '../data/observatory';
 import { downloadCsv } from '../lib/exportCsv';
 import { useOfficerProfile } from '../lib/officerProfile';
 import { useAuditLog } from '../lib/auditLog';
+import { canMutate } from '../lib/permissions';
 
 const medianQualificationTime =
 supportingMetrics.find((metric) => metric.label === 'Median officer qualification time')?.value ?? '—';
@@ -25,6 +26,7 @@ filter((item): item is {opportunity: (typeof opportunities)[number];shortlist: (
 export function ConsoleOpportunities() {
   const { profile } = useOfficerProfile();
   const { logEvent } = useAuditLog();
+  const mutable = canMutate(profile.role);
   const [signalDecisions, setSignalDecisions] = useState<Record<string, SignalDecision>>({});
   const [shortlistDecisions, setShortlistDecisions] = useState<Record<string, ShortlistDecision>>({});
 
@@ -97,6 +99,7 @@ export function ConsoleOpportunities() {
         <SignalQueue
           signals={signals}
           decisions={signalDecisions}
+          canMutate={mutable}
           onDecide={(id, decision) => {
             setSignalDecisions((current) => ({ ...current, [id]: decision }));
             const signal = signals.find((item) => item.id === id);
@@ -111,6 +114,7 @@ export function ConsoleOpportunities() {
         <ShortlistReview
           items={shortlistItems}
           decisions={shortlistDecisions}
+          canMutate={mutable}
           onDecide={(id, decision) => {
             setShortlistDecisions((current) => ({ ...current, [id]: decision }));
             const opportunity = opportunities.find((item) => item.id === id);

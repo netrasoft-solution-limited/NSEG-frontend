@@ -3,6 +3,7 @@ import { CheckIcon, RefreshCwIcon } from 'lucide-react';
 import type { Opportunity } from '../../data/opportunities';
 import type { Shortlist } from '../../data/shortlists';
 import { sectorLabel, modeLabel } from '../../lib/marketplaceLookups';
+import { AuditOnlyBadge } from './AuditOnlyBadge';
 
 export type ShortlistDecision = 'pending' | 'approved' | 'adjust';
 
@@ -11,9 +12,10 @@ interface ShortlistCardProps {
   shortlist: Shortlist;
   decision: ShortlistDecision;
   onDecide: (opportunityId: string, decision: ShortlistDecision) => void;
+  canMutate: boolean;
 }
 
-function ShortlistCard({ opportunity, shortlist, decision, onDecide }: ShortlistCardProps) {
+function ShortlistCard({ opportunity, shortlist, decision, onDecide, canMutate }: ShortlistCardProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const active = shortlist.candidates[activeIndex];
 
@@ -28,7 +30,8 @@ function ShortlistCard({ opportunity, shortlist, decision, onDecide }: Shortlist
           <p className="text-[12.5px] text-gray-400">{opportunity.buyerRegion}</p>
         </div>
 
-        {decision === 'pending' &&
+        {decision === 'pending' && !canMutate && <AuditOnlyBadge />}
+        {decision === 'pending' && canMutate &&
         <div className="flex shrink-0 items-center gap-2">
             <button
             type="button"
@@ -118,9 +121,10 @@ interface ShortlistReviewProps {
   items: { opportunity: Opportunity; shortlist: Shortlist }[];
   decisions: Record<string, ShortlistDecision>;
   onDecide: (opportunityId: string, decision: ShortlistDecision) => void;
+  canMutate: boolean;
 }
 
-export function ShortlistReview({ items, decisions, onDecide }: ShortlistReviewProps) {
+export function ShortlistReview({ items, decisions, onDecide, canMutate }: ShortlistReviewProps) {
   return (
     <div>
       <div className="mb-3">
@@ -134,7 +138,8 @@ export function ShortlistReview({ items, decisions, onDecide }: ShortlistReviewP
           opportunity={opportunity}
           shortlist={shortlist}
           decision={decisions[opportunity.id] ?? 'pending'}
-          onDecide={onDecide} />
+          onDecide={onDecide}
+          canMutate={canMutate} />
 
         )}
       </div>

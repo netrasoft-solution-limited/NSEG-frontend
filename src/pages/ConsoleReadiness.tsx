@@ -9,6 +9,7 @@ import { downloadCsv } from '../lib/exportCsv';
 import { computeReadinessScore, readinessTierFor } from '../lib/readinessScore';
 import { useOfficerProfile } from '../lib/officerProfile';
 import { useAuditLog } from '../lib/auditLog';
+import { canMutate } from '../lib/permissions';
 
 const actorsById = new Map(actors.map((actor) => [actor.id, actor]));
 
@@ -96,6 +97,7 @@ export function ConsoleReadiness() {
           submissions={readinessSubmissions}
           actorsById={actorsById}
           decisions={decisions}
+          canMutate={canMutate(profile.role)}
           onDecide={(id, status) => {
             setDecisions((current) => ({ ...current, [id]: status }));
             const submission = readinessSubmissions.find((item) => item.id === id);

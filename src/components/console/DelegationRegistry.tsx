@@ -4,6 +4,7 @@ import type { Actor } from '../../data/actors';
 import type { Buyer } from '../../data/buyers';
 import type { Delegation, DelegationStatus } from '../../data/delegations';
 import { orgFor } from '../../lib/delegationLookup';
+import { AuditOnlyBadge } from './AuditOnlyBadge';
 
 interface DelegationRegistryProps {
   delegations: Delegation[];
@@ -11,6 +12,7 @@ interface DelegationRegistryProps {
   buyersById: Map<string, Buyer>;
   overrides: Record<string, DelegationStatus>;
   onRevoke: (id: string) => void;
+  canMutate: boolean;
 }
 
 const statusStyles: Record<DelegationStatus, string> = {
@@ -38,7 +40,8 @@ export function DelegationRegistry({
   actorsById,
   buyersById,
   overrides,
-  onRevoke
+  onRevoke,
+  canMutate
 }: DelegationRegistryProps) {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
@@ -91,7 +94,8 @@ export function DelegationRegistry({
                 </div>
 
                 <div className="flex shrink-0 items-center gap-2">
-                  {(status === 'active' || status === 'expiring-soon') &&
+                  {(status === 'active' || status === 'expiring-soon') && !canMutate && <AuditOnlyBadge />}
+                  {(status === 'active' || status === 'expiring-soon') && canMutate &&
                   <button
                     type="button"
                     onClick={() => onRevoke(delegation.id)}

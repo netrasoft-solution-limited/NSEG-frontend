@@ -9,12 +9,14 @@ import { filterActors, type ActorFilterState } from '../lib/actorFilters';
 import { downloadCsv } from '../lib/exportCsv';
 import { useOfficerProfile } from '../lib/officerProfile';
 import { useAuditLog } from '../lib/auditLog';
+import { canMutate } from '../lib/permissions';
 
 const emptyFilters: ActorFilterState = { search: '', status: 'all', tier: 'all' };
 
 export function ConsoleExporters() {
   const { profile } = useOfficerProfile();
   const { logEvent } = useAuditLog();
+  const mutable = canMutate(profile.role);
   const [filters, setFilters] = useState<ActorFilterState>(emptyFilters);
   const [verificationDecisions, setVerificationDecisions] = useState<Record<string, VerificationDecision>>({});
   const [suspensionOverrides, setSuspensionOverrides] = useState<Record<string, boolean>>({});
@@ -110,6 +112,7 @@ export function ConsoleExporters() {
         <VerificationQueue
           entities={actors.map((actor) => ({ ...actor, referenceId: actor.natepId }))}
           decisions={verificationDecisions}
+          canMutate={mutable}
           onDecide={(id, decision) => {
             setVerificationDecisions((current) => ({ ...current, [id]: decision }));
             if (decision === 'rejected') {
@@ -131,6 +134,7 @@ export function ConsoleExporters() {
           total={actors.length}
           filters={filters}
           onChange={setFilters}
+          canMutate={mutable}
           onSuspendToggle={(id, nextSuspended) => {
             setSuspensionOverrides((current) => ({ ...current, [id]: nextSuspended }));
             const actor = actors.find((item) => item.id === id);

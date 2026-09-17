@@ -3,11 +3,14 @@ import React, { createContext, useContext, useMemo, useState } from 'react';
 /**
  * Desk officers handle day-to-day qualification/verification work; the BRD's two-tier
  * incentive workflow (BR-P2-05.3) reserves final sign-off above a threshold for a
- * designated NATEP/NEPC Administrator. This is a client-side role switch for this demo
- * — there's no backend to enforce it, so it shapes what the UI offers, not a real
- * permission boundary.
+ * designated NATEP/NEPC Administrator. 'adspa-auditor' simulates BRD Module 2's
+ * ROLE_ADSPA_OFFICER — technical/security audit access that can inspect everything but
+ * "cannot modify database records, user permissions, or system configurations" — so the
+ * console goes read-only across every mutating action under that role. This is a
+ * client-side role switch for this demo — there's no backend to enforce it, so it shapes
+ * what the UI offers, not a real permission boundary.
  */
-export type OfficerRole = 'desk-officer' | 'administrator';
+export type OfficerRole = 'desk-officer' | 'administrator' | 'adspa-auditor';
 
 interface OfficerProfile {
   name: string;

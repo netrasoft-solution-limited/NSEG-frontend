@@ -10,6 +10,7 @@ import {
   CalendarIcon,
   CompassIcon,
   DownloadIcon,
+  EyeIcon,
   FileTextIcon,
   GlobeIcon,
   HandshakeIcon,
@@ -153,6 +154,12 @@ export function ConsoleLayout({ breadcrumb, onExport, children }: ConsoleLayoutP
           </div>
 
           <div className="ml-auto flex items-center gap-2">
+            {profile.role === 'adspa-auditor' &&
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 text-[12.5px] font-medium text-amber-700">
+                <EyeIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                Read-only audit mode
+              </span>
+            }
             <span className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1.5 text-[12.5px] font-medium text-gray-600">
               <CalendarIcon className="h-3.5 w-3.5" aria-hidden="true" />
               Last 30 days

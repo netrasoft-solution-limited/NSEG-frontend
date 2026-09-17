@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertTriangleIcon, CheckIcon, XIcon } from 'lucide-react';
 import type { VerificationQueueStatus } from '../../lib/verification';
+import { AuditOnlyBadge } from './AuditOnlyBadge';
 
 export type VerificationDecision = 'approved' | 'rejected';
 
@@ -18,9 +19,10 @@ interface VerificationQueueProps {
   entities: VerifiableEntity[];
   decisions: Record<string, VerificationDecision>;
   onDecide: (entityId: string, decision: VerificationDecision) => void;
+  canMutate: boolean;
 }
 
-export function VerificationQueue({ entities, decisions, onDecide }: VerificationQueueProps) {
+export function VerificationQueue({ entities, decisions, onDecide, canMutate }: VerificationQueueProps) {
   const queued = entities.filter((entity) => entity.verificationQueue !== 'none' && !decisions[entity.id]);
   const resolved = entities.filter((entity) => entity.verificationQueue !== 'none' && decisions[entity.id]);
 
@@ -68,7 +70,8 @@ export function VerificationQueue({ entities, decisions, onDecide }: Verificatio
                 </div>
 
                 <div className="flex shrink-0 items-center gap-2">
-                  {!decision &&
+                  {!decision && !canMutate && <AuditOnlyBadge />}
+                  {!decision && canMutate &&
                   <>
                       <button
                     type="button"

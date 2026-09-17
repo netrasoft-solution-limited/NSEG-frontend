@@ -8,6 +8,7 @@ import { actors } from '../data/actors';
 import { downloadCsv } from '../lib/exportCsv';
 import { useOfficerProfile } from '../lib/officerProfile';
 import { useAuditLog } from '../lib/auditLog';
+import { canMutate } from '../lib/permissions';
 
 const actorsById = new Map(actors.map((actor) => [actor.id, actor]));
 
@@ -93,6 +94,7 @@ export function ConsoleIncentives() {
           actorsById={actorsById}
           decisions={decisions}
           canApprove={profile.role === 'administrator'}
+          canMutate={canMutate(profile.role)}
           onDecide={(id, status) => {
             setDecisions((current) => ({ ...current, [id]: status }));
             const application = incentiveApplications.find((item) => item.id === id);

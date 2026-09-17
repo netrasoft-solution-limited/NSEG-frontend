@@ -2,6 +2,7 @@ import React from 'react';
 import { CheckIcon, XIcon } from 'lucide-react';
 import type { Signal } from '../../data/signals';
 import { sectorLabel } from '../../lib/marketplaceLookups';
+import { AuditOnlyBadge } from './AuditOnlyBadge';
 
 export type SignalDecision = 'pending' | 'qualified' | 'rejected';
 
@@ -15,9 +16,10 @@ interface SignalQueueProps {
   signals: Signal[];
   decisions: Record<string, SignalDecision>;
   onDecide: (id: string, decision: SignalDecision) => void;
+  canMutate: boolean;
 }
 
-export function SignalQueue({ signals, decisions, onDecide }: SignalQueueProps) {
+export function SignalQueue({ signals, decisions, onDecide, canMutate }: SignalQueueProps) {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
       <div>
@@ -54,7 +56,8 @@ export function SignalQueue({ signals, decisions, onDecide }: SignalQueueProps) 
                 </div>
 
                 <div className="flex shrink-0 items-center gap-2">
-                  {decision === 'pending' &&
+                  {decision === 'pending' && !canMutate && <AuditOnlyBadge />}
+                  {decision === 'pending' && canMutate &&
                   <>
                       <button
                     type="button"

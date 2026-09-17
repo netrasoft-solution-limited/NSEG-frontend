@@ -21,6 +21,7 @@ import { auditIncentiveApplication } from '../lib/incentiveAudit';
 import { downloadCsv } from '../lib/exportCsv';
 import { useOfficerProfile } from '../lib/officerProfile';
 import { useAuditLog } from '../lib/auditLog';
+import { canMutate } from '../lib/permissions';
 
 const actorsById = new Map(actors.map((actor) => [actor.id, actor]));
 const baselineExportVolumeUsd = 14250000;
@@ -28,6 +29,7 @@ const baselineExportVolumeUsd = 14250000;
 export function ConsoleObservatory() {
   const { profile } = useOfficerProfile();
   const { logEvent } = useAuditLog();
+  const mutable = canMutate(profile.role);
   const [overrides, setOverrides] = useState<Record<string, ReconciliationStatus>>({});
   const [scenarioReports, setScenarioReports] = useState<PolicyScenarioReport[]>(policyScenarioReports);
 
@@ -127,6 +129,7 @@ export function ConsoleObservatory() {
         <ReconciliationPanel
           institutions={institutionReconciliation}
           overrides={overrides}
+          canMutate={mutable}
           onResolve={(institution) => setOverrides((current) => ({ ...current, [institution]: 'reconciled' }))} />
 
 
@@ -147,6 +150,7 @@ export function ConsoleObservatory() {
 
         <PolicySimulator
           reports={scenarioReports}
+          canMutate={mutable}
           onRun={(inputs: PolicyScenarioInputs) => {
             const report: PolicyScenarioReport = {
               id: `sim-${Date.now()}`,

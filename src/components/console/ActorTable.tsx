@@ -11,6 +11,7 @@ interface ActorTableProps {
   filters: ActorFilterState;
   onChange: (filters: ActorFilterState) => void;
   onSuspendToggle: (actorId: string, nextSuspended: boolean) => void;
+  canMutate: boolean;
 }
 
 function StatusPill({ actor }: {actor: Actor;}) {
@@ -42,7 +43,7 @@ function StatusPill({ actor }: {actor: Actor;}) {
 
 }
 
-export function ActorTable({ actors, total, filters, onChange, onSuspendToggle }: ActorTableProps) {
+export function ActorTable({ actors, total, filters, onChange, onSuspendToggle, canMutate }: ActorTableProps) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   return (
@@ -172,7 +173,8 @@ export function ActorTable({ actors, total, filters, onChange, onSuspendToggle }
                     </button>
                     {openMenuId === actor.id &&
                   <div className="absolute right-0 top-full z-10 mt-1 w-48 rounded-xl border border-gray-100 bg-white p-1.5 text-left shadow-lg">
-                        <button
+                        {canMutate ?
+                    <button
                       type="button"
                       onClick={() => {
                         onSuspendToggle(actor.id, !actor.suspended);
@@ -180,8 +182,13 @@ export function ActorTable({ actors, total, filters, onChange, onSuspendToggle }
                       }}
                       className="block w-full rounded-lg px-2.5 py-1.5 text-left text-[12.5px] text-gray-700 hover:bg-gray-50">
 
-                          {actor.suspended ? 'Reinstate account' : 'Suspend account'}
-                        </button>
+                            {actor.suspended ? 'Reinstate account' : 'Suspend account'}
+                          </button> :
+
+                    <span className="block cursor-not-allowed rounded-lg px-2.5 py-1.5 text-[12.5px] text-gray-300">
+                            {actor.suspended ? 'Reinstate account' : 'Suspend account'} (audit view only)
+                          </span>
+                    }
                         {['View profile', 'Message exporter'].map((label) =>
                     <span
                       key={label}

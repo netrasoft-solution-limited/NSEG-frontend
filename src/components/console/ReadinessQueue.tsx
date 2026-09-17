@@ -3,12 +3,14 @@ import { CheckIcon, ChevronDownIcon, XIcon } from 'lucide-react';
 import type { ReadinessSubmission, AssertionStatus } from '../../data/readinessSubmissions';
 import type { Actor } from '../../data/actors';
 import { computeReadinessScore, readinessParameterWeights, readinessTierFor } from '../../lib/readinessScore';
+import { AuditOnlyBadge } from './AuditOnlyBadge';
 
 interface ReadinessQueueProps {
   submissions: ReadinessSubmission[];
   actorsById: Map<string, Actor>;
   decisions: Record<string, AssertionStatus>;
   onDecide: (id: string, status: AssertionStatus) => void;
+  canMutate: boolean;
 }
 
 function scoreTone(score: number) {
@@ -23,7 +25,7 @@ const tierStyles: Record<1 | 2 | 3, string> = {
   3: 'bg-emerald-50 text-emerald-700'
 };
 
-export function ReadinessQueue({ submissions, actorsById, decisions, onDecide }: ReadinessQueueProps) {
+export function ReadinessQueue({ submissions, actorsById, decisions, onDecide, canMutate }: ReadinessQueueProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   return (
@@ -117,7 +119,8 @@ export function ReadinessQueue({ submissions, actorsById, decisions, onDecide }:
                 </div>
 
                 <div className="flex shrink-0 items-center gap-2">
-                  {status === 'pending' &&
+                  {status === 'pending' && !canMutate && <AuditOnlyBadge />}
+                  {status === 'pending' && canMutate &&
                   <>
                       <button
                     type="button"

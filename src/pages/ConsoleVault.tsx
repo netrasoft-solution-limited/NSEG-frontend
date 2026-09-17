@@ -8,6 +8,7 @@ import { actors } from '../data/actors';
 import { downloadCsv } from '../lib/exportCsv';
 import { useOfficerProfile } from '../lib/officerProfile';
 import { useAuditLog } from '../lib/auditLog';
+import { canMutate } from '../lib/permissions';
 
 const actorsById = new Map(actors.map((actor) => [actor.id, actor]));
 
@@ -88,6 +89,7 @@ export function ConsoleVault() {
           documents={vaultDocuments}
           actorsById={actorsById}
           decisions={decisions}
+          canMutate={canMutate(profile.role)}
           onDecide={(id, status) => {
             setDecisions((current) => ({ ...current, [id]: status }));
             const doc = vaultDocuments.find((item) => item.id === id);

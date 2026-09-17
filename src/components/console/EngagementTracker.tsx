@@ -8,6 +8,7 @@ import type { VaultDocument } from '../../data/vaultDocuments';
 import { buildDisclosurePackage } from '../../lib/disclosurePackage';
 import { engagementStageLabels, isTerminalStage, nextStage, type EngagementStage } from '../../lib/engagementStage';
 import { DisclosurePackageViewer } from './DisclosurePackageViewer';
+import { AuditOnlyBadge } from './AuditOnlyBadge';
 
 interface EngagementTrackerProps {
   engagements: Engagement[];
@@ -19,6 +20,7 @@ interface EngagementTrackerProps {
   onAdvance: (id: string) => void;
   onDecline: (id: string) => void;
   onViewPackage: (engagementId: string) => void;
+  canMutate: boolean;
 }
 
 const consentStyles: Record<ConsentStatus, string> = {
@@ -46,7 +48,8 @@ export function EngagementTracker({
   stages,
   onAdvance,
   onDecline,
-  onViewPackage
+  onViewPackage,
+  canMutate
 }: EngagementTrackerProps) {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
@@ -131,7 +134,8 @@ export function EngagementTracker({
                       Needs invalidation
                     </span>
                   }
-                  {!needsInvalidation && upcoming &&
+                  {!needsInvalidation && upcoming && !canMutate && <AuditOnlyBadge />}
+                  {!needsInvalidation && upcoming && canMutate &&
                   <>
                       <button
                       type="button"

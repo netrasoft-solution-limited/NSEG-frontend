@@ -10,6 +10,7 @@ import { orgFor } from '../lib/delegationLookup';
 import { downloadCsv } from '../lib/exportCsv';
 import { useOfficerProfile } from '../lib/officerProfile';
 import { useAuditLog } from '../lib/auditLog';
+import { canMutate } from '../lib/permissions';
 
 const actorsById = new Map(actors.map((actor) => [actor.id, actor]));
 const buyersById = new Map(buyers.map((buyer) => [buyer.id, buyer]));
@@ -17,6 +18,7 @@ const buyersById = new Map(buyers.map((buyer) => [buyer.id, buyer]));
 export function ConsoleDelegations() {
   const { profile } = useOfficerProfile();
   const { logEvent } = useAuditLog();
+  const mutable = canMutate(profile.role);
   const [overrides, setOverrides] = useState<Record<string, DelegationStatus>>({});
 
   const statusOf = (id: string, fallback: DelegationStatus) => overrides[id] ?? fallback;
@@ -95,6 +97,7 @@ export function ConsoleDelegations() {
           actorsById={actorsById}
           buyersById={buyersById}
           overrides={overrides}
+          canMutate={mutable}
           onRevoke={(id) => {
             setOverrides((current) => ({ ...current, [id]: 'revoked' }));
             const delegation = delegations.find((item) => item.id === id);

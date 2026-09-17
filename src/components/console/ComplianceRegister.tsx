@@ -8,6 +8,7 @@ import {
 '../../data/regulations';
 import { opportunities } from '../../data/opportunities';
 import { sectorLabel } from '../../lib/marketplaceLookups';
+import { AuditOnlyBadge } from './AuditOnlyBadge';
 
 export interface ComplianceFilterState {
   search: string;
@@ -27,6 +28,7 @@ interface ComplianceRegisterProps {
   onFilterChange: (filters: ComplianceFilterState) => void;
   overrides: Record<string, OverrideState>;
   onAction: (id: string, next: OverrideState) => void;
+  canMutate: boolean;
 }
 
 const statusStyles: Record<RequirementStatus, string> = {
@@ -53,7 +55,8 @@ export function ComplianceRegister({
   filters,
   onFilterChange,
   overrides,
-  onAction
+  onAction,
+  canMutate
 }: ComplianceRegisterProps) {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
@@ -165,6 +168,8 @@ export function ComplianceRegister({
                   <td className="py-3 pl-3 text-right">
                     {state.status === 'superseded' ?
                     <span className="text-[11.5px] text-gray-300">No action</span> :
+                    !canMutate ?
+                    <AuditOnlyBadge /> :
                     state.reviewDue || state.status === 'under-review' ?
                     <button
                       type="button"

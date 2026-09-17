@@ -6,7 +6,8 @@ import { useAuditLog } from '../lib/auditLog';
 
 const roleLabels: Record<OfficerRole, string> = {
   'desk-officer': 'Desk Officer',
-  administrator: 'NATEP/NEPC Administrator'
+  administrator: 'NATEP/NEPC Administrator',
+  'adspa-auditor': 'ADSPA Security & Compliance Auditor'
 };
 
 interface NotificationPreference {
@@ -124,7 +125,7 @@ export function ConsoleSettings() {
 
             <div>
               <label htmlFor="sign-off-clearance" className="block text-[12.5px] font-medium text-gray-600">
-                Sign-off clearance
+                Platform role
               </label>
               <select
                 id="sign-off-clearance"
@@ -132,16 +133,18 @@ export function ConsoleSettings() {
                 onChange={(event) => {
                   const nextRole = event.target.value as OfficerRole;
                   setRole(nextRole);
-                  logEvent(`Switched sign-off clearance to "${roleLabels[nextRole]}"`, 'settings', profile.name);
+                  logEvent(`Switched platform role to "${roleLabels[nextRole]}"`, 'settings', profile.name);
                 }}
                 className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-[13.5px] text-gray-900 focus:border-gray-400 focus:outline-none">
 
                 <option value="desk-officer">{roleLabels['desk-officer']}</option>
                 <option value="administrator">{roleLabels.administrator}</option>
+                <option value="adspa-auditor">{roleLabels['adspa-auditor']}</option>
               </select>
               <p className="mt-1.5 text-[11px] text-gray-400">
-                Demo control only — a real deployment assigns this via IAM, not a self-service dropdown. Gates
-                high-value incentive sign-off on the Incentives page.
+                Demo control only — a real deployment assigns this via IAM, not a self-service dropdown.
+                Administrator gates high-value incentive sign-off; ADSPA Auditor puts the entire Console into
+                read-only audit mode (BRD ROLE_ADSPA_OFFICER — inspect everything, modify nothing).
               </p>
             </div>
 

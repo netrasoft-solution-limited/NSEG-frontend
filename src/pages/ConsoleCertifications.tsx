@@ -9,6 +9,7 @@ import { isCertificationDocument, renewalUrgency } from '../lib/certification';
 import { downloadCsv } from '../lib/exportCsv';
 import { useOfficerProfile } from '../lib/officerProfile';
 import { useAuditLog } from '../lib/auditLog';
+import { canMutate } from '../lib/permissions';
 
 const actorsById = new Map(actors.map((actor) => [actor.id, actor]));
 const certificationDocuments = vaultDocuments.filter(isCertificationDocument);
@@ -16,6 +17,7 @@ const certificationDocuments = vaultDocuments.filter(isCertificationDocument);
 export function ConsoleCertifications() {
   const { profile } = useOfficerProfile();
   const { logEvent } = useAuditLog();
+  const mutable = canMutate(profile.role);
   const [decisions, setDecisions] = useState<Record<string, DocumentVerificationStatus>>({});
   const [remindersSent, setRemindersSent] = useState<Record<string, boolean>>({});
 
@@ -104,6 +106,7 @@ export function ConsoleCertifications() {
           actorsById={actorsById}
           decisions={decisions}
           remindersSent={remindersSent}
+          canMutate={mutable}
           onDecide={(id, status) => {
             setDecisions((current) => ({ ...current, [id]: status }));
             const document = certificationDocuments.find((item) => item.id === id);

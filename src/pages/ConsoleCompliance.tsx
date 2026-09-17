@@ -7,6 +7,7 @@ import { regulatoryRequirements } from '../data/regulations';
 import { downloadCsv } from '../lib/exportCsv';
 import { useOfficerProfile } from '../lib/officerProfile';
 import { useAuditLog } from '../lib/auditLog';
+import { canMutate } from '../lib/permissions';
 
 const emptyFilters: ComplianceFilterState = { search: '', category: 'all', status: 'all' };
 
@@ -111,6 +112,7 @@ export function ConsoleCompliance() {
           filters={filters}
           onFilterChange={setFilters}
           overrides={overrides}
+          canMutate={canMutate(profile.role)}
           onAction={(id, next) => {
             setOverrides((current) => ({ ...current, [id]: next }));
             const requirement = regulatoryRequirements.find((item) => item.id === id);

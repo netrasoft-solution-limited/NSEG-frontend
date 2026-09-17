@@ -5,6 +5,7 @@ import type { ConsentGrant, ConsentStatus } from '../../data/consentGrants';
 import type { VaultDocument } from '../../data/vaultDocuments';
 import { buildDisclosurePackage } from '../../lib/disclosurePackage';
 import { DisclosurePackageViewer } from './DisclosurePackageViewer';
+import { AuditOnlyBadge } from './AuditOnlyBadge';
 
 interface ConsentRegisterProps {
   grants: ConsentGrant[];
@@ -13,6 +14,7 @@ interface ConsentRegisterProps {
   overrides: Record<string, ConsentStatus>;
   onRevoke: (grantId: string) => void;
   onViewPackage: (grantId: string) => void;
+  canMutate: boolean;
 }
 
 const statusStyles: Record<ConsentStatus, string> = {
@@ -27,7 +29,8 @@ export function ConsentRegister({
   vaultDocuments,
   overrides,
   onRevoke,
-  onViewPackage
+  onViewPackage,
+  canMutate
 }: ConsentRegisterProps) {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
@@ -71,7 +74,8 @@ export function ConsentRegister({
                 </div>
 
                 <div className="flex shrink-0 items-center gap-2">
-                  {status === 'active' &&
+                  {status === 'active' && !canMutate && <AuditOnlyBadge />}
+                  {status === 'active' && canMutate &&
                   <button
                     type="button"
                     onClick={() => onRevoke(grant.id)}

@@ -4,16 +4,18 @@ import { sectors } from '../../data/sectors';
 import type { PolicyScenarioReport } from '../../data/policyScenarios';
 import type { PolicyScenarioInputs } from '../../lib/policySimulation';
 import { sectorLabel } from '../../lib/marketplaceLookups';
+import { AuditOnlyBadge } from './AuditOnlyBadge';
 
 interface PolicySimulatorProps {
   reports: PolicyScenarioReport[];
   onRun: (inputs: PolicyScenarioInputs) => void;
+  canMutate: boolean;
 }
 
 const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 const horizonLabels: Record<12 | 24 | 36, string> = { 12: '12 months', 24: '24 months', 36: '36 months' };
 
-export function PolicySimulator({ reports, onRun }: PolicySimulatorProps) {
+export function PolicySimulator({ reports, onRun, canMutate }: PolicySimulatorProps) {
   const [inputs, setInputs] = useState<PolicyScenarioInputs>({
     grantMatchPercent: 5,
     taxRebatePercent: 2,
@@ -96,14 +98,18 @@ export function PolicySimulator({ reports, onRun }: PolicySimulatorProps) {
         </label>
       </div>
 
+      {canMutate ?
       <button
         type="button"
         onClick={() => onRun(inputs)}
         className="mt-4 inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2.5 text-[13px] font-semibold text-white transition-colors duration-150 ease-out hover:bg-black">
 
-        <PlayIcon className="h-3.5 w-3.5" aria-hidden="true" />
-        Run simulation
-      </button>
+          <PlayIcon className="h-3.5 w-3.5" aria-hidden="true" />
+          Run simulation
+        </button> :
+
+      <div className="mt-4"><AuditOnlyBadge /></div>
+      }
 
       <div className="mt-5 border-t border-gray-50 pt-4">
         <p className="text-[12.5px] font-medium text-gray-600">Scenario reports</p>
