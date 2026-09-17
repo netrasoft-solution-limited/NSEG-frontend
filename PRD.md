@@ -106,7 +106,7 @@ matrix, non-goals, precedence order) constrain every module below.
 |---|---|---|---|
 | 2.1 | Unified Identity & Access Management (IAM) | ⬜ | [officerProfile.tsx](src/lib/officerProfile.tsx) is a single mocked profile, no login/RBAC |
 | 2.2 | Canonical Actor Registry & Identity Verification | 🟡 | [ActorTable.tsx](src/components/console/ActorTable.tsx), [BuyerTable.tsx](src/components/console/BuyerTable.tsx), [VerificationQueue.tsx](src/components/console/VerificationQueue.tsx), [verification.ts](src/lib/verification.ts) — per-portal actor/buyer views exist; no unified cross-portal registry or dedup UI |
-| 2.3 | Organization Delegation & Multi-Tenant Context | ⬜ | Not started |
+| 2.3 | Organization Delegation & Multi-Tenant Context | ✅ | [ConsoleDelegations.tsx](src/pages/ConsoleDelegations.tsx), [DelegationRegistry.tsx](src/components/console/DelegationRegistry.tsx), [delegations.ts](src/data/delegations.ts) — each exporter/buyer account modeled as an org with named delegates (employee/contractor/branch officer), 365-day recertification cap surfaced as a 30-day warning, officer revoke reserved for compliance action |
 | 2.4 | Shared Evidence & Zero-Duplicate Document Vault | ✅ | [ConsoleVault.tsx](src/pages/ConsoleVault.tsx), [EvidenceVault.tsx](src/components/console/EvidenceVault.tsx), [vaultDocuments.ts](src/data/vaultDocuments.ts) |
 | 2.5 | Granular User Consent & Privacy (NDPA 2023) | ✅ | [ConsoleConsent.tsx](src/pages/ConsoleConsent.tsx), [ConsentRegister.tsx](src/components/console/ConsentRegister.tsx), [consentGrants.ts](src/data/consentGrants.ts) |
 | 2.6 | Immutable Disclosure Package | ✅ | [DisclosurePackageViewer.tsx](src/components/console/DisclosurePackageViewer.tsx), [disclosurePackage.ts](src/lib/disclosurePackage.ts) — built as a derived artifact (not stored), so revoking or expiring the underlying consent grant instantly voids it; surfaced from both `ConsoleConsent` and `ConsoleEngagements`; each view is audit-logged |
@@ -233,7 +233,9 @@ Dispute Resolution) — decided out of scope entirely, not just unbuilt so far (
    `ConsoleCompliance` from being exporter-facing.
 
 **Mid-term — net-new, moderate scope:**
-6. Organization Delegation / multi-tenant context (Module 2.3) — an agency-delegate switcher.
+6. ~~Organization Delegation / multi-tenant context~~ — done: `ConsoleDelegations` models each
+   exporter/buyer as an org with named delegates, surfaces the 365-day recertification cap as a
+   30-day warning, and reserves revocation for officer compliance action, not routine self-service.
 7. Predictive Policy Simulation (Module 5.3) and Automated Incentive Audit & Anti-Leakage (Module
    5.4) — extend `ConsoleObservatory`.
 8. Simulated multi-role login (Module 2.1) — decided in scope (§8, decision 3): extend
@@ -317,3 +319,7 @@ constraints.
   descoped outright rather than deferred, given its direct conflict with Module 1's Non-Goal 1. A
   simulated multi-role login is in scope as a mid-term item. The Observatory's "real-time" framing
   is a permanent non-goal, not a gap. §4, §5, and §7 updated to reflect these decisions.
+- **2026-09-17** — Added `ConsoleDelegations` (Module 2.3): models each exporter/buyer account as
+  an organization with named delegates rather than a single login, surfaces the BRD's 365-day
+  delegation cap as a 30-day expiry warning, and keeps revocation an officer-oversight action
+  mirroring `ConsentRegister`. Build order item 6 (§7) is now done.

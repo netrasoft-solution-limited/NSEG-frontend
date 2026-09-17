@@ -23,6 +23,7 @@ import {
   ShieldCheckIcon,
   ShieldIcon,
   UsersIcon,
+  UsersRoundIcon,
   WalletIcon } from
 'lucide-react';
 import type { IconComponent } from '../../types/icons';
@@ -50,6 +51,7 @@ const sidebarItems: SidebarItem[] = [
 { icon: WalletIcon, label: 'Incentives', href: '/console/incentives' },
 { icon: FileTextIcon, label: 'Vault', href: '/console/vault' },
 { icon: ShieldIcon, label: 'Consent', href: '/console/consent' },
+{ icon: UsersRoundIcon, label: 'Delegations', href: '/console/delegations' },
 { icon: LayersIcon, label: 'Taxonomies', href: '/console/taxonomies' },
 { icon: HistoryIcon, label: 'Audit log', href: '/console/audit' },
 { icon: SettingsIcon, label: 'Settings', href: '/console/settings' }];

@@ -14,6 +14,7 @@ import {
   ShieldCheckIcon,
   ShieldIcon,
   UsersIcon,
+  UsersRoundIcon,
   WalletIcon } from
 'lucide-react';
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
@@ -23,6 +24,7 @@ import type { IconComponent } from '../types/icons';
 const categoryMeta: Record<AuditCategory, { label: string; icon: IconComponent }> = {
   exporters: { label: 'Exporters', icon: UsersIcon },
   buyers: { label: 'Buyers', icon: BuildingIcon },
+  delegations: { label: 'Delegations', icon: UsersRoundIcon },
   opportunities: { label: 'Opportunities', icon: BriefcaseIcon },
   engagements: { label: 'Engagements', icon: HandshakeIcon },
   outcomes: { label: 'Outcomes', icon: BanknoteIcon },

@@ -3,6 +3,7 @@ import React, { createContext, useContext, useMemo, useState } from 'react';
 export type AuditCategory =
 'exporters' |
 'buyers' |
+'delegations' |
 'opportunities' |
 'engagements' |
 'outcomes' |
