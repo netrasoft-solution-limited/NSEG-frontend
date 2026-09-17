@@ -122,7 +122,7 @@ matrix, non-goals, precedence order) constrain every module below.
 | 3.3 | Automated Matchmaking & Supplier Discovery | ✅ | [ShortlistReview.tsx](src/components/console/ShortlistReview.tsx), [shortlists.ts](src/data/shortlists.ts) |
 | 3.4 | Proposal Submission & Bid Management | 🟡 | [ConsoleEngagements.tsx](src/pages/ConsoleEngagements.tsx) tracks referral→interview→contract stages; no actual proposal/bid document submission |
 | 3.5 | Market Access Intelligence & Regulatory Insights | ✅ | [ConsoleMarketIntelligence.tsx](src/pages/ConsoleMarketIntelligence.tsx), [MarketIntelligenceLibrary.tsx](src/components/console/MarketIntelligenceLibrary.tsx), [marketIntelligence.ts](src/data/marketIntelligence.ts) — destination-market briefs indexed by country/sector/mode with a draft→under-review→published authoring workflow |
-| 3.6 | Symmetric Trust Badging & Progressive Feature Unlocking | 🟡 | [trustTiers.ts](src/data/trustTiers.ts), [buyerTiers.ts](src/data/buyerTiers.ts) drive badges shown in tables; no feature-unlock gating logic |
+| 3.6 | Symmetric Trust Badging & Progressive Feature Unlocking | ✅ | [ConsoleTrustBadging.tsx](src/pages/ConsoleTrustBadging.tsx), [trustBadging.ts](src/lib/trustBadging.ts) — surfaces both tier ladders side by side with each tier's unlocked capabilities and the BRD-required "Next Unlock Prompt," plus a per-exporter breakdown sorted by profile completion. Read-only by design: this is oversight/explainability, not an officer decision. No feature-unlock *gating* is implemented (nothing in the prototype is actually locked behind a tier) |
 | 3.7 | Cross-Border Settlement & Verified Escrow | 🚫 | Constrained by Module 1 Non-Goal 1 — see §5. Track as milestone metadata only (already how `ConsoleEngagements` stages `contract-signed`/`commenced`) |
 | — | Outcome / Attribution Event (Canonical Information Package #8) | ✅ | [ConsoleOutcomes.tsx](src/pages/ConsoleOutcomes.tsx), [OutcomeLedger.tsx](src/components/console/OutcomeLedger.tsx), [outcomes.ts](src/data/outcomes.ts) — self-reported outcomes start Provisional, an officer independently verifies, and same-engagement duplicate self-reports are flagged for single-count decisions before anything would feed the Observatory |
 
@@ -251,6 +251,11 @@ Dispute Resolution) — decided out of scope entirely, not just unbuilt so far (
    pass (see §8 decision 3) — `ROLE_ENTITY_ADMIN`/`ROLE_ACTOR_USER` don't apply to an officer console
    at all, since they're exporter/buyer-side roles.
 
+**Completed beyond the original mid-term list:**
+9. ~~Symmetric Trust Badging & Progressive Feature Unlocking~~ (Module 3.6) — `ConsoleTrustBadging`
+   surfaces both tier ladders' unlocked capabilities and next-step prompts side by side, plus a
+   per-exporter completion breakdown. Read-only oversight, not a decision queue.
+
 **Out of scope for this prototype (see §8):**
 - Portal 4 (Global Promotion & Investment Facilitation) — Module 6. Decision 1.
 - Portal 5 (Financing & Escrow) — Module 7. Decision 2 — descoped outright, not deferred.
@@ -349,3 +354,8 @@ constraints.
   banner in `ConsoleLayout`. Scoped down from the original plan (all 5 BRD roles) to just this one —
   see §8 decision 3 for why. This completes all mid-term build-order items (§7); only the explicitly
   out-of-scope long-term items remain (§8 decisions 1-2).
+- **2026-09-17** — Added `ConsoleTrustBadging` (Module 3.6): both exporter and buyer trust-tier
+  ladders shown side by side with their unlocked capabilities and next-step prompts (added a
+  `nextStep` field to `buyerTiers.ts` to match `trustTiers.ts`'s existing one, completing the BRD's
+  "symmetric" pairing), plus a per-exporter completion breakdown. Read-only — no tier-gating logic
+  was added, since nothing in the prototype is actually locked behind a tier today.

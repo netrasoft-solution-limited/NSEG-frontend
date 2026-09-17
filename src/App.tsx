@@ -6,6 +6,7 @@ import { ConsoleDashboard } from './pages/ConsoleDashboard';
 import { ConsoleExporters } from './pages/ConsoleExporters';
 import { ConsoleOpportunities } from './pages/ConsoleOpportunities';
 import { ConsoleMarketIntelligence } from './pages/ConsoleMarketIntelligence';
+import { ConsoleTrustBadging } from './pages/ConsoleTrustBadging';
 import { ConsoleEngagements } from './pages/ConsoleEngagements';
 import { ConsoleOutcomes } from './pages/ConsoleOutcomes';
 import { ConsoleCertifications } from './pages/ConsoleCertifications';
@@ -34,6 +35,7 @@ function Console() {
       <Route index element={<ConsoleDashboard />} />
       <Route path="exporters" element={<ConsoleExporters />} />
       <Route path="buyers" element={<ConsoleBuyers />} />
+      <Route path="trust-badging" element={<ConsoleTrustBadging />} />
       <Route path="opportunities" element={<ConsoleOpportunities />} />
       <Route path="market-intelligence" element={<ConsoleMarketIntelligence />} />
       <Route path="engagements" element={<ConsoleEngagements />} />
