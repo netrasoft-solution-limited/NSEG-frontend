@@ -1,12 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NigeriaFlag } from '../common/NigeriaFlag';
 import { BrandLogo } from '../common/BrandLogo';
-import { ArrowRightIcon, BriefcaseIcon, ChevronDownIcon, GlobeIcon, LifeBuoyIcon, MenuIcon, ShieldCheckIcon, XIcon } from 'lucide-react';
+import { ArrowRightIcon, LifeBuoyIcon, MenuIcon, ShieldCheckIcon, XIcon } from 'lucide-react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { EASE } from '../motion/Reveal';
 import { useHashLink } from '../../hooks/useHashLink';
 import { ThemeToggle } from './ThemeToggle';
+import { GetStartedDialog } from './GetStartedDialog';
 
 const navItems = [
 { label: 'Home', href: '#top' },
@@ -15,18 +16,14 @@ const navItems = [
 { label: 'The process', href: '#process' }];
 
 
-const workspaceLinks = [
-{ to: '/workspace', label: 'Exporter workspace', detail: 'Nigerian service exporters', icon: BriefcaseIcon },
-{ to: '/buyer', label: 'Buyer workspace', detail: 'International buyers sourcing services', icon: GlobeIcon }];
 
 
 export function TopNav() {
   const reduced = useReducedMotion();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const [signInOpen, setSignInOpen] = useState(false);
   const [verifyOpen, setVerifyOpen] = useState(false);
-  const signInRef = useRef<HTMLDivElement>(null);
+  const [getStartedOpen, setGetStartedOpen] = useState(false);
   const resolveHash = useHashLink();
   const { pathname } = useLocation();
   const [activeHash, setActiveHash] = useState('#top');
@@ -57,21 +54,6 @@ export function TopNav() {
     };
   }, [pathname]);
 
-  useEffect(() => {
-    if (!signInOpen) return;
-    const onPointer = (event: MouseEvent) => {
-      if (!signInRef.current?.contains(event.target as Node)) setSignInOpen(false);
-    };
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setSignInOpen(false);
-    };
-    document.addEventListener('mousedown', onPointer);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onPointer);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [signInOpen]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -151,54 +133,16 @@ export function TopNav() {
           )}
         </ul>
 
-        <div ref={signInRef} className="relative ml-auto hidden lg:ml-0 lg:block">
-          <button
-            type="button"
-            onClick={() => setSignInOpen((value) => !value)}
-            aria-expanded={signInOpen}
-            aria-controls="sign-in-menu"
-            className="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-[14.5px] text-white/85 transition-colors duration-150 ease-out hover:text-white">
-
-            Sign in
-            <ChevronDownIcon
-              className={`h-3.5 w-3.5 transition-transform duration-150 ease-out ${signInOpen ? 'rotate-180' : ''}`}
-              aria-hidden="true" />
-
-          </button>
-          {signInOpen &&
-          <div
-            id="sign-in-menu"
-            className="absolute right-0 top-full mt-2 w-72 rounded-2xl border border-white/10 bg-[#0A100D]/95 p-2 shadow-xl shadow-black/40 backdrop-blur-xl">
-
-              <ul>
-                {workspaceLinks.map(({ to, label, detail, icon: Icon }) =>
-              <li key={to}>
-                    <Link
-                  to={to}
-                  onClick={() => setSignInOpen(false)}
-                  className="flex items-start gap-3 rounded-xl px-3 py-2.5 transition-colors duration-150 ease-out hover:bg-white/[0.06]">
-
-                      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-gate-soft" aria-hidden="true" />
-                      <span>
-                        <span className="block text-[13.5px] font-medium text-white">{label}</span>
-                        <span className="block text-[12px] text-white/60">{detail}</span>
-                      </span>
-                    </Link>
-                  </li>
-              )}
-              </ul>
-            </div>
-          }
-        </div>
-
-        <a
-          href="/#who-its-for"
-          onClick={resolveHash('#who-its-for')}
-          className="hidden items-center gap-1.5 rounded-xl bg-gate px-4 py-2 text-[14px] font-semibold text-white transition-colors duration-150 ease-out hover:bg-gate-deep lg:ml-0 lg:inline-flex">
+        <button
+          type="button"
+          onClick={() => setGetStartedOpen(true)}
+          aria-haspopup="dialog"
+          aria-expanded={getStartedOpen}
+          className="hidden items-center gap-1.5 rounded-xl bg-gate px-4 py-2 text-[14px] font-semibold text-white transition-colors duration-150 ease-out hover:bg-gate-deep lg:ml-2 lg:inline-flex">
 
           Get started
           <ArrowRightIcon className="h-3.5 w-3.5" aria-hidden="true" />
-        </a>
+        </button>
 
         <ThemeToggle className="hidden lg:inline-flex" />
 
@@ -239,33 +183,17 @@ export function TopNav() {
                 </li>
             )}
             </ul>
-            <p className="mt-2 border-t border-white/10 px-3 pb-1 pt-3 text-[11px] uppercase tracking-[0.14em] text-white/60">
-              Sign in
-            </p>
-            <ul className="space-y-1">
-              {workspaceLinks.map(({ to, label, icon: Icon }) =>
-            <li key={to}>
-                  <Link
-                to={to}
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[14px] text-white">
-
-                    <Icon className="h-4 w-4 text-gate-soft" aria-hidden="true" />
-                    {label}
-                  </Link>
-                </li>
-            )}
-            </ul>
-            <a
-            href="/#who-its-for"
-            onClick={(event) => {
-              resolveHash('#who-its-for')(event);
+            <button
+            type="button"
+            onClick={() => {
               setOpen(false);
+              setGetStartedOpen(true);
             }}
-            className="mt-2 block rounded-xl bg-gate px-3.5 py-2.5 text-center text-[14px] font-semibold text-white">
+            aria-haspopup="dialog"
+            className="mt-2 block w-full rounded-xl bg-gate px-3.5 py-2.5 text-center text-[14px] font-semibold text-white">
 
               Get started
-            </a>
+            </button>
             <div className="mt-2 flex items-center justify-between rounded-lg border border-white/10 px-3 py-2">
               <span className="text-[13px] text-white/60">Appearance</span>
               <ThemeToggle />
@@ -273,6 +201,7 @@ export function TopNav() {
           </motion.div>
         }
       </AnimatePresence>
+      <GetStartedDialog open={getStartedOpen} onClose={() => setGetStartedOpen(false)} />
     </header>);
 
 }

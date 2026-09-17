@@ -7,7 +7,7 @@ import { Reveal } from '../motion/Reveal';
 /** "Why it can be trusted": the four published rules. */
 export function TrustRules() {
   return (
-    <section id="how-it-works" className="scroll-mt-28 border-y border-hairline/6 bg-ink-800/30">
+    <section id="how-it-works" className="scroll-mt-28 border-y border-hairline/[0.03] bg-ink-800/30">
       <div className="mx-auto max-w-shell px-4 py-24 sm:py-28">
         <Reveal>
           <div className="max-w-2xl">

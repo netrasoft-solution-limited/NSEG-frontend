@@ -21,7 +21,7 @@ function FooterEntry({ item, className }: {item: FooterItem;className: string;})
 
 export function SiteFooter() {
   return (
-    <footer id="support" className="border-t border-hairline/8 bg-ink-800/40">
+    <footer id="support" className="border-t border-hairline/[0.04] bg-ink-800/40">
       <div className="mx-auto max-w-shell px-4 pb-10 pt-14">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,2fr)]">
           <div>
@@ -48,7 +48,7 @@ export function SiteFooter() {
           </nav>
         </div>
 
-        <div className="mt-12 flex flex-col gap-4 border-t border-hairline/8 pt-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="mt-12 flex flex-col gap-4 border-t border-hairline/[0.05] pt-6 lg:flex-row lg:items-center lg:justify-between">
           <ul className="flex flex-wrap gap-x-5 gap-y-2">
             {legalLinks.map((item) =>
             <li key={item.label}>
