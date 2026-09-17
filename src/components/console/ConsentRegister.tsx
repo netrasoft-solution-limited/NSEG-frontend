@@ -11,7 +11,6 @@ interface ConsentRegisterProps {
   grants: ConsentGrant[];
   actorsById: Map<string, Actor>;
   vaultDocuments: VaultDocument[];
-  overrides: Record<string, ConsentStatus>;
   onRevoke: (grantId: string) => void;
   onViewPackage: (grantId: string) => void;
   canMutate: boolean;
@@ -27,7 +26,6 @@ export function ConsentRegister({
   grants,
   actorsById,
   vaultDocuments,
-  overrides,
   onRevoke,
   onViewPackage,
   canMutate
@@ -44,7 +42,7 @@ export function ConsentRegister({
       <ul className="mt-4 space-y-2">
         {grants.map((grant) => {
           const actor = actorsById.get(grant.actorId);
-          const status = overrides[grant.id] ?? grant.status;
+          const status = grant.status;
 
           return (
             <li key={grant.id} className="rounded-xl border border-gray-100 px-4 py-3">

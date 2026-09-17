@@ -1,49 +1,44 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { AlertTriangleIcon, FileCheckIcon, HandshakeIcon, HourglassIcon } from 'lucide-react';
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
 import { StatCard } from '../components/console/StatCard';
 import { EngagementTracker } from '../components/console/EngagementTracker';
-import { engagements } from '../data/engagements';
 import { opportunities } from '../data/opportunities';
-import { consentGrants } from '../data/consentGrants';
 import { actors } from '../data/actors';
 import { vaultDocuments } from '../data/vaultDocuments';
-import { engagementStageLabels, isTerminalStage, nextStage, type EngagementStage } from '../lib/engagementStage';
+import { engagementStageLabels, isTerminalStage } from '../lib/engagementStage';
 import { downloadCsv } from '../lib/exportCsv';
 import { useOfficerProfile } from '../lib/officerProfile';
 import { useAuditLog } from '../lib/auditLog';
 import { canMutate } from '../lib/permissions';
+import { useEngagementLedger } from '../lib/engagementLedger';
 
 const opportunitiesById = new Map(opportunities.map((opportunity) => [opportunity.id, opportunity]));
-const consentGrantsById = new Map(consentGrants.map((grant) => [grant.id, grant]));
 const actorsById = new Map(actors.map((actor) => [actor.id, actor]));
 
 export function ConsoleEngagements() {
   const { profile } = useOfficerProfile();
   const { logEvent } = useAuditLog();
   const mutable = canMutate(profile.role);
-  const [stages, setStages] = useState<Record<string, EngagementStage>>({});
+  const { engagements, consentGrants, advanceStage, declineEngagement } = useEngagementLedger();
+  const consentGrantsById = new Map(consentGrants.map((grant) => [grant.id, grant]));
 
-  const stageOf = (id: string, fallback: EngagementStage) => stages[id] ?? fallback;
-
+  // A referral outlives neither its consent nor its own stage: revoking the grant in the
+  // consent register lands here as work to invalidate (BRD §3.8).
   const needsInvalidationCount = engagements.filter((engagement) => {
     const consent = consentGrantsById.get(engagement.consentGrantId);
-    const stage = stageOf(engagement.id, engagement.stage);
-    return consent?.status !== 'active' && !isTerminalStage(stage);
+    return consent?.status !== 'active' && !isTerminalStage(engagement.stage);
   }).length;
 
-  const awaitingBuyerCount = engagements.filter(
-    (engagement) => stageOf(engagement.id, engagement.stage) === 'buyer-reviewing'
-  ).length;
+  const awaitingBuyerCount = engagements.filter((engagement) => engagement.stage === 'buyer-reviewing').length;
 
   const contractedCount = engagements.filter((engagement) =>
-  ['contract-signed', 'commenced'].includes(stageOf(engagement.id, engagement.stage))
+  ['contract-signed', 'commenced'].includes(engagement.stage)
   ).length;
 
   const activeCount = engagements.filter((engagement) => {
-    const stage = stageOf(engagement.id, engagement.stage);
     const consent = consentGrantsById.get(engagement.consentGrantId);
-    return consent?.status === 'active' && !isTerminalStage(stage);
+    return consent?.status === 'active' && !isTerminalStage(engagement.stage);
   }).length;
 
   const handleExport = () => {
@@ -57,7 +52,7 @@ export function ConsoleEngagements() {
           opportunity: opportunity?.title ?? engagement.opportunityId,
           exporter: actor?.name ?? '',
           buyer: consent?.recipient ?? '',
-          stage: engagementStageLabels[stageOf(engagement.id, engagement.stage)],
+          stage: engagementStageLabels[engagement.stage],
           consentStatus: consent?.status ?? 'unknown'
         };
       })
@@ -117,32 +112,9 @@ export function ConsoleEngagements() {
           consentGrantsById={consentGrantsById}
           actorsById={actorsById}
           vaultDocuments={vaultDocuments}
-          stages={stages}
           canMutate={mutable}
-          onAdvance={(id) => {
-            const engagement = engagements.find((item) => item.id === id);
-            if (!engagement) return;
-            const stage = stageOf(id, engagement.stage);
-            const upcoming = nextStage(stage);
-            if (!upcoming) return;
-            setStages((current) => ({ ...current, [id]: upcoming }));
-            const opportunity = opportunitiesById.get(engagement.opportunityId);
-            logEvent(
-              `Advanced the referral for "${opportunity?.title ?? engagement.opportunityId}" to ${engagementStageLabels[upcoming]}`,
-              'engagements',
-              profile.name
-            );
-          }}
-          onDecline={(id) => {
-            setStages((current) => ({ ...current, [id]: 'declined' }));
-            const engagement = engagements.find((item) => item.id === id);
-            const opportunity = engagement ? opportunitiesById.get(engagement.opportunityId) : undefined;
-            logEvent(
-              `Marked the referral for "${opportunity?.title ?? id}" as declined by the buyer`,
-              'engagements',
-              profile.name
-            );
-          }}
+          onAdvance={(id) => advanceStage(id, profile.name)}
+          onDecline={(id) => declineEngagement(id, profile.name)}
           onViewPackage={(id) => {
             const engagement = engagements.find((item) => item.id === id);
             const consent = engagement ? consentGrantsById.get(engagement.consentGrantId) : undefined;

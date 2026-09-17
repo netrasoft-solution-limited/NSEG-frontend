@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { CheckCircleIcon, ClockIcon, ShieldIcon, ShieldOffIcon } from 'lucide-react';
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
 import { StatCard } from '../components/console/StatCard';
 import { ConsentRegister } from '../components/console/ConsentRegister';
-import { consentGrants, type ConsentStatus } from '../data/consentGrants';
 import { actors } from '../data/actors';
 import { vaultDocuments } from '../data/vaultDocuments';
 import { downloadCsv } from '../lib/exportCsv';
 import { useOfficerProfile } from '../lib/officerProfile';
 import { useAuditLog } from '../lib/auditLog';
 import { canMutate } from '../lib/permissions';
+import { useEngagementLedger } from '../lib/engagementLedger';
 
 const actorsById = new Map(actors.map((actor) => [actor.id, actor]));
 
@@ -17,13 +17,11 @@ export function ConsoleConsent() {
   const { profile } = useOfficerProfile();
   const { logEvent } = useAuditLog();
   const mutable = canMutate(profile.role);
-  const [overrides, setOverrides] = useState<Record<string, ConsentStatus>>({});
+  const { consentGrants, revokeConsent } = useEngagementLedger();
 
-  const statusOf = (id: string, fallback: ConsentStatus) => overrides[id] ?? fallback;
-
-  const activeCount = consentGrants.filter((grant) => statusOf(grant.id, grant.status) === 'active').length;
-  const revokedCount = consentGrants.filter((grant) => statusOf(grant.id, grant.status) === 'revoked').length;
-  const expiredCount = consentGrants.filter((grant) => statusOf(grant.id, grant.status) === 'expired').length;
+  const activeCount = consentGrants.filter((grant) => grant.status === 'active').length;
+  const revokedCount = consentGrants.filter((grant) => grant.status === 'revoked').length;
+  const expiredCount = consentGrants.filter((grant) => grant.status === 'expired').length;
 
   const handleExport = () => {
     downloadCsv(
@@ -34,7 +32,7 @@ export function ConsoleConsent() {
         purpose: grant.purpose,
         fieldsDisclosed: grant.fieldsDisclosed.join('; '),
         grantedOn: grant.grantedOn,
-        status: statusOf(grant.id, grant.status)
+        status: grant.status
       }))
     );
     logEvent(`Exported the consent register (${consentGrants.length} rows)`, 'consent', profile.name);
@@ -89,18 +87,8 @@ export function ConsoleConsent() {
           grants={consentGrants}
           actorsById={actorsById}
           vaultDocuments={vaultDocuments}
-          overrides={overrides}
           canMutate={mutable}
-          onRevoke={(id) => {
-            setOverrides((current) => ({ ...current, [id]: 'revoked' }));
-            const grant = consentGrants.find((item) => item.id === id);
-            const actor = grant ? actorsById.get(grant.actorId) : undefined;
-            logEvent(
-              `Revoked ${actor?.name ?? 'an exporter'}'s consent grant to ${grant?.recipient ?? 'a recipient'}`,
-              'consent',
-              profile.name
-            );
-          }}
+          onRevoke={(id) => revokeConsent(id, profile.name)}
           onViewPackage={(id) => {
             const grant = consentGrants.find((item) => item.id === id);
             const actor = grant ? actorsById.get(grant.actorId) : undefined;

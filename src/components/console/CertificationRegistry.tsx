@@ -8,7 +8,6 @@ import { AuditOnlyBadge } from './AuditOnlyBadge';
 interface CertificationRegistryProps {
   documents: VaultDocument[];
   actorsById: Map<string, Actor>;
-  decisions: Record<string, DocumentVerificationStatus>;
   remindersSent: Record<string, boolean>;
   onDecide: (id: string, status: DocumentVerificationStatus) => void;
   onSendReminder: (id: string) => void;
@@ -24,7 +23,6 @@ const urgencyStyles = {
 export function CertificationRegistry({
   documents,
   actorsById,
-  decisions,
   remindersSent,
   onDecide,
   onSendReminder,
@@ -43,7 +41,7 @@ export function CertificationRegistry({
       <ul className="mt-4 space-y-2">
         {documents.map((document) => {
           const actor = actorsById.get(document.actorId);
-          const status = decisions[document.id] ?? document.verification;
+          const status = document.verification;
           const urgency = status === 'verified' ? renewalUrgency(document.expiresInDays) : 'none';
           const reminderSent = remindersSent[document.id];
 

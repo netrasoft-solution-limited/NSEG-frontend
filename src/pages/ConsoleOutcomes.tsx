@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { AlertTriangleIcon, BanknoteIcon, CheckCircleIcon, HourglassIcon } from 'lucide-react';
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
 import { StatCard } from '../components/console/StatCard';
 import { OutcomeLedger } from '../components/console/OutcomeLedger';
-import { outcomeReports as seededOutcomeReports, type OutcomeVerificationStatus } from '../data/outcomes';
 import { engagements } from '../data/engagements';
 import { opportunities } from '../data/opportunities';
 import { consentGrants } from '../data/consentGrants';
@@ -13,6 +12,7 @@ import { downloadCsv } from '../lib/exportCsv';
 import { useOfficerProfile } from '../lib/officerProfile';
 import { useAuditLog } from '../lib/auditLog';
 import { canMutate } from '../lib/permissions';
+import { useEngagementLedger } from '../lib/engagementLedger';
 import { useGatewayExchange } from '../lib/gatewayExchange';
 
 const engagementsById = new Map(engagements.map((engagement) => [engagement.id, engagement]));
@@ -25,7 +25,7 @@ const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: '
 export function ConsoleOutcomes() {
   const { profile } = useOfficerProfile();
   const { logEvent } = useAuditLog();
-  const [decisions, setDecisions] = useState<Record<string, OutcomeVerificationStatus>>({});
+  const { outcomeReports: ledgerReports, decideOutcome } = useEngagementLedger();
   const { deliveryConfirmations } = useGatewayExchange();
 
   // Buyer confirmations sent from the buyer workspace join the ledger as provisional
@@ -43,24 +43,22 @@ export function ConsoleOutcomes() {
     'Buyer confirmed delivery from the buyer workspace.',
     verification: 'provisional' as const
   })),
-  ...seededOutcomeReports];
-
-  const statusOf = (id: string, fallback: OutcomeVerificationStatus) => decisions[id] ?? fallback;
+  ...ledgerReports];
 
   const provisionalCount = outcomeReports.filter(
-    (report) => statusOf(report.id, report.verification) === 'provisional'
+    (report) => report.verification === 'provisional'
   ).length;
 
-  const verifiedReports = outcomeReports.filter((report) => statusOf(report.id, report.verification) === 'verified');
+  const verifiedReports = outcomeReports.filter((report) => report.verification === 'verified');
   const verifiedValue = verifiedReports.reduce((total, report) => total + report.amount, 0);
 
   const duplicateRiskGroups = Array.from(groupReportsByEngagement(outcomeReports).values()).filter((group) => {
-    const live = group.map((report) => statusOf(report.id, report.verification));
+    const live = group.map((report) => report.verification);
     return live.filter((status) => status !== 'rejected').length > 1;
   }).length;
 
   const rejectedCount = outcomeReports.filter(
-    (report) => statusOf(report.id, report.verification) === 'rejected'
+    (report) => report.verification === 'rejected'
   ).length;
 
   const handleExport = () => {
@@ -75,7 +73,7 @@ export function ConsoleOutcomes() {
           amount: report.amount,
           currency: report.currency,
           reportedOn: report.reportedOn,
-          verification: statusOf(report.id, report.verification)
+          verification: report.verification
         };
       })
     );
@@ -135,20 +133,7 @@ export function ConsoleOutcomes() {
           consentGrantsById={consentGrantsById}
           actorsById={actorsById}
           canMutate={canMutate(profile.role)}
-          decisions={decisions}
-          onDecide={(id, status) => {
-            setDecisions((current) => ({ ...current, [id]: status }));
-            const report = outcomeReports.find((item) => item.id === id);
-            const engagement = report ? engagementsById.get(report.engagementId) : undefined;
-            const opportunity = engagement ? opportunitiesById.get(engagement.opportunityId) : undefined;
-            logEvent(
-              status === 'verified' ?
-              `Verified ${currency.format(report?.amount ?? 0)} in export value for "${opportunity?.title ?? id}"` :
-              `Rejected an outcome report for "${opportunity?.title ?? id}"`,
-              'outcomes',
-              profile.name
-            );
-          }} />
+          onDecide={(id, status) => decideOutcome(id, status, profile.name)} />
 
       </div>
     </ConsoleLayout>);

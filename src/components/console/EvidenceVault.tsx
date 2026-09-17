@@ -7,7 +7,6 @@ import { AuditOnlyBadge } from './AuditOnlyBadge';
 interface EvidenceVaultProps {
   documents: VaultDocument[];
   actorsById: Map<string, Actor>;
-  decisions: Record<string, DocumentVerificationStatus>;
   onDecide: (documentId: string, status: DocumentVerificationStatus) => void;
   canMutate: boolean;
 }
@@ -18,7 +17,7 @@ const malwareStyles: Record<VaultDocument['malwareScan'], string> = {
   flagged: 'bg-rose-50 text-rose-700'
 };
 
-export function EvidenceVault({ documents, actorsById, decisions, onDecide, canMutate }: EvidenceVaultProps) {
+export function EvidenceVault({ documents, actorsById, onDecide, canMutate }: EvidenceVaultProps) {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
       <div>
@@ -32,7 +31,7 @@ export function EvidenceVault({ documents, actorsById, decisions, onDecide, canM
       <ul className="mt-4 space-y-2">
         {documents.map((document) => {
           const actor = actorsById.get(document.actorId);
-          const status = decisions[document.id] ?? document.verification;
+          const status = document.verification;
 
           return (
             <li

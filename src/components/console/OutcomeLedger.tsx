@@ -18,7 +18,6 @@ interface OutcomeLedgerProps {
   opportunitiesById: Map<string, Opportunity>;
   consentGrantsById: Map<string, ConsentGrant>;
   actorsById: Map<string, Actor>;
-  decisions: Record<string, OutcomeVerificationStatus>;
   onDecide: (id: string, status: OutcomeVerificationStatus) => void;
   canMutate: boolean;
 }
@@ -36,7 +35,6 @@ export function OutcomeLedger({
   opportunitiesById,
   consentGrantsById,
   actorsById,
-  decisions,
   onDecide,
   canMutate
 }: OutcomeLedgerProps) {
@@ -54,14 +52,14 @@ export function OutcomeLedger({
 
       <ul className="mt-4 space-y-2">
         {reports.map((report) => {
-          const status = decisions[report.id] ?? report.verification;
+          const status = report.verification;
           const engagement = engagementsById.get(report.engagementId);
           const opportunity = engagement ? opportunitiesById.get(engagement.opportunityId) : undefined;
           const consent = engagement ? consentGrantsById.get(engagement.consentGrantId) : undefined;
           const actor = consent ? actorsById.get(consent.actorId) : undefined;
           const group = (grouped.get(report.engagementId) ?? []).map((item) => ({
             ...item,
-            verification: decisions[item.id] ?? item.verification
+            verification: item.verification
           }));
           const liveReport = { ...report, verification: status };
           const supersededByConfirmedSibling = status === 'provisional' && hasConfirmedSibling(liveReport, group);

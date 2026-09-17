@@ -1,45 +1,34 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { AlertTriangleIcon, AwardIcon, BadgeCheckIcon, HourglassIcon } from 'lucide-react';
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
 import { StatCard } from '../components/console/StatCard';
 import { CertificationRegistry } from '../components/console/CertificationRegistry';
-import { vaultDocuments, type DocumentVerificationStatus } from '../data/vaultDocuments';
 import { actors } from '../data/actors';
 import { isCertificationDocument, renewalUrgency } from '../lib/certification';
 import { downloadCsv } from '../lib/exportCsv';
 import { useOfficerProfile } from '../lib/officerProfile';
 import { useAuditLog } from '../lib/auditLog';
 import { canMutate } from '../lib/permissions';
+import { useDocumentVerification } from '../lib/documentVerification';
 
 const actorsById = new Map(actors.map((actor) => [actor.id, actor]));
-const certificationDocuments = vaultDocuments.filter(isCertificationDocument);
-
 export function ConsoleCertifications() {
   const { profile } = useOfficerProfile();
   const { logEvent } = useAuditLog();
   const mutable = canMutate(profile.role);
-  const [decisions, setDecisions] = useState<Record<string, DocumentVerificationStatus>>({});
-  const [remindersSent, setRemindersSent] = useState<Record<string, boolean>>({});
+  const { documents, decide, remindersSent, sendRenewalReminder } = useDocumentVerification();
+  const certificationDocuments = documents.filter(isCertificationDocument);
 
-  const statusOf = (id: string, fallback: DocumentVerificationStatus) => decisions[id] ?? fallback;
+  const pendingCount = certificationDocuments.filter((document) => document.verification === 'pending').length;
+  const certifiedCount = certificationDocuments.filter((document) => document.verification === 'verified').length;
 
-  const pendingCount = certificationDocuments.filter(
-    (document) => statusOf(document.id, document.verification) === 'pending'
+  const renewalWarningCount = certificationDocuments.filter(
+    (document) => document.verification === 'verified' && renewalUrgency(document.expiresInDays) !== 'none'
   ).length;
 
-  const certifiedCount = certificationDocuments.filter(
-    (document) => statusOf(document.id, document.verification) === 'verified'
+  const urgentCount = certificationDocuments.filter(
+    (document) => document.verification === 'verified' && renewalUrgency(document.expiresInDays) === 'urgent'
   ).length;
-
-  const renewalWarningCount = certificationDocuments.filter((document) => {
-    const status = statusOf(document.id, document.verification);
-    return status === 'verified' && renewalUrgency(document.expiresInDays) !== 'none';
-  }).length;
-
-  const urgentCount = certificationDocuments.filter((document) => {
-    const status = statusOf(document.id, document.verification);
-    return status === 'verified' && renewalUrgency(document.expiresInDays) === 'urgent';
-  }).length;
 
   const handleExport = () => {
     downloadCsv(
@@ -48,7 +37,7 @@ export function ConsoleCertifications() {
         exporter: actorsById.get(document.actorId)?.name ?? document.actorId,
         credential: document.kind,
         uploadedOn: document.uploadedOn,
-        status: statusOf(document.id, document.verification),
+        status: document.verification,
         expiresInDays: document.expiresInDays ?? ''
       }))
     );
@@ -104,31 +93,10 @@ export function ConsoleCertifications() {
         <CertificationRegistry
           documents={certificationDocuments}
           actorsById={actorsById}
-          decisions={decisions}
           remindersSent={remindersSent}
           canMutate={mutable}
-          onDecide={(id, status) => {
-            setDecisions((current) => ({ ...current, [id]: status }));
-            const document = certificationDocuments.find((item) => item.id === id);
-            const actor = document ? actorsById.get(document.actorId) : undefined;
-            logEvent(
-              status === 'verified' ?
-              `Issued a certification badge to ${actor?.name ?? id}` :
-              `Rejected a certification submission from ${actor?.name ?? id}`,
-              'compliance',
-              profile.name
-            );
-          }}
-          onSendReminder={(id) => {
-            setRemindersSent((current) => ({ ...current, [id]: true }));
-            const document = certificationDocuments.find((item) => item.id === id);
-            const actor = document ? actorsById.get(document.actorId) : undefined;
-            logEvent(
-              `Sent a renewal reminder to ${actor?.name ?? id} for a certification expiring in ${document?.expiresInDays ?? '?'}d`,
-              'compliance',
-              profile.name
-            );
-          }} />
+          onDecide={(id, status) => decide(id, status, profile.name)}
+          onSendReminder={(id) => sendRenewalReminder(id, profile.name)} />
 
       </div>
     </ConsoleLayout>);

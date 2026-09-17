@@ -8,6 +8,8 @@ import { AuditLogProvider } from './lib/auditLog';
 import { GatewayExchangeProvider } from './lib/gatewayExchange';
 import { RegulatoryRegisterProvider } from './lib/regulatoryRegister';
 import { AccountsProvider, useAccounts } from './lib/accounts';
+import { DocumentVerificationProvider } from './lib/documentVerification';
+import { EngagementLedgerProvider } from './lib/engagementLedger';
 
 import { PageLoader } from './components/common/PageLoader';
 import { RouteProgressFinisher, RouteProgressProvider, RouteProgressStarter } from './components/common/RouteProgress';
@@ -184,6 +186,8 @@ export function App({ heroVariant = 'stacked', liveDemos = true }: AppProps) {
   return (
     <OfficerProfileProvider>
       <AuditLogProvider>
+        <DocumentVerificationProvider>
+        <EngagementLedgerProvider>
         <GatewayExchangeProvider>
         <RegulatoryRegisterProvider>
         <AccountsProvider>
@@ -208,6 +212,8 @@ export function App({ heroVariant = 'stacked', liveDemos = true }: AppProps) {
         </AccountsProvider>
         </RegulatoryRegisterProvider>
         </GatewayExchangeProvider>
+        </EngagementLedgerProvider>
+        </DocumentVerificationProvider>
       </AuditLogProvider>
     </OfficerProfileProvider>);
 

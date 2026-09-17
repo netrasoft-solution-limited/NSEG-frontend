@@ -16,7 +16,6 @@ interface EngagementTrackerProps {
   consentGrantsById: Map<string, ConsentGrant>;
   actorsById: Map<string, Actor>;
   vaultDocuments: VaultDocument[];
-  stages: Record<string, EngagementStage>;
   onAdvance: (id: string) => void;
   onDecline: (id: string) => void;
   onViewPackage: (engagementId: string) => void;
@@ -45,7 +44,6 @@ export function EngagementTracker({
   consentGrantsById,
   actorsById,
   vaultDocuments,
-  stages,
   onAdvance,
   onDecline,
   onViewPackage,
@@ -66,7 +64,7 @@ export function EngagementTracker({
           const opportunity = opportunitiesById.get(engagement.opportunityId);
           const consent = consentGrantsById.get(engagement.consentGrantId);
           const actor = consent ? actorsById.get(consent.actorId) : undefined;
-          const stage = stages[engagement.id] ?? engagement.stage;
+          const stage = engagement.stage;
           const consentActive = consent?.status === 'active';
           const needsInvalidation = !consentActive && !isTerminalStage(stage);
           const upcoming = nextStage(stage);
