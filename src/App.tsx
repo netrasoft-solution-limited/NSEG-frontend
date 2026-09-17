@@ -16,6 +16,7 @@ import { ConsoleIncentives } from './pages/ConsoleIncentives';
 import { ConsoleBuyers } from './pages/ConsoleBuyers';
 import { ConsoleVault } from './pages/ConsoleVault';
 import { ConsoleConsent } from './pages/ConsoleConsent';
+import { ConsoleTaxonomies } from './pages/ConsoleTaxonomies';
 import { ConsoleAudit } from './pages/ConsoleAudit';
 import { ConsoleSettings } from './pages/ConsoleSettings';
 import { OfficerProfileProvider } from './lib/officerProfile';
@@ -43,6 +44,7 @@ function Console() {
       <Route path="incentives" element={<ConsoleIncentives />} />
       <Route path="vault" element={<ConsoleVault />} />
       <Route path="consent" element={<ConsoleConsent />} />
+      <Route path="taxonomies" element={<ConsoleTaxonomies />} />
       <Route path="audit" element={<ConsoleAudit />} />
       <Route path="settings" element={<ConsoleSettings />} />
     </Routes>);

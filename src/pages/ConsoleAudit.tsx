@@ -9,6 +9,7 @@ import {
   GlobeIcon,
   HandshakeIcon,
   HistoryIcon,
+  LayersIcon,
   SettingsIcon,
   ShieldCheckIcon,
   ShieldIcon,
@@ -31,6 +32,7 @@ const categoryMeta: Record<AuditCategory, { label: string; icon: IconComponent }
   incentives: { label: 'Incentives', icon: WalletIcon },
   vault: { label: 'Vault', icon: FileTextIcon },
   consent: { label: 'Consent', icon: ShieldIcon },
+  taxonomies: { label: 'Taxonomies', icon: LayersIcon },
   settings: { label: 'Settings', icon: SettingsIcon }
 };
 

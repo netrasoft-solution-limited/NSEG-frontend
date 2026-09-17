@@ -110,7 +110,7 @@ matrix, non-goals, precedence order) constrain every module below.
 | 2.4 | Shared Evidence & Zero-Duplicate Document Vault | ✅ | [ConsoleVault.tsx](src/pages/ConsoleVault.tsx), [EvidenceVault.tsx](src/components/console/EvidenceVault.tsx), [vaultDocuments.ts](src/data/vaultDocuments.ts) |
 | 2.5 | Granular User Consent & Privacy (NDPA 2023) | ✅ | [ConsoleConsent.tsx](src/pages/ConsoleConsent.tsx), [ConsentRegister.tsx](src/components/console/ConsentRegister.tsx), [consentGrants.ts](src/data/consentGrants.ts) |
 | 2.6 | Immutable Disclosure Package | ✅ | [DisclosurePackageViewer.tsx](src/components/console/DisclosurePackageViewer.tsx), [disclosurePackage.ts](src/lib/disclosurePackage.ts) — built as a derived artifact (not stored), so revoking or expiring the underlying consent grant instantly voids it; surfaced from both `ConsoleConsent` and `ConsoleEngagements`; each view is audit-logged |
-| 2.7 | Controlled Taxonomies & Master Data | 🟡 | Taxonomies exist as static data ([sectors.ts](src/data/sectors.ts), [trustTiers.ts](src/data/trustTiers.ts), [buyerTiers.ts](src/data/buyerTiers.ts)) but with no admin/versioning UI |
+| 2.7 | Controlled Taxonomies & Master Data | ✅ | [ConsoleTaxonomies.tsx](src/pages/ConsoleTaxonomies.tsx), [TaxonomyRegistry.tsx](src/components/console/TaxonomyRegistry.tsx), [taxonomies.ts](src/data/taxonomies.ts) — read-only version/deprecation metadata layered over the live code tables ([sectors.ts](src/data/sectors.ts), `supplyModes`, [trustTiers.ts](src/data/trustTiers.ts), [buyerTiers.ts](src/data/buyerTiers.ts)) rather than duplicating them; deliberately no edit actions, since version supersession is a TWG-lead decision, not a desk officer one |
 | 2.8 | Configurable Workflow & Task Engine | 🟡 | Each portal has its own ad hoc queue ([SignalQueue.tsx](src/components/console/SignalQueue.tsx), [IncentiveQueue.tsx](src/components/console/IncentiveQueue.tsx), etc.) but no generic/SLA-aware task engine |
 | 2.9 | Event Bus, Universal Gateway & Tamper-Evident Audit | 🟡 | [auditLog.tsx](src/lib/auditLog.tsx), [ConsoleAudit.tsx](src/pages/ConsoleAudit.tsx) cover the audit trail; event bus/API gateway are backend concerns, N/A for a frontend prototype |
 
@@ -222,8 +222,10 @@ Dispute Resolution) in any form yet.
 4. ~~Market Access Intelligence & Regulatory Insights~~ — done: `ConsoleMarketIntelligence` is a
    searchable library of destination-market briefs (country/sector/mode-indexed) with a
    draft→under-review→published authoring workflow.
-5. Taxonomies & Master Data reference view (Module 2.7) — lightweight, likely folds into
-   `ConsoleSettings`.
+5. ~~Taxonomies & Master Data reference view~~ — done: given its own page rather than folding into
+   `ConsoleSettings`, since Settings is explicitly scoped to personal profile/notification
+   preferences, not platform administration (see its own subtitle) — the same boundary that keeps
+   `ConsoleCompliance` from being exporter-facing.
 
 **Mid-term — net-new, moderate scope:**
 6. Organization Delegation / multi-tenant context (Module 2.3) — an agency-delegate switcher.
@@ -278,3 +280,8 @@ Dispute Resolution) in any form yet.
   library indexed by country/sector/WTO-GATS mode, with a draft→under-review→published authoring
   workflow for NATEP Administrators. Build order item 4 (§7) is now done — only item 5 (Taxonomies
   & Master Data) remains in the near-term list.
+- **2026-09-17** — Added `ConsoleTaxonomies` (Module 2.7): a read-only registry of the platform's
+  controlled vocabularies (sectors, WTO/GATS modes, trust tiers) with version and deprecation
+  metadata, deliberately excluded from `ConsoleSettings` per that page's own personal-settings-only
+  scope note. All five near-term build-order items (§7) are now done; next is the mid-term list
+  (Organization Delegation, Predictive Policy Simulation, Automated Incentive Audit).

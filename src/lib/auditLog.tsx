@@ -12,6 +12,7 @@ export type AuditCategory =
 'incentives' |
 'vault' |
 'consent' |
+'taxonomies' |
 'settings';
 
 export interface AuditLogEntry {
