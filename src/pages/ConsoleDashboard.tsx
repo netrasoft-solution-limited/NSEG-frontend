@@ -23,7 +23,7 @@ import { StatCard } from '../components/console/StatCard';
 import { signals } from '../data/signals';
 import { shortlists } from '../data/shortlists';
 import { readinessSubmissions } from '../data/readinessSubmissions';
-import { regulatoryRequirements } from '../data/regulations';
+import { useRegulatoryRegister } from '../lib/regulatoryRegister';
 import { useOfficerProfile } from '../lib/officerProfile';
 import { useAuditLog } from '../lib/auditLog';
 
@@ -48,6 +48,7 @@ export function ConsoleDashboard() {
   const pendingSignals = signals.length;
   const pendingShortlists = shortlists.length;
   const pendingReadiness = readinessSubmissions.filter((submission) => submission.assertionStatus === 'pending').length;
+  const { requirements: regulatoryRequirements } = useRegulatoryRegister();
   const reviewDueRequirements = regulatoryRequirements.filter((item) => item.reviewDue).length;
 
   return (

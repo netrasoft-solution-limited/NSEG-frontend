@@ -29,6 +29,11 @@ export interface RegulatoryRequirement {
   status: RequirementStatus;
   lastReviewedOn: string;
   reviewDue: boolean;
+  /** REG-02: published versions only. A revision supersedes the prior version, never deletes it. */
+  version: number;
+  /** The competent-authority officers who signed this version off. */
+  signedOffBy: string[];
+  signedOffOn: string;
   /** Plain-language summary written for the exporter, not the lawyer. */
   summary: string;
   /** Where the exporter actually goes to do this. */
@@ -69,6 +74,9 @@ export const regulatoryRequirements: RegulatoryRequirement[] = [
   status: 'current',
   lastReviewedOn: '2026-07-12',
   reviewDue: false,
+  version: 1,
+  signedOffBy: ['Ngozi Eze', 'Ifeoma Nwosu'],
+  signedOffOn: '2026-07-12',
   summary: 'Your company must be registered with the CAC and up to date on annual returns before it can contract with a foreign buyer through the Gateway.',
   officialChannel: 'CAC Company Registration Portal — annual returns and status report',
   evidenceExpected: 'CAC certificate and a status report issued within the last 12 months',
@@ -87,6 +95,9 @@ export const regulatoryRequirements: RegulatoryRequirement[] = [
   status: 'under-review',
   lastReviewedOn: '2026-06-02',
   reviewDue: true,
+  version: 1,
+  signedOffBy: ['Aisha Bello', 'Kunle Bakare'],
+  signedOffOn: '2026-06-02',
   summary: 'Moving personal data about Nigerians to a client abroad needs a lawful transfer basis.',
   officialChannel: 'Nigeria Data Protection Commission — compliance filings',
   evidenceExpected: 'Transfer impact note and data processing agreement',
@@ -104,6 +115,9 @@ export const regulatoryRequirements: RegulatoryRequirement[] = [
   status: 'current',
   lastReviewedOn: '2026-08-01',
   reviewDue: false,
+  version: 1,
+  signedOffBy: ['Emeka Obi'],
+  signedOffOn: '2026-08-01',
   summary: 'Advisory engagements above the programme threshold need professional indemnity insurance in force for the whole contract.',
   officialChannel: 'Any NAICOM-licensed insurer — certificate uploaded to your evidence vault',
   evidenceExpected: 'Insurance certificate showing cover amount and validity dates',
@@ -121,6 +135,9 @@ export const regulatoryRequirements: RegulatoryRequirement[] = [
   status: 'current',
   lastReviewedOn: '2026-05-19',
   reviewDue: true,
+  version: 1,
+  signedOffBy: ['Yusuf Garba'],
+  signedOffOn: '2026-05-19',
   summary: 'Engineering design work signed off for a client must name a COREN-registered engineer who takes responsibility for it.',
   officialChannel: 'COREN — practitioner registration and annual practice licence',
   evidenceExpected: 'COREN registration number and current practice licence',
@@ -137,6 +154,9 @@ export const regulatoryRequirements: RegulatoryRequirement[] = [
   status: 'current',
   lastReviewedOn: '2026-07-28',
   reviewDue: false,
+  version: 1,
+  signedOffBy: ['Funke Adebayo'],
+  signedOffOn: '2026-07-28',
   summary: 'Every export invoice must carry a valid tax identification number so the income is recorded correctly.',
   officialChannel: 'Nigeria Revenue Service — TIN registration and validation',
   evidenceExpected: 'TIN certificate or validation result',
@@ -155,6 +175,9 @@ export const regulatoryRequirements: RegulatoryRequirement[] = [
   status: 'superseded',
   lastReviewedOn: '2026-03-14',
   reviewDue: false,
+  version: 1,
+  signedOffBy: ['Funke Adebayo'],
+  signedOffOn: '2026-03-14',
   summary: 'Replaced by the current export invoicing guidance.',
   officialChannel: 'Nigeria Revenue Service',
   evidenceExpected: '—',
@@ -171,6 +194,9 @@ export const regulatoryRequirements: RegulatoryRequirement[] = [
   status: 'current',
   lastReviewedOn: '2026-08-15',
   reviewDue: false,
+  version: 1,
+  signedOffBy: ['Musa Ibrahim', 'Hauwa Sani'],
+  signedOffOn: '2026-08-15',
   summary: 'Foreign currency you earn from an export must come back through a Nigerian bank within the set window.',
   officialChannel: 'Your bank’s trade services desk',
   evidenceExpected: 'Bank credit advice matched to the export invoice',
@@ -188,6 +214,9 @@ export const regulatoryRequirements: RegulatoryRequirement[] = [
   status: 'under-review',
   lastReviewedOn: '2026-06-20',
   reviewDue: true,
+  version: 1,
+  signedOffBy: ['Musa Ibrahim', 'Hauwa Sani'],
+  signedOffOn: '2026-06-20',
   summary: 'Larger export receipts may need an export proceeds form lodged with your bank.',
   officialChannel: 'Your bank’s trade services desk',
   evidenceExpected: 'Completed form reference from the bank',
@@ -205,6 +234,9 @@ export const regulatoryRequirements: RegulatoryRequirement[] = [
   status: 'current',
   lastReviewedOn: '2026-07-05',
   reviewDue: false,
+  version: 1,
+  signedOffBy: ['Emeka Obi'],
+  signedOffOn: '2026-07-05',
   summary: 'Buyers whose support desks touch card data will ask for a PCI-DSS attestation before onboarding you.',
   officialChannel: 'A PCI-qualified security assessor',
   evidenceExpected: 'Attestation of compliance for your service scope',
@@ -222,6 +254,9 @@ export const regulatoryRequirements: RegulatoryRequirement[] = [
   status: 'current',
   lastReviewedOn: '2026-04-22',
   reviewDue: true,
+  version: 1,
+  signedOffBy: ['Emeka Obi'],
+  signedOffOn: '2026-04-22',
   summary: 'US healthcare buyers expect you to sign a business associate agreement and show how patient data is protected.',
   officialChannel: 'Buyer procurement team — business associate agreement',
   evidenceExpected: 'Signed agreement and a data handling attestation',
@@ -239,6 +274,9 @@ export const regulatoryRequirements: RegulatoryRequirement[] = [
   status: 'current',
   lastReviewedOn: '2026-08-09',
   reviewDue: false,
+  version: 1,
+  signedOffBy: ['Emeka Obi'],
+  signedOffOn: '2026-08-09',
   summary: 'Penetration testing buyers in the UK and EU usually require CREST or an equivalent accreditation for the testers on the job.',
   officialChannel: 'CREST or an equivalent accreditation body',
   evidenceExpected: 'Accreditation certificate for the named testers',
@@ -255,6 +293,9 @@ export const regulatoryRequirements: RegulatoryRequirement[] = [
   status: 'under-review',
   lastReviewedOn: '2026-05-30',
   reviewDue: true,
+  version: 1,
+  signedOffBy: ['Musa Ibrahim', 'Hauwa Sani'],
+  signedOffOn: '2026-05-30',
   summary: 'Payments from diaspora clients go through extra anti-money-laundering screening at your bank.',
   officialChannel: 'Your bank’s compliance desk',
   evidenceExpected: 'Client identity details on the invoice',
@@ -271,6 +312,9 @@ export const regulatoryRequirements: RegulatoryRequirement[] = [
   status: 'current',
   lastReviewedOn: '2026-08-20',
   reviewDue: false,
+  version: 1,
+  signedOffBy: ['Chidi Okafor', 'Segun Alabi'],
+  signedOffOn: '2026-08-20',
   summary: 'If you export as an individual rather than a company, your national identification number stands in for CAC registration.',
   officialChannel: 'NIMC — NIN enrolment and verification',
   evidenceExpected: 'NIN slip or verification result matching your account name',
@@ -288,6 +332,9 @@ export const regulatoryRequirements: RegulatoryRequirement[] = [
   status: 'current',
   lastReviewedOn: '2026-08-28',
   reviewDue: false,
+  version: 1,
+  signedOffBy: ['Emeka Obi'],
+  signedOffOn: '2026-08-28',
   summary: 'UK and EU clients must put a data processing agreement in place before you handle personal data for them remotely.',
   officialChannel: 'Buyer procurement team — data processing agreement',
   evidenceExpected: 'Signed data processing agreement',
@@ -304,6 +351,9 @@ export const regulatoryRequirements: RegulatoryRequirement[] = [
   status: 'current',
   lastReviewedOn: '2026-08-11',
   reviewDue: false,
+  version: 1,
+  signedOffBy: ['Musa Ibrahim', 'Hauwa Sani'],
+  signedOffOn: '2026-08-11',
   summary: 'Open a foreign currency (domiciliary) account in your own or your company’s name so buyers can pay you directly.',
   officialChannel: 'Any authorised dealer bank',
   evidenceExpected: 'Account confirmation letter from the bank',
@@ -312,3 +362,26 @@ export const regulatoryRequirements: RegulatoryRequirement[] = [
   nextReviewOn: '2027-02-11',
   appliesTo: {}
 }];
+
+
+/** Who signs content off. Buyer-driven standards have no Nigerian competent authority, so the
+ * NATEP Secretariat validates them. */
+export function signOffAgency(authority: string): string {
+  return authority === 'Buyer-side procurement standard' ? 'NATEP Secretariat' : authority;
+}
+
+/** REG-02 multi-tier approval "where configured": statutory and FX content needs two different
+ * officers at the authority; everything else needs one. */
+export function requiredSignOffs(category: RequirementCategory): number {
+  return category === 'statutory' || category === 'fx-settlement' ? 2 : 1;
+}
+
+export const competentAuthorities: string[] = [
+'Central Bank of Nigeria',
+'Corporate Affairs Commission',
+'Council for the Regulation of Engineering in Nigeria',
+'National Identity Management Commission',
+'NATEP Secretariat',
+'Nigeria Data Protection Commission',
+'Nigeria Revenue Service'];
+

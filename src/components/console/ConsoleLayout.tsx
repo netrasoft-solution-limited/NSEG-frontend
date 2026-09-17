@@ -189,7 +189,13 @@ export function ConsoleLayout({ breadcrumb, onExport, children }: ConsoleLayoutP
               </span>
               <span className="hidden text-left leading-tight sm:block">
                 <span className="block text-[12.5px] font-semibold text-gray-900">{profile.name}</span>
-                <span className="block text-[11px] text-gray-400">{profile.title}</span>
+                <span className="block text-[11px] text-gray-400">
+                  {profile.role === 'authority-focal' ?
+                  `Focal · ${profile.authority}` :
+                  profile.role === 'content-drafter' ?
+                  'Regulatory Content Drafter' :
+                  profile.title}
+                </span>
               </span>
             </span>
           </div>

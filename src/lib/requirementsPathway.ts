@@ -1,6 +1,5 @@
 import {
   pathwayCategoryOrder,
-  regulatoryRequirements,
   type RegulatoryRequirement,
   type RequirementCategory,
   type SupplyModeId,
@@ -38,8 +37,13 @@ function appliesTo(requirement: RegulatoryRequirement, answers: PathwayAnswers):
 
 }
 
-/** REG-03: only requirements in 'current' status reach the exporter as guidance. */
-export function buildPathway(answers: PathwayAnswers, verifiedEvidence: EvidenceKey[]): Pathway {
+/** REG-03: only requirements in 'current' status reach the exporter as guidance — drafts
+ * live outside the register entirely until an authority signs them off (REG-02). */
+export function buildPathway(
+answers: PathwayAnswers,
+verifiedEvidence: EvidenceKey[],
+regulatoryRequirements: RegulatoryRequirement[])
+: Pathway {
   const applicable = regulatoryRequirements.filter((requirement) => appliesTo(requirement, answers));
   const current = applicable.filter((requirement) => requirement.status === 'current');
 

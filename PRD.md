@@ -123,7 +123,7 @@ the Gateway holding or moving funds, creating statutory obligations, and hardwar
 | Match scoring | Matching engine | Demand officer | Output advisory; auto-transmission disabled | ✅ [ShortlistReview.tsx](src/components/console/ShortlistReview.tsx) |
 | Disclosure of supplier data | Referral workflow | The data subject | 403 without active consent | ✅ [disclosurePackage.ts](src/lib/disclosurePackage.ts) |
 | Outcome report | Exporter or buyer | Independent verification officer | Self-reported value Provisional; excluded from Observatory | ✅ [OutcomeLedger.tsx](src/components/console/OutcomeLedger.tsx) |
-| Regulatory content change | Content drafter | Competent authority focal | Stays Draft until signed off | ⬜ No Draft state or sign-off (REG-02) |
+| Regulatory content change | Content drafter | Competent authority focal | Stays Draft until signed off | ✅ [regulatoryRegister.tsx](src/lib/regulatoryRegister.tsx) `signOffBlocker`: drafter can't sign own version, focal must be from the owning agency, two-tier sign-off needs two different officers |
 | Actor merge | Deduplication engine | Data steward | Blocked in the 70–84% match band | ⬜ No dedup or steward queue (FND-02) |
 | Audit log export | System administrator | ADSPA officer | Dual-key; unilateral extraction blocked | ⬜ [ConsoleAudit.tsx](src/pages/ConsoleAudit.tsx) has no dual-key export |
 | Incentive disbursal | Rules engine pre-qualification | NATEP/NEPC administrator | Automated pass alone never disburses | ✅ [IncentiveQueue.tsx](src/components/console/IncentiveQueue.tsx) `canApprove` gate |
@@ -184,8 +184,8 @@ static data — never the production non-functional detail (Argon2id, AES-256-GC
 ### 5.4 Regulatory Trust (delivered within Supply) — G2 critical
 | ID | Requirement | Status | Where in repo / gap |
 |---|---|---|---|
-| REG-01 | Requirements register | 🟡 | [ConsoleCompliance.tsx](src/pages/ConsoleCompliance.tsx), [ComplianceRegister.tsx](src/components/console/ComplianceRegister.tsx), [regulations.ts](src/data/regulations.ts) — the five categories match. Records now carry plain-language summary, official channel, applicability (track / mode / market, plus sector), evidence expected, source citation, effective and next-review dates. The console register doesn't display or edit the new fields yet; seed content is prototype text, not validated |
-| REG-02 | Institutional authoring and validation | ⬜ | Statuses are `current / under-review / superseded`. No Draft, no per-agency queue, no competent-authority sign-off; the officer can mark content reviewed unilaterally |
+| REG-01 | Requirements register | 🟡 | [ConsoleCompliance.tsx](src/pages/ConsoleCompliance.tsx), [ComplianceRegister.tsx](src/components/console/ComplianceRegister.tsx), [regulations.ts](src/data/regulations.ts) — the five categories match. Records now carry plain-language summary, official channel, applicability (track / mode / market, plus sector), evidence expected, source citation, effective and next-review dates. Versioned with `signedOffBy` / `signedOffOn`; drafters edit every field, including applicability, in [RequirementDraftEditor.tsx](src/components/console/RequirementDraftEditor.tsx). Disclaimer text per record not modelled; seed content is prototype text, not validated |
+| REG-02 | Institutional authoring and validation | 🟡 | [ConsoleCompliance.tsx](src/pages/ConsoleCompliance.tsx), [AuthoringPipeline.tsx](src/components/console/AuthoringPipeline.tsx), [regulatoryRegister.tsx](src/lib/regulatoryRegister.tsx) — Draft → Awaiting sign-off → Published (or Returned with a required note); per-agency queues; statutory and FX content needs two sign-offs; publishing a revision creates a new version and keeps the prior one as superseded; review calendar. Editing clears prior sign-offs. Content Drafter and Competent Authority Focal are simulated roles. Only a focal can confirm content unchanged — desk officers can only flag it. No disclaimer management or configurable approval tiers per agency |
 | REG-03 | Wizard and pathway engine | 🟡 | [WorkspaceRequirements.tsx](src/pages/WorkspaceRequirements.tsx), [requirementsPathway.ts](src/lib/requirementsPathway.ts) — four-question wizard (track, sector, mode, market) producing a pathway ordered statutory → fiscal → professional → buyer standard → FX. Only `current` requirements are shown; applicable under-review items are counted, not shown. Marks requirements already met by verified evidence. No save/resume across sessions or change alerts |
 | REG-04 | Exporter readiness workspace | 🟡 | [WorkspaceReadiness.tsx](src/pages/WorkspaceReadiness.tsx), [exporterSession.tsx](src/lib/exporterSession.tsx) — private by default with an explicit, revocable "share snapshot" switch; evidence status from the vault; bank & FX settlement checklist; private diagnostic draft that previews the tier it would support and is submitted for officer review. Sharing and submitting are audit-logged. The console doesn't yet show shared snapshots |
 | REG-05 | Change alert and invalidation | 🟡 | [ComplianceRegister.tsx](src/components/console/ComplianceRegister.tsx) computes an "Affects" count against live opportunities. No review tasks, notifications, or flagging of dependent assertions for revalidation |
@@ -285,9 +285,8 @@ the change log (§11).
 **Priority 1 — correct what now conflicts with the baseline**
 1. ~~**Single tier ladder and honest tier names (D-06, SUP-05/06, §3.2).**~~ Done — see §11. Remaining:
    enforce bid ceilings, downgrade on credential expiry, and say by whom/when on each badge.
-2. **Regulatory authoring with sign-off (REG-01, REG-02).** Add Draft status and the missing record
-   fields; content stays Draft until a competent-authority focal signs off; supersede, never delete.
-   Closes the §4 "regulatory content change" row. This is G2-critical.
+2. ~~**Regulatory authoring with sign-off (REG-01, REG-02).**~~ Done — see §11. Remaining: disclaimer
+   management and per-agency approval configuration.
 
 **Priority 2 — Regulatory Trust capability set (G2/G3)**
 3. **Change alerts and assertion revalidation (REG-05, REG-06).** Publishing a new requirement version
@@ -452,3 +451,11 @@ default" is what to assume until the programme decides.
   returns to the buyer (DEM-02/03). Buyer introduction requests reach a new exporter Introductions tab,
   where accepting discloses identity and withdrawing revokes it (DEM-09, FND-05). Buyer delivery
   confirmations join the console Outcomes ledger under the existing duplicate checks (DEM-11).
+- **2026-09-17** — **Regulatory authoring with sign-off (REG-01/02).** Added simulated Content Drafter
+  and Competent Authority Focal roles (with the agency a focal signs for). An app-wide
+  `RegulatoryRegisterProvider` holds drafts, sign-offs and published versions, so the console and the
+  exporter wizard read one live register. Drafts are never visible to exporters. Separation of duties is
+  enforced in one place: nobody signs their own draft, focals only sign for their agency, and statutory
+  and FX content needs two different officers. Publishing a revision creates `reg-xx-v2` and keeps v1 as
+  superseded. Returns require a note, and edits clear earlier sign-offs. Closes the §4 regulatory content
+  row.

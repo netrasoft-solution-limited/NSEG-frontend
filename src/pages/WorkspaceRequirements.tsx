@@ -11,6 +11,7 @@ import {
 import { trackLabels, type ExporterTrack } from '../data/trustTiers';
 import { useExporterSession, type WizardAnswers } from '../lib/exporterSession';
 import { buildPathway, type PathwayAnswers } from '../lib/requirementsPathway';
+import { useRegulatoryRegister } from '../lib/regulatoryRegister';
 
 const modeOptions: { id: SupplyModeId; label: string; detail: string }[] = [
 { id: 'mode1', label: 'Remotely, from Nigeria', detail: 'You deliver online or by phone. WTO/GATS Mode 1.' },
@@ -78,6 +79,7 @@ function isComplete(answers: WizardAnswers): answers is PathwayAnswers {
 
 export function WorkspaceRequirements() {
   const { actor, workspace, updateWorkspace } = useExporterSession();
+  const { requirements } = useRegulatoryRegister();
   const answers = workspace.wizard;
   const [step, setStep] = useState(() => isComplete(answers) ? steps.length : 0);
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -102,7 +104,7 @@ export function WorkspaceRequirements() {
 
   const stepAnswered = [true, Boolean(answers.sectorCode), Boolean(answers.mode), Boolean(answers.market)];
   const showPathway = step === steps.length && isComplete(answers);
-  const pathway = showPathway ? buildPathway(answers, actor.verifiedEvidence) : null;
+  const pathway = showPathway ? buildPathway(answers, actor.verifiedEvidence, requirements) : null;
 
   return (
     <WorkspaceLayout

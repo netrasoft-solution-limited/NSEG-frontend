@@ -34,6 +34,7 @@ import { BuyerSessionProvider } from './lib/buyerSession';
 import { OfficerProfileProvider } from './lib/officerProfile';
 import { AuditLogProvider } from './lib/auditLog';
 import { GatewayExchangeProvider } from './lib/gatewayExchange';
+import { RegulatoryRegisterProvider } from './lib/regulatoryRegister';
 
 interface AppProps {
   heroVariant?: 'stacked' | 'split';
@@ -97,6 +98,7 @@ export function App({ heroVariant = 'stacked', liveDemos = true }: AppProps) {
     <OfficerProfileProvider>
       <AuditLogProvider>
         <GatewayExchangeProvider>
+        <RegulatoryRegisterProvider>
         <Routes>
           <Route path="/" element={<Landing heroVariant={heroVariant} liveDemos={liveDemos} />} />
           <Route path="/marketplace" element={<Marketplace />} />
@@ -104,6 +106,7 @@ export function App({ heroVariant = 'stacked', liveDemos = true }: AppProps) {
           <Route path="/workspace/*" element={<Workspace />} />
           <Route path="/buyer/*" element={<BuyerWorkspace />} />
         </Routes>
+        </RegulatoryRegisterProvider>
         </GatewayExchangeProvider>
       </AuditLogProvider>
     </OfficerProfileProvider>);

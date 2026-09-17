@@ -3,11 +3,14 @@ import { ConsoleLayout } from '../components/console/ConsoleLayout';
 import { useOfficerProfile, type OfficerRole } from '../lib/officerProfile';
 import { initialsOf } from '../lib/initials';
 import { useAuditLog } from '../lib/auditLog';
+import { competentAuthorities } from '../data/regulations';
 
 const roleLabels: Record<OfficerRole, string> = {
   'desk-officer': 'Desk Officer',
   administrator: 'NATEP/NEPC Administrator',
-  'adspa-auditor': 'ADSPA Security & Compliance Auditor'
+  'adspa-auditor': 'ADSPA Security & Compliance Auditor',
+  'content-drafter': 'Regulatory Content Drafter',
+  'authority-focal': 'Competent Authority Focal'
 };
 
 interface NotificationPreference {
@@ -47,7 +50,7 @@ function ToggleSwitch({ enabled, onToggle, label }: {enabled: boolean;onToggle: 
 }
 
 export function ConsoleSettings() {
-  const { profile, setName, setRole } = useOfficerProfile();
+  const { profile, setName, setRole, setAuthority } = useOfficerProfile();
   const { entries, logEvent } = useAuditLog();
   const [draftName, setDraftName] = useState(profile.name);
   const [preferences, setPreferences] = useState<NotificationPreference[]>(defaultPreferences);
@@ -140,13 +143,39 @@ export function ConsoleSettings() {
                 <option value="desk-officer">{roleLabels['desk-officer']}</option>
                 <option value="administrator">{roleLabels.administrator}</option>
                 <option value="adspa-auditor">{roleLabels['adspa-auditor']}</option>
+                <option value="content-drafter">{roleLabels['content-drafter']}</option>
+                <option value="authority-focal">{roleLabels['authority-focal']}</option>
               </select>
               <p className="mt-1.5 text-[11px] text-gray-400">
                 Demo control only — a real deployment assigns this via IAM, not a self-service dropdown.
                 Administrator gates high-value incentive sign-off; ADSPA Auditor puts the entire Console into
-                read-only audit mode (BRD ROLE_ADSPA_OFFICER — inspect everything, modify nothing).
+                read-only audit mode (BRD ROLE_ADSPA_OFFICER — inspect everything, modify nothing). Content
+                Drafter writes regulatory requirements; Competent Authority Focal signs them off for one agency.
               </p>
             </div>
+
+            {profile.role === 'authority-focal' &&
+            <div>
+                <label htmlFor="focal-authority" className="block text-[12.5px] font-medium text-gray-600">
+                  Signing for
+                </label>
+                <select
+                id="focal-authority"
+                value={profile.authority}
+                onChange={(event) => {
+                  setAuthority(event.target.value);
+                  logEvent(`Set sign-off authority to ${event.target.value}`, 'settings', profile.name);
+                }}
+                className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-[13.5px] text-gray-900 focus:border-gray-400 focus:outline-none">
+
+                  {competentAuthorities.map((authority) =>
+                <option key={authority} value={authority}>
+                      {authority}
+                    </option>
+                )}
+                </select>
+              </div>
+            }
 
             <button
               type="submit"

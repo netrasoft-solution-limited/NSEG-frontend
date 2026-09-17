@@ -9,6 +9,8 @@ import {
 import { opportunities } from '../../data/opportunities';
 import { sectorLabel } from '../../lib/marketplaceLookups';
 import { AuditOnlyBadge } from './AuditOnlyBadge';
+import { canConfirmCurrent, canDraft } from '../../lib/regulatoryRegister';
+import type { OfficerRole } from '../../lib/officerProfile';
 
 export interface ComplianceFilterState {
   search: string;
@@ -16,18 +18,17 @@ export interface ComplianceFilterState {
   status: RequirementStatus | 'all';
 }
 
-interface OverrideState {
-  status: RequirementStatus;
-  reviewDue: boolean;
-}
-
 interface ComplianceRegisterProps {
   requirements: RegulatoryRequirement[];
   total: number;
   filters: ComplianceFilterState;
   onFilterChange: (filters: ComplianceFilterState) => void;
-  overrides: Record<string, OverrideState>;
-  onAction: (id: string, next: OverrideState) => void;
+  profile: {name: string;role: OfficerRole;authority: string;};
+  /** Requirement ids that already have an open revision in authoring. */
+  revisionsInProgress: Set<string>;
+  onFlag: (requirement: RegulatoryRequirement) => void;
+  onConfirm: (requirement: RegulatoryRequirement) => void;
+  onRevise: (requirement: RegulatoryRequirement) => void;
   canMutate: boolean;
 }
 
@@ -54,8 +55,11 @@ export function ComplianceRegister({
   total,
   filters,
   onFilterChange,
-  overrides,
-  onAction,
+  profile,
+  revisionsInProgress,
+  onFlag,
+  onConfirm,
+  onRevise,
   canMutate
 }: ComplianceRegisterProps) {
   return (
@@ -128,7 +132,7 @@ export function ComplianceRegister({
               <th className="py-2.5 pr-3 font-medium">Requirement</th>
               <th className="py-2.5 pr-3 font-medium">Category</th>
               <th className="py-2.5 pr-3 font-medium">Authority</th>
-              <th className="py-2.5 pr-3 font-medium">Last reviewed</th>
+              <th className="py-2.5 pr-3 font-medium">Version · signed off</th>
               <th className="py-2.5 pr-3 font-medium">Affects</th>
               <th className="py-2.5 pr-3 font-medium">Status</th>
               <th className="py-2.5 pl-3 text-right font-medium">Actions</th>
@@ -136,10 +140,8 @@ export function ComplianceRegister({
           </thead>
           <tbody>
             {requirements.map((requirement) => {
-              const state = overrides[requirement.id] ?? {
-                status: requirement.status,
-                reviewDue: requirement.reviewDue
-              };
+              const state = requirement;
+              const reviewOpen = state.reviewDue || state.status === 'under-review';
 
               return (
                 <tr key={requirement.id} className="border-b border-gray-50 last:border-0">
@@ -149,7 +151,10 @@ export function ComplianceRegister({
                   </td>
                   <td className="py-3 pr-3 text-gray-500">{requirementCategoryLabels[requirement.category]}</td>
                   <td className="py-3 pr-3 text-gray-500">{requirement.authority}</td>
-                  <td className="py-3 pr-3 text-gray-500">{requirement.lastReviewedOn}</td>
+                  <td className="py-3 pr-3 text-gray-500">
+                    <p>v{requirement.version} · {requirement.signedOffOn}</p>
+                    <p className="text-[11px] text-gray-400">{requirement.signedOffBy.join(', ')}</p>
+                  </td>
                   <td className="py-3 pr-3 font-mono text-[11.5px] text-gray-400">
                     {affectedOpportunities(requirement.sectorCode)}
                   </td>
@@ -167,25 +172,49 @@ export function ComplianceRegister({
                   </td>
                   <td className="py-3 pl-3 text-right">
                     {state.status === 'superseded' ?
-                    <span className="text-[11.5px] text-gray-300">No action</span> :
+                    <span className="text-[11.5px] text-gray-300">Kept for history</span> :
                     !canMutate ?
                     <AuditOnlyBadge /> :
-                    state.reviewDue || state.status === 'under-review' ?
-                    <button
-                      type="button"
-                      onClick={() => onAction(requirement.id, { status: 'current', reviewDue: false })}
-                      className="rounded-full bg-gray-900 px-3 py-1.5 text-[12px] font-semibold text-white transition-colors duration-150 ease-out hover:bg-black">
 
-                        Mark reviewed
-                      </button> :
+                    <div className="flex flex-wrap justify-end gap-1.5">
+                        {revisionsInProgress.has(requirement.id) ?
+                      <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[11.5px] font-medium text-amber-700">
+                            Revision in authoring
+                          </span> :
+                      canDraft(profile.role) &&
+                      <button
+                        type="button"
+                        onClick={() => onRevise(requirement)}
+                        className="rounded-full bg-gray-900 px-3 py-1.5 text-[12px] font-semibold text-white transition-colors duration-150 ease-out hover:bg-black">
 
-                    <button
-                      type="button"
-                      onClick={() => onAction(requirement.id, { status: 'under-review', reviewDue: true })}
-                      className="rounded-full border border-gray-200 px-3 py-1.5 text-[12px] font-medium text-gray-500 transition-colors duration-150 ease-out hover:border-gray-300 hover:text-gray-700">
+                              Propose revision
+                            </button>
 
-                        Flag for review
-                      </button>
+                      }
+                        {reviewOpen && canConfirmCurrent(requirement, profile) &&
+                      <button
+                        type="button"
+                        onClick={() => onConfirm(requirement)}
+                        className="rounded-full border border-gray-200 px-3 py-1.5 text-[12px] font-medium text-gray-600 transition-colors duration-150 ease-out hover:border-gray-300">
+
+                            Confirm unchanged
+                          </button>
+                      }
+                        {!reviewOpen && profile.role !== 'authority-focal' &&
+                      <button
+                        type="button"
+                        onClick={() => onFlag(requirement)}
+                        className="rounded-full border border-gray-200 px-3 py-1.5 text-[12px] font-medium text-gray-500 transition-colors duration-150 ease-out hover:border-gray-300 hover:text-gray-700">
+
+                            Flag for review
+                          </button>
+                      }
+                        {reviewOpen && !canConfirmCurrent(requirement, profile) && !canDraft(profile.role) &&
+                      <span className="max-w-[180px] text-[11px] text-gray-400">
+                            Needs a revision or a focal's confirmation
+                          </span>
+                      }
+                      </div>
                     }
                   </td>
                 </tr>);
