@@ -11,8 +11,8 @@ export function BuyerSignIn() {
   return (
     <AuthLayout audience="buyer" switchLink={{ label: 'Exporting services? Exporter sign in', to: '/workspace/sign-in' }}>
       <SignInCard
-        heading="Sign in to your buyer workspace"
-        intro="Source Nigerian service exporters through officer-qualified requests and approved shortlists."
+        heading="Welcome back"
+        intro="Sign in to your buyer workspace."
         registerHref="/buyer/register"
         registerLabel="Create a buyer account"
         homeHref="/buyer"
@@ -22,7 +22,7 @@ export function BuyerSignIn() {
           id: buyer.id,
           email: buyer.email,
           name: buyer.name,
-          detail: `${buyer.region} · ${buyer.email}`,
+          detail: `${buyer.contactName ? `${buyer.contactName} · ` : ''}${buyer.region}`,
           badge: <BuyerTierBadge tier={buyerTiers.find((tier) => tier.id === buyer.tier)!} />
         }))} />
 

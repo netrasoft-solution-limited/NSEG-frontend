@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ArrowRightIcon, CheckIcon, CircleIcon, HourglassIcon, InfoIcon, LockIcon, UnlockIcon } from 'lucide-react';
+import { CheckIcon, CircleIcon, CirclePlusIcon, HourglassIcon, InfoIcon, LockIcon, UnlockIcon } from 'lucide-react';
 import { BuyerLayout } from '../components/workspace/BuyerLayout';
 import { BuyerTierBadge } from '../components/workspace/TierBadge';
 import { buyerTiers } from '../data/buyerTiers';
@@ -10,14 +10,42 @@ import { registryTypeLabels, useAccounts, type RegistryType } from '../lib/accou
 import { useAuditLog } from '../lib/auditLog';
 import { usePendingAction } from '../lib/usePendingAction';
 import { Field, PrimaryButton, inputClass } from '../components/workspace/FormField';
+import { Callout, Panel, Stat, StatGrid, Tag, Timeline, primaryLinkClass, type TimelineState } from '../components/workspace/WorkspaceUI';
+import { sectorLabel } from '../lib/marketplaceLookups';
 import {
   buyerEngagements,
   buyerOpportunities,
   buyerShortlist,
   buyerStanding,
   engagedCandidateId,
-  requestStatusFor } from
+  requestStatusFor,
+  requestStatusSteps,
+  type RequestStatus } from
 '../lib/buyerWorkspace';
+
+/** How far each request status has moved through the handling stages shown on the overview. */
+const stagesDone: Record<RequestStatus, number> = {
+  draft: 0,
+  'awaiting-qualification': 1,
+  published: 3,
+  shortlisting: 4,
+  engaging: 5,
+  'in-delivery': 5
+};
+
+const handlingStages = [
+{ title: 'Submitted', detail: 'You state the requirement in structured form' },
+{ title: 'Qualified', detail: 'A desk officer checks credibility and records a reason' },
+{ title: 'Requirements attached', detail: 'The exact version of every applicable rule is pinned' },
+{ title: 'Matched', detail: 'Evidenced capability compared; the reasoning is shown in full' },
+{ title: 'Consent', detail: 'Exporters choose whether to share their details with you' },
+{ title: 'Contract and outcome', detail: 'You engage; delivery is confirmed and verified' }];
+
+
+function greeting(): string {
+  const hour = new Date().getHours();
+  return hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+}
 
 /** What an officer actually checks to grant each tier — shown on the ladder. */
 const tierChecks: Record<string, string[]> = {
@@ -48,7 +76,6 @@ export function BuyerOverview() {
     (opportunity) => buyerShortlist(opportunity) && !state.selections[opportunity.id] && !engagedCandidateId(opportunity)
   ).length;
   const engagements = buyerEngagements(buyer);
-  const inDelivery = requests.filter((opportunity) => requestStatusFor(opportunity) === 'in-delivery');
   const unconfirmed = engagements.filter(
     (engagement) =>
     engagement.stage === 'commenced' &&
@@ -57,28 +84,127 @@ export function BuyerOverview() {
   const drafts = state.drafts;
   const submitted = exchange.requests.filter((request) => request.buyerId === buyer.id);
 
-  const attention: { text: string; to: string; action: string }[] = [
-  ...(shortlistsToReview > 0 ?
-  [{ text: `${shortlistsToReview} officer-approved ${shortlistsToReview === 1 ? 'shortlist is' : 'shortlists are'} waiting for your decision`, to: '/buyer/shortlists', action: 'Review' }] :
-  []),
-  ...(unconfirmed.length > 0 ?
-  [{ text: `${unconfirmed.length} ${unconfirmed.length === 1 ? 'engagement is' : 'engagements are'} in delivery — confirm when work is complete`, to: '/buyer/engagements', action: 'Open' }] :
-  []),
-  ...(drafts.length > 0 ?
-  [{ text: `${drafts.length} draft ${drafts.length === 1 ? 'request has' : 'requests have'} not been submitted`, to: '/buyer/requests', action: 'Finish' }] :
-  [])];
+  const statuses: RequestStatus[] = [
+  ...requests.map(requestStatusFor),
+  ...submitted.map((request) => request.decision === 'pending' ? 'awaiting-qualification' as const : 'published' as const)];
 
+  const furthest = statuses.length ? Math.max(...statuses.map((status) => stagesDone[status])) : 0;
+  const inProgress = statuses.filter((status) => status !== 'in-delivery').length;
+  const recent = [
+  ...submitted.map((request) => ({
+    id: request.id,
+    title: request.title,
+    detail: `${sectorLabel(request.sectorCode)} · USD ${request.budgetMin.toLocaleString()}–${request.budgetMax.toLocaleString()}`,
+    tag: request.decision === 'pending' ?
+    <Tag tone="gold">Awaiting qualification</Tag> :
+    request.decision === 'rejected' ?
+    <Tag tone="clay">Not qualified</Tag> :
+    <Tag tone="green">Qualified</Tag>
+  })),
+  ...requests.map((opportunity) => ({
+    id: opportunity.id,
+    title: opportunity.title,
+    detail: `${sectorLabel(opportunity.sectorCode)} · posted ${opportunity.postedOn}`,
+    tag:
+    <Tag tone={requestStatusFor(opportunity) === 'in-delivery' ? 'ok' : 'green'}>
+          {requestStatusSteps.find((step) => step.id === requestStatusFor(opportunity))?.label}
+        </Tag>
 
-  const stats = [
-  { label: 'Requests', value: requests.length + drafts.length + submitted.length },
-  { label: 'Shortlists ready', value: shortlistsReady },
-  { label: 'In delivery', value: inDelivery.length }];
-
+  }))].
+  slice(0, 4);
 
   return (
     <BuyerLayout
-      title="Overview"
-      intro="Source Nigerian service exporters through officer-qualified requests. You're only asked to verify at the moment an action needs it.">
+      section="Overview"
+      title={`${greeting()}, ${buyer.contactName?.split(' ')[0] ?? buyer.name}`}
+      intro={`${buyer.name} · ${standing.tier.badge} buyer · ${buyer.region}`}
+      actions={
+      <Link to="/buyer/requests/new" className={primaryLinkClass}>
+          <CirclePlusIcon className="h-4 w-4" aria-hidden="true" />
+          Place a requirement
+        </Link>
+      }>
+
+      <div className="space-y-4">
+        {isNew && requests.length === 0 && drafts.length === 0 && submitted.length === 0 &&
+        <Callout tone="green" title="Place your first requirement" action={{ label: 'Get started', to: '/buyer/requests/new' }}>
+            Your account is ready ({buyer.referenceId}). You'll only be asked to verify your company when you send a
+            requirement for qualification.
+          </Callout>
+        }
+        {shortlistsToReview > 0 &&
+        <Callout
+          tone="green"
+          title={`You have ${shortlistsToReview} officer-approved ${shortlistsToReview === 1 ? 'shortlist' : 'shortlists'} to review`}
+          action={{ label: 'Review now', to: '/buyer/introductions' }}>
+
+            See why each exporter matches. You see who they are once they agree to share their details.
+          </Callout>
+        }
+        {unconfirmed.length > 0 &&
+        <Callout
+          tone="gold"
+          title={`${unconfirmed.length} ${unconfirmed.length === 1 ? 'contract is' : 'contracts are'} in delivery`}
+          action={{ label: 'Confirm delivery', to: '/buyer/contracts' }}>
+
+            Confirm when the work is complete. An officer then verifies the outcome.
+          </Callout>
+        }
+        {drafts.length > 0 &&
+        <Callout
+          tone="neutral"
+          title={`${drafts.length} draft ${drafts.length === 1 ? 'requirement has' : 'requirements have'} not been submitted`}
+          action={{ label: 'Finish', to: '/buyer/requests' }} />
+
+        }
+      </div>
+
+      <div className="mt-6">
+        <StatGrid>
+          <Stat label="Requirements placed" value={statuses.length} detail={drafts.length ? `Plus ${drafts.length} in draft` : 'Sent for qualification'} />
+          <Stat label="In progress" value={inProgress} detail="Being qualified or matched" />
+          <Stat label="Shortlists waiting" value={shortlistsToReview} detail={shortlistsToReview ? 'Action needed from you' : 'Nothing waiting'} />
+          <Stat label="Contracts" value={engagements.length} detail={`${shortlistsReady} ${shortlistsReady === 1 ? 'shortlist' : 'shortlists'} issued so far`} />
+        </StatGrid>
+      </div>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        <Panel
+          title="Your requirements"
+          aside={
+          <Link to="/buyer/requests" className="text-[13px] font-semibold text-gray-900 underline-offset-4 hover:underline">
+              See all
+            </Link>
+          }>
+
+          {recent.length === 0 ?
+          <p className="text-[13.5px] text-gray-600">No requirements placed yet.</p> :
+
+          <ul className="divide-y divide-gray-100">
+              {recent.map((item) =>
+            <li key={item.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
+                  <div className="min-w-0">
+                    <p className="text-[14px] font-semibold text-gray-900">{item.title}</p>
+                    <p className="text-[12.5px] text-gray-600">{item.detail}</p>
+                  </div>
+                  {item.tag}
+                </li>
+            )}
+            </ul>
+          }
+        </Panel>
+
+        <Panel title="How your requirement is handled" intro="Every stage is recorded and can be challenged.">
+          <Timeline
+            steps={handlingStages.map((stage, index) => ({
+              ...stage,
+              state: (index < furthest ? 'done' : index === furthest ? 'now' : 'later') as TimelineState
+            }))} />
+
+        </Panel>
+      </div>
+
+      <div className="mt-6">
 
       <section aria-labelledby="buyer-tier" className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
         <h2 id="buyer-tier" className="text-[12px] font-medium uppercase tracking-[0.08em] text-gray-600">
@@ -166,60 +292,7 @@ export function BuyerOverview() {
         }
       </section>
 
-      {isNew && requests.length === 0 && drafts.length === 0 && submitted.length === 0 &&
-      <section aria-labelledby="welcome" className="mt-6 rounded-2xl border border-gray-900 bg-white p-5 sm:p-6">
-          <h2 id="welcome" className="text-[15px] font-semibold text-gray-900">
-            Welcome, {buyer.contactName?.split(' ')[0] ?? buyer.name}
-          </h2>
-          <p className="mt-1 text-[13.5px] leading-relaxed text-gray-700">
-            Your account is ready ({buyer.referenceId}). Start by drafting a request — you'll only be asked to verify your
-            company when you send it for qualification.
-          </p>
-          <Link
-            to="/buyer/requests"
-            className="mt-3 inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-gray-900 px-5 text-[13.5px] font-semibold text-white hover:bg-black">
-
-            Draft your first request
-            <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
-          </Link>
-        </section>
-      }
-
-      <dl className="mt-6 grid grid-cols-3 gap-3">
-        {stats.map((stat) =>
-        <div key={stat.label} className="rounded-2xl border border-gray-200 bg-white p-4">
-            <dt className="text-[12.5px] text-gray-600">{stat.label}</dt>
-            <dd className="mt-1 font-display text-[26px] font-semibold tabular-nums text-gray-900">{stat.value}</dd>
-          </div>
-        )}
-      </dl>
-
-      <section aria-labelledby="attention" className="mt-6 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
-        <h2 id="attention" className="text-[15px] font-semibold text-gray-900">
-          Needs your attention
-        </h2>
-        {attention.length === 0 ?
-        <p className="mt-2 text-[13.5px] text-gray-600">
-            Nothing right now. <Link to="/buyer/requests" className="font-medium text-gray-900 underline underline-offset-2">Post a request</Link> when
-            you have work to source.
-          </p> :
-
-        <ul className="mt-3 divide-y divide-gray-100">
-            {attention.map((item) =>
-          <li key={item.text} className="flex flex-wrap items-center justify-between gap-2 py-2.5">
-                <span className="text-[13.5px] text-gray-800">{item.text}</span>
-                <Link
-              to={item.to}
-              className="inline-flex min-h-[44px] items-center gap-1 rounded-full px-3 text-[13px] font-semibold text-gray-900 hover:bg-gray-50">
-
-                  {item.action}
-                  <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
-                </Link>
-              </li>
-          )}
-          </ul>
-        }
-      </section>
+      </div>
 
       <div className="mt-6 grid gap-6 md:grid-cols-2">
         <section aria-labelledby="buyer-unlocked" className="rounded-2xl border border-gray-200 bg-white p-5">

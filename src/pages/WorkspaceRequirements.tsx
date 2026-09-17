@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeftIcon, ArrowRightIcon, CheckCircle2Icon, CircleDashedIcon, HourglassIcon, InfoIcon, PencilIcon } from 'lucide-react';
-import { WorkspaceLayout } from '../components/workspace/WorkspaceLayout';
+import { WorkspaceLayout, exporterRegisterTabs } from '../components/workspace/WorkspaceLayout';
 import { sectors } from '../data/sectors';
 import {
   requirementCategoryLabels,
@@ -109,8 +109,9 @@ export function WorkspaceRequirements() {
 
   return (
     <WorkspaceLayout
-      title="Requirements"
-      intro="Answer four questions about how you export. You get the requirements that apply to you, in the order to tackle them.">
+      title="Requirements register"
+      intro="Answer four questions about how you export. You get the requirements that apply to you, in the order to tackle them."
+      tabs={exporterRegisterTabs}>
 
       {changes.length > 0 &&
       <section aria-labelledby="recent-changes" className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 p-5">

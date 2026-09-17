@@ -123,8 +123,8 @@ export function BuyerEngagements() {
 
   return (
     <BuyerLayout
-      title="Engagements"
-      intro="Exporters you've been introduced to, and where each engagement stands. Access to an exporter's profile lasts only as long as their consent.">
+      title="Contracts"
+      intro="Engagements with exporters you were introduced to, and where each stands. Recorded as metadata only — the Gateway does not process payments or hold funds.">
 
       {engagements.length === 0 &&
       <p className="rounded-2xl border border-gray-200 bg-white p-5 text-[13.5px] text-gray-600">

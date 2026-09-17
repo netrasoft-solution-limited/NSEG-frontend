@@ -48,7 +48,7 @@ export function Marketplace() {
             </p>
             <p className="mt-3 text-[14px] text-chalk-muted">
               Sourcing services from Nigeria?{' '}
-              <Link to="/buyer/requests" className="font-semibold text-gate-soft underline-offset-4 hover:underline">
+              <Link to="/buyer/requests/new" className="font-semibold text-gate-soft underline-offset-4 hover:underline">
                 Post a request
               </Link>
             </p>

@@ -127,6 +127,7 @@ export function AccountsProvider({ children }: {children: React.ReactNode;}) {
         const record: ActorRecord = {
           id: `act-new-${Date.now()}`,
           name: registration.displayName,
+          contactName: registration.fullName.trim(),
           email: registration.email.trim(),
           natepId: `NT-${registration.track === 'firm' ? 'B' : 'I'}26-${randomDigits(5)}`,
           track: registration.track,

@@ -11,8 +11,8 @@ export function ExporterSignIn() {
   return (
     <AuthLayout audience="exporter" switchLink={{ label: 'Buying services? Buyer sign in', to: '/buyer/sign-in' }}>
       <SignInCard
-        heading="Sign in to your exporter workspace"
-        intro="Check your standing, work through export requirements and prepare privately for verification."
+        heading="Welcome back"
+        intro="Sign in to your exporter workspace."
         registerHref="/workspace/register"
         registerLabel="Create an exporter account"
         homeHref="/workspace"
@@ -22,7 +22,7 @@ export function ExporterSignIn() {
           id: actor.id,
           email: actor.email,
           name: actor.name,
-          detail: `${trackLabels[actor.track]} · ${actor.email}`,
+          detail: `${actor.contactName ? `${actor.contactName} · ` : ''}${trackLabels[actor.track]}`,
           badge: <TierBadge tier={trustTiers.find((tier) => tier.id === actor.tier)!} />
         }))} />
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowUpRightIcon, BriefcaseIcon, ChevronDownIcon, GlobeIcon, MenuIcon, XIcon } from 'lucide-react';
+import { BrandLogo } from '../common/BrandLogo';
+import { ArrowRightIcon, BriefcaseIcon, ChevronDownIcon, GlobeIcon, LandmarkIcon, LifeBuoyIcon, MenuIcon, ShieldCheckIcon, XIcon } from 'lucide-react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { EASE } from '../motion/Reveal';
@@ -8,10 +9,9 @@ import { ThemeToggle } from './ThemeToggle';
 
 const navItems = [
 { label: 'Home', href: '#top' },
-{ label: 'Portals', href: '#portals' },
-{ label: 'Trust', href: '#trust' },
-{ label: 'Observatory', href: '#observatory' },
-{ label: 'Governance', href: '#governance' }];
+{ label: 'Who it is for', href: '#who-its-for' },
+{ label: 'How it works', href: '#how-it-works' },
+{ label: 'The process', href: '#process' }];
 
 
 const workspaceLinks = [
@@ -24,10 +24,11 @@ export function TopNav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [signInOpen, setSignInOpen] = useState(false);
+  const [verifyOpen, setVerifyOpen] = useState(false);
   const signInRef = useRef<HTMLDivElement>(null);
   const resolveHash = useHashLink();
   const { pathname } = useLocation();
-  const isCurrent = (label: string) => label === 'Home' && pathname === '/' || label === 'Marketplace' && pathname === '/marketplace';
+  const isCurrent = (label: string) => label === 'Home' && pathname === '/';
 
   useEffect(() => {
     if (!signInOpen) return;
@@ -60,18 +61,53 @@ export function TopNav() {
   // (even at rest) since pages without hero art behind it (e.g. Marketplace)
   // would otherwise leave the fixed-light nav text with no contrast in light mode.
   return (
-    <header className="fixed inset-x-0 top-0 z-50 px-4 pt-4">
+    <header className="fixed inset-x-0 top-0 z-50 px-4 pt-3">
+      <div className="mx-auto mb-2 max-w-shell">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-xl border border-white/10 bg-[#0A100D]/85 px-3 py-1.5 text-[12px] text-white/75 backdrop-blur-xl">
+          <span className="inline-flex items-center gap-1.5">
+            <LandmarkIcon className="h-3.5 w-3.5 text-gate-tint" aria-hidden="true" />
+            <span className="sm:hidden">Official FMITI platform</span>
+            <span className="hidden sm:inline">An official platform of the Federal Ministry of Industry, Trade and Investment</span>
+          </span>
+          <span className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setVerifyOpen((value) => !value)}
+              aria-expanded={verifyOpen}
+              aria-controls="verify-site"
+              className="inline-flex items-center gap-1 text-white/80 underline-offset-2 hover:text-white hover:underline">
+
+              <ShieldCheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
+              Verify this site
+            </button>
+            <a
+              href="/#support"
+              onClick={resolveHash('#support')}
+              className="inline-flex items-center gap-1 text-white/80 underline-offset-2 hover:text-white hover:underline">
+
+              <LifeBuoyIcon className="h-3.5 w-3.5" aria-hidden="true" />
+              Support
+            </a>
+          </span>
+        </div>
+        {verifyOpen &&
+        <p id="verify-site" className="mt-1.5 rounded-xl border border-white/10 bg-[#0A100D]/95 px-3 py-2 text-[12.5px] leading-relaxed text-white/80">
+            Official Gateway pages are served from a <span className="font-semibold text-white">.gov.ng</span> address over a
+            secure connection. We will never ask for your password by email or phone. This is a prototype build.
+          </p>
+        }
+      </div>
       <nav
         aria-label="Primary"
-        className={`mx-auto flex max-w-shell items-center gap-3 rounded-2xl border border-white/10 bg-black/70 px-3 py-2.5 backdrop-blur-xl transition-shadow duration-200 ease-out ${
+        className={`mx-auto flex max-w-shell items-center gap-3 rounded-2xl border border-white/10 bg-[#0A100D]/80 px-3 py-2.5 backdrop-blur-xl transition-shadow duration-200 ease-out ${
         scrolled ? 'shadow-lg shadow-black/30' : ''}`
         }>
 
         <a href="/#top" className="flex items-center pl-1">
-          <img src="/brand/nseg-logo-white.svg" alt="NSEG — Nigeria Service Export Gateway" className="h-9 w-auto sm:h-10" />
+          <BrandLogo className="h-7 sm:h-8" />
         </a>
 
-        <ul className="ml-auto hidden items-center gap-1 md:flex">
+        <ul className="ml-auto hidden items-center gap-1 lg:flex">
           {navItems.map((item) =>
           <li key={item.href}>
               <a
@@ -86,20 +122,9 @@ export function TopNav() {
               </a>
             </li>
           )}
-          <li>
-            <Link
-              to="/marketplace"
-              aria-current={isCurrent('Marketplace') ? 'page' : undefined}
-              className={`rounded-lg px-3 py-1.5 text-[13px] transition-colors duration-150 ease-out hover:text-white ${
-              isCurrent('Marketplace') ? 'text-white' : 'text-white/60'}`
-              }>
-
-              Marketplace
-            </Link>
-          </li>
         </ul>
 
-        <div ref={signInRef} className="relative ml-auto hidden md:ml-0 md:block">
+        <div ref={signInRef} className="relative ml-auto hidden lg:ml-0 lg:block">
           <button
             type="button"
             onClick={() => setSignInOpen((value) => !value)}
@@ -116,7 +141,7 @@ export function TopNav() {
           {signInOpen &&
           <div
             id="sign-in-menu"
-            className="absolute right-0 top-full mt-2 w-72 rounded-2xl border border-white/10 bg-black/95 p-2 shadow-xl shadow-black/40 backdrop-blur-xl">
+            className="absolute right-0 top-full mt-2 w-72 rounded-2xl border border-white/10 bg-[#0A100D]/95 p-2 shadow-xl shadow-black/40 backdrop-blur-xl">
 
               <ul>
                 {workspaceLinks.map(({ to, label, detail, icon: Icon }) =>
@@ -140,21 +165,22 @@ export function TopNav() {
         </div>
 
         <a
-          href="#governance"
-          className="hidden items-center gap-1.5 rounded-xl bg-gate px-3.5 py-2 text-[13px] font-semibold text-white transition-colors duration-150 ease-out hover:bg-gate-deep md:ml-0 md:inline-flex">
+          href="/#who-its-for"
+          onClick={resolveHash('#who-its-for')}
+          className="hidden items-center gap-1.5 rounded-xl bg-gate px-3.5 py-2 text-[13px] font-semibold text-white transition-colors duration-150 ease-out hover:bg-gate-deep lg:ml-0 lg:inline-flex">
 
-          Request access
-          <ArrowUpRightIcon className="h-3.5 w-3.5" aria-hidden="true" />
+          Get started
+          <ArrowRightIcon className="h-3.5 w-3.5" aria-hidden="true" />
         </a>
 
-        <ThemeToggle className="hidden md:inline-flex" />
+        <ThemeToggle className="hidden lg:inline-flex" />
 
         <button
           type="button"
           onClick={() => setOpen((value) => !value)}
           aria-expanded={open}
           aria-label={open ? 'Close menu' : 'Open menu'}
-          className="ml-auto rounded-lg border border-white/10 p-2 text-white md:hidden">
+          className="ml-auto rounded-lg border border-white/10 p-2 text-white lg:hidden">
 
           {open ? <XIcon className="h-4 w-4" /> : <MenuIcon className="h-4 w-4" />}
         </button>
@@ -167,7 +193,7 @@ export function TopNav() {
           animate={{ opacity: 1, y: 0 }}
           exit={reduced ? undefined : { opacity: 0, y: -8 }}
           transition={{ duration: 0.2, ease: EASE }}
-          className="mx-auto mt-2 max-w-shell rounded-2xl border border-white/10 bg-black/90 p-3 backdrop-blur-xl md:hidden">
+          className="mx-auto mt-2 max-w-shell rounded-2xl border border-white/10 bg-[#0A100D]/95 p-3 backdrop-blur-xl lg:hidden">
 
             <ul className="space-y-1">
               {navItems.map((item) =>
@@ -185,16 +211,6 @@ export function TopNav() {
                   </a>
                 </li>
             )}
-              <li>
-                <Link
-                to="/marketplace"
-                onClick={() => setOpen(false)}
-                aria-current={isCurrent('Marketplace') ? 'page' : undefined}
-                className={`block rounded-lg px-3 py-2 text-[14px] ${isCurrent('Marketplace') ? 'bg-white/[0.06] text-white' : 'text-white/60'}`}>
-
-                  Marketplace
-                </Link>
-              </li>
             </ul>
             <p className="mt-2 border-t border-white/10 px-3 pb-1 pt-3 text-[11px] uppercase tracking-[0.14em] text-white/60">
               Sign in
@@ -214,11 +230,14 @@ export function TopNav() {
             )}
             </ul>
             <a
-            href="#governance"
-            onClick={() => setOpen(false)}
+            href="/#who-its-for"
+            onClick={(event) => {
+              resolveHash('#who-its-for')(event);
+              setOpen(false);
+            }}
             className="mt-2 block rounded-xl bg-gate px-3.5 py-2.5 text-center text-[14px] font-semibold text-white">
 
-              Request access
+              Get started
             </a>
             <div className="mt-2 flex items-center justify-between rounded-lg border border-white/10 px-3 py-2">
               <span className="text-[13px] text-white/60">Appearance</span>

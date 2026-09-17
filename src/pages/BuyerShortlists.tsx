@@ -26,8 +26,8 @@ export function BuyerShortlists() {
 
   return (
     <BuyerLayout
-      title="Shortlists"
-      intro="Exporters a desk officer has matched and approved for your requests. You see why each one is on the list; you see who they are once they agree to share their profile.">
+      title="Introductions"
+      intro="Exporters a desk officer has matched and approved for your requirements. You see why each one matches; you see who they are only once they consent to share their details.">
 
       {withShortlists.length === 0 &&
       <p className="rounded-2xl border border-gray-200 bg-white p-5 text-[13.5px] text-gray-600">

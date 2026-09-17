@@ -1,155 +1,170 @@
-import React from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowRightIcon, BriefcaseIcon, GlobeIcon, ShieldCheckIcon } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { ArrowRightIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import type { IconComponent } from '../../types/icons';
-import { PipelineRail } from './PipelineRail';
 import { CorridorMap } from './CorridorMap';
-import { HeroMessage } from './HeroMessage';
 import { EASE } from '../motion/Reveal';
+import { opportunities } from '../../data/opportunities';
+import { outcomeReports } from '../../data/outcomes';
+import { competentAuthorities } from '../../data/regulations';
+import { useRegulatoryRegister } from '../../lib/regulatoryRegister';
 
 export type HeroVariant = 'stacked' | 'split';
 
-const audiences: { to: string; eyebrow: string; label: string; detail: string; icon: IconComponent }[] = [
-{
-  to: '/workspace',
-  eyebrow: 'For service exporters',
-  label: 'Exporter workspace',
-  detail: 'Track your standing and readiness',
-  icon: BriefcaseIcon
-},
-{
-  to: '/buyer',
-  eyebrow: 'For international buyers',
-  label: 'Buyer workspace',
-  detail: 'Post requests and review shortlists',
-  icon: GlobeIcon
-}];
+/** The rotating last word of the headline: "…matched to the world — with ___." */
+const headlineWords = ['proof', 'evidence', 'consent', 'confidence', 'integrity'];
 
+function RotatingWord({ reduced }: {reduced: boolean;}) {
+  const [index, setIndex] = useState(0);
 
-function AudienceEntries({ align }: {align: 'center' | 'start';}) {
+  useEffect(() => {
+    if (reduced) return;
+    const timer = window.setInterval(() => setIndex((current) => (current + 1) % headlineWords.length), 2600);
+    return () => window.clearInterval(timer);
+  }, [reduced]);
+
   return (
-    <ul
-      aria-label="Sign in to a workspace"
-      className={`mt-5 grid max-w-2xl gap-3 sm:grid-cols-2 ${align === 'center' ? 'mx-auto' : ''}`}>
-
-      {audiences.map(({ to, eyebrow, label, detail, icon: Icon }) =>
-      <li key={to}>
-          <Link
-          to={to}
-          className="group flex h-full items-center gap-3 rounded-2xl border border-white/12 bg-black/40 p-4 text-left backdrop-blur-md transition-colors duration-150 ease-out hover:border-gate/50 hover:bg-black/55 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gate">
-
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gate/15 text-gate">
-              <Icon className="h-5 w-5" aria-hidden="true" />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-[11px] uppercase tracking-[0.12em] text-white/60">{eyebrow}</span>
-              <span className="mt-0.5 block text-[15px] font-semibold text-white">{label}</span>
-              <span className="block text-[12.5px] text-white/65">{detail}</span>
-            </span>
-            <ArrowRightIcon
-            className="h-4 w-4 shrink-0 text-white/50 transition-transform duration-150 ease-out group-hover:translate-x-0.5 group-hover:text-gate"
-            aria-hidden="true" />
-
-          </Link>
-        </li>
+    // Every word sits in the same grid cell, the others invisible, so the cell is as wide as the
+    // longest word and the headline never reflows as the word changes.
+    <span className="relative inline-grid justify-items-start text-left align-baseline" aria-hidden="true">
+      {headlineWords.map((word) =>
+      <span key={word} className="invisible col-start-1 row-start-1 whitespace-nowrap">
+          {word}.
+        </span>
       )}
-    </ul>);
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={headlineWords[index]}
+          className="col-start-1 row-start-1 whitespace-nowrap text-gate-tint"
+          initial={reduced ? false : { opacity: 0, y: '0.35em', filter: 'blur(6px)' }}
+          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          exit={reduced ? undefined : { opacity: 0, y: '-0.35em', filter: 'blur(6px)' }}
+          transition={{ duration: 0.35, ease: EASE }}>
+
+          {headlineWords[index]}
+          <span className="text-white">.</span>
+        </motion.span>
+      </AnimatePresence>
+    </span>);
 
 }
 
-function Actions({ align = 'center' }: {align?: 'center' | 'start';}) {
-  return (
-    <>
-    <div className={`flex flex-wrap items-center gap-3 ${align === 'center' ? 'justify-center' : 'justify-start'}`}>
-      <a
-        href="#portals"
-        className="inline-flex items-center gap-2 rounded-xl bg-gate px-5 py-3 text-[14px] font-semibold text-white transition-colors duration-150 ease-out hover:bg-gate-deep">
+const compactUsd = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  notation: 'compact',
+  maximumFractionDigits: 1
+});
 
-        See how the Gateway works
-        <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
-      </a>
-      <a
-        href="#governance"
-        className="inline-flex items-center gap-2 rounded-xl border border-white/14 px-5 py-3 text-[14px] font-semibold text-white transition-colors duration-150 ease-out hover:border-white/30">
-
-        Institutional onboarding
-      </a>
-    </div>
-    <AudienceEntries align={align} />
-    </>);
+/** Live figures for the strip under the hero, read from the same records the console uses. */
+function useGatewayFigures() {
+  const { requirements } = useRegulatoryRegister();
+  const verifiedValue = outcomeReports.
+  filter((report) => report.verification === 'verified').
+  reduce((total, report) => total + report.amount, 0);
+  return [
+  { label: 'Published requirements', value: requirements.filter((item) => item.status === 'current').length.toString() },
+  { label: 'Live opportunities', value: opportunities.length.toString() },
+  { label: 'Verified export value', value: compactUsd.format(verifiedValue) },
+  { label: 'Validating institutions', value: competentAuthorities.length.toString() }];
 
 }
 
-export function Hero({ variant = 'stacked' }: {variant?: HeroVariant;}) {
+/** The `variant` prop is kept for the app's existing API; both render the same layout. */
+export function Hero(_props: {variant?: HeroVariant;}) {
   const reduced = useReducedMotion();
+  const figures = useGatewayFigures();
 
-  const intro =
-  <motion.p
-    initial={reduced ? false : { opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.28, ease: EASE }}
-    className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.04] px-3 py-1.5 text-[11.5px] text-white/70">
+  const fade = (delay: number) =>
+  reduced ?
+  {} :
+  {
+    initial: { opacity: 0, y: 12 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.32, ease: EASE, delay }
+  };
 
-      <ShieldCheckIcon className="h-3.5 w-3.5 text-gate" aria-hidden="true" />
-      FMITI · NATEP / NCMSE · NDPA 2023 by design
-    </motion.p>;
+  return (
+    <section
+      id="top"
+      className="relative flex min-h-[100svh] flex-col overflow-hidden bg-[#0A100D] pb-16 pt-44 sm:pb-20 sm:pt-44 lg:pb-12">
 
-
-  if (variant === 'split') {
-    return (
-      <section id="top" className="relative overflow-hidden pt-32 sm:pt-36">
+      {/* Map nudged down so its Nigeria hub lands between the headline and the figures. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-[-12%] top-[12%] lg:bottom-[-22%] lg:top-[22%]" aria-hidden="true">
         <CorridorMap />
-        <div className="pointer-events-none absolute inset-0 bg-black/55" aria-hidden="true" />
-        <div className="relative mx-auto grid max-w-shell items-center gap-10 px-4 pb-16 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-14 lg:pb-24">
-          <div>
-            {intro}
-            <div className="mt-6">
-              <HeroMessage
-                align="start"
-                headlineClass="min-h-[3.25em] font-display text-[40px] font-semibold leading-[1.04] tracking-[-0.03em] text-white sm:min-h-[2.3em] sm:text-[54px] lg:text-[60px]"
-                subClass="max-w-xl text-[15px] leading-relaxed text-white/75 sm:text-base" />
-              
-            </div>
-            <div className="mt-8">
-              <Actions align="start" />
-            </div>
-          </div>
-          <motion.div
-            initial={reduced ? false : { opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, ease: EASE, delay: reduced ? 0 : 0.2 }}>
-            
-            <PipelineRail />
+      </div>
+      <div className="pointer-events-none absolute inset-0 bg-[#0A100D]/65" aria-hidden="true" />
+
+      <div className="relative mx-auto flex w-full max-w-shell flex-1 flex-col justify-between gap-12 px-4">
+        <div className="text-center">
+          <motion.p
+            {...fade(0)}
+            className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.05] px-3.5 py-1.5 text-[11.5px] font-medium uppercase tracking-[0.16em] text-white/80">
+
+            <span className="h-1.5 w-1.5 rounded-full bg-gate-tint" aria-hidden="true" />
+            National Talent Export Programme
+          </motion.p>
+
+          <motion.h1
+            {...fade(0.05)}
+            className="mx-auto mt-5 max-w-4xl text-balance font-display text-[38px] font-semibold leading-[1.04] tracking-[-0.03em] text-white sm:text-[54px] lg:text-[62px]">
+
+            {/* Screen readers get one stable sentence; the rotation is visual only. */}
+            <span className="sr-only">Nigerian expertise, matched to the world — with proof.</span>
+            <span aria-hidden="true">Nigerian expertise, matched to the world — with </span>
+            <RotatingWord reduced={Boolean(reduced)} />
+          </motion.h1>
+
+          <motion.p
+            {...fade(0.1)}
+            className="mx-auto mt-5 max-w-2xl text-[15px] leading-relaxed text-white/75 sm:text-[16.5px]">
+
+            One national platform where international demand is verified, market requirements are published with their
+            source, Nigerian capability is evidenced rather than claimed, and every introduction is made with recorded
+            consent.
+          </motion.p>
+
+          <motion.div {...fade(0.15)} className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              to="/buyer"
+              className="inline-flex min-h-[48px] items-center gap-2 rounded-xl bg-gate px-5 text-[14.5px] font-semibold text-white transition-colors duration-150 ease-out hover:bg-gate-deep">
+
+              I am buying services
+              <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
+            </Link>
+            <Link
+              to="/workspace"
+              className="inline-flex min-h-[48px] items-center gap-2 rounded-xl border border-white/25 bg-white/[0.04] px-5 text-[14.5px] font-semibold text-white transition-colors duration-150 ease-out hover:border-white/50">
+
+              I am exporting services
+              <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
+            </Link>
           </motion.div>
         </div>
-      </section>);
 
-  }
-
-  return (
-    <section id="top" className="relative overflow-hidden pt-32 sm:pt-40">
-      <CorridorMap />
-      <div className="pointer-events-none absolute inset-0 bg-black/60" aria-hidden="true" />
-      <div className="relative mx-auto max-w-shell px-4 pb-16 lg:pb-24">
-        <div className="text-center">{intro}</div>
-        <div className="mt-7">
-          <HeroMessage
-            align="center"
-            headlineClass="mx-auto max-w-4xl min-h-[3.25em] font-display text-[42px] font-semibold leading-[1.03] tracking-[-0.03em] text-white sm:min-h-[2.2em] sm:text-[64px] lg:text-[78px]"
-            subClass="max-w-2xl text-[15px] leading-relaxed text-white/75 sm:text-base" />
-          
-        </div>
-        <div className="mt-8">
-          <Actions />
-        </div>
         <motion.div
-          className="mt-14 text-left"
-          initial={reduced ? false : { opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, ease: EASE, delay: reduced ? 0 : 0.34 }}>
-          
-          <PipelineRail />
+          {...fade(0.22)}
+          className="mx-auto w-full max-w-4xl rounded-2xl border border-white/12 bg-[#0A100D]/60 p-4 sm:p-5">
+
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-4">
+            {figures.map((figure) =>
+            <div key={figure.label} className="sm:border-l sm:border-white/10 sm:pl-4 sm:first:border-l-0 sm:first:pl-0">
+                <dt className="text-[12px] text-white/60">{figure.label}</dt>
+                <dd className="mt-1 font-display text-[26px] font-semibold tabular-nums leading-none text-white sm:text-[30px]">
+                  {figure.value}
+                </dd>
+              </div>
+            )}
+          </dl>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-3 text-[12.5px]">
+            <span className="inline-flex items-center gap-2 text-white/75">
+              <span className="relative flex h-2 w-2" aria-hidden="true">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-gate-tint opacity-60 motion-safe:animate-ping" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-gate-tint" />
+              </span>
+              Live on the Gateway · <span className="font-medium text-white">Operating</span>
+            </span>
+          </div>
         </motion.div>
       </div>
     </section>);

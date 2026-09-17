@@ -5,7 +5,6 @@ import { BuyerTierBadge } from '../components/workspace/TierBadge';
 import { buyers } from '../data/buyers';
 import { buyerTiers } from '../data/buyerTiers';
 import { opportunities } from '../data/opportunities';
-import { consentGrants } from '../data/consentGrants';
 import { useExporterSession } from '../lib/exporterSession';
 import { useGatewayExchange, type IntroductionRequest } from '../lib/gatewayExchange';
 import { modeLabel, sectorLabel } from '../lib/marketplaceLookups';
@@ -13,9 +12,7 @@ import { useAuditLog } from '../lib/auditLog';
 import { usePendingAction } from '../lib/usePendingAction';
 import { Spinner } from '../components/common/Spinner';
 
-/** What an accepted introduction discloses (FND-05/06): enough to decide on a conversation,
- * nothing more. */
-const disclosedFields = ['Your name and NATEP ID', 'Your tier and what was verified', 'Your verified certifications'];
+import { introductionFields as disclosedFields } from '../lib/exporterDisclosures';
 
 const responseLabels: Record<Exclude<IntroductionRequest['response'], 'pending' | 'accepted'>, string> = {
   declined: 'You declined',
@@ -31,7 +28,6 @@ export function WorkspaceIntroductions() {
   const pending = mine.filter((item) => item.response === 'pending');
   const active = mine.filter((item) => item.response === 'accepted');
   const closed = mine.filter((item) => item.response === 'declined' || item.response === 'withdrawn');
-  const earlierGrants = consentGrants.filter((grant) => grant.actorId === actor.id);
 
   const { run, pending: inFlight, isPending } = usePendingAction();
 
@@ -152,8 +148,8 @@ export function WorkspaceIntroductions() {
 
   return (
     <WorkspaceLayout
-      title="Introductions"
-      intro="When you're on a shortlist, buyers see why you match but not who you are. They only see your profile if you accept — and you can withdraw that at any time.">
+      title="Consent requests"
+      intro="You are in control. When you're shortlisted, buyers see why you match but not who you are. They see your details only if you accept, and you can withdraw at any time.">
 
       <section aria-labelledby="intro-pending">
         <h2 id="intro-pending" className="text-[15px] font-semibold text-gray-900">
@@ -183,33 +179,6 @@ export function WorkspaceIntroductions() {
             Not shared
           </h2>
           <ul className="mt-3 space-y-4">{closed.map(renderCard)}</ul>
-        </section>
-      }
-
-      {earlierGrants.length > 0 &&
-      <section aria-labelledby="intro-earlier" className="mt-8 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
-          <h2 id="intro-earlier" className="text-[15px] font-semibold text-gray-900">
-            Earlier consents
-          </h2>
-          <ul className="mt-3 divide-y divide-gray-100">
-            {earlierGrants.map((grant) =>
-          <li key={grant.id} className="flex flex-wrap items-start justify-between gap-2 py-3">
-                <div>
-                  <p className="text-[14px] text-gray-900">{grant.recipient}</p>
-                  <p className="text-[12.5px] text-gray-600">
-                    {grant.purpose} · shares {grant.fieldsDisclosed.join(', ').toLowerCase()}
-                  </p>
-                </div>
-                <span
-              className={`rounded-full px-2.5 py-1 text-[12px] font-medium ${
-              grant.status === 'active' ? 'bg-emerald-50 text-emerald-800' : 'bg-gray-100 text-gray-700'}`
-              }>
-
-                  {grant.status === 'active' ? 'Active' : grant.status === 'revoked' ? 'Withdrawn' : 'Expired'}
-                </span>
-              </li>
-          )}
-          </ul>
         </section>
       }
 

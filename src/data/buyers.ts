@@ -23,6 +23,7 @@ export const buyers: Buyer[] = [
 {
   id: 'byr-01',
   name: 'Nordwind Logistics BV',
+  contactName: 'Elke Vermeer',
   referenceId: 'BYR-26-40021',
   email: 'sourcing@nordwindlogistics.eu',
   region: 'Western Europe',
@@ -34,6 +35,7 @@ export const buyers: Buyer[] = [
 {
   id: 'byr-02',
   name: 'Meridian Holdings Group',
+  contactName: 'Thandiwe Mokoena',
   referenceId: 'BYR-26-40088',
   email: 'procurement@meridianholdings.co.za',
   region: 'Southern Africa',
@@ -45,6 +47,7 @@ export const buyers: Buyer[] = [
 {
   id: 'byr-03',
   name: 'City of Ashbrook Municipal Services',
+  contactName: 'Daniel Reyes',
   referenceId: 'BYR-26-40105',
   email: 'contracts@ashbrookmunicipal.gov',
   region: 'North America',
@@ -56,6 +59,7 @@ export const buyers: Buyer[] = [
 {
   id: 'byr-04',
   name: 'Halcyon BPO Solutions Inc.',
+  contactName: 'Priya Raman',
   referenceId: 'BYR-26-40142',
   email: 'vendors@halcyonbpo.com',
   region: 'Western Europe',
@@ -68,6 +72,7 @@ export const buyers: Buyer[] = [
 {
   id: 'byr-05',
   name: 'Gulfline Freight Partners LLC',
+  contactName: 'Omar Al-Fahim',
   referenceId: 'BYR-26-40167',
   email: 'ops@gulflinefreight.ae',
   region: 'Gulf States',
@@ -79,6 +84,7 @@ export const buyers: Buyer[] = [
 {
   id: 'byr-06',
   name: 'Cascadia Telehealth Network',
+  contactName: 'Marta Ilić',
   referenceId: 'BYR-26-40190',
   email: 'partnerships@cascadiatelehealth.com',
   region: 'Western Europe',
@@ -90,6 +96,7 @@ export const buyers: Buyer[] = [
 {
   id: 'byr-07',
   name: 'Sahel Employer Services Ltd',
+  contactName: 'Fatou Diallo',
   referenceId: 'BYR-26-40211',
   email: 'compliance@sahelemployer.co.ke',
   region: 'East Africa',
@@ -101,6 +108,7 @@ export const buyers: Buyer[] = [
 {
   id: 'byr-08',
   name: 'Ferrovia Manufacturing Group',
+  contactName: 'Luca Bianchi',
   referenceId: 'BYR-26-40233',
   email: 'itprocurement@ferroviagroup.com',
   region: 'North America',
@@ -112,6 +120,7 @@ export const buyers: Buyer[] = [
 {
   id: 'byr-09',
   name: 'Kestrel Consumer Brands',
+  contactName: 'Sarah Whitfield',
   referenceId: 'BYR-26-40258',
   email: 'marketing@kestrelbrands.co.za',
   region: 'Southern Africa',
@@ -124,6 +133,7 @@ export const buyers: Buyer[] = [
 {
   id: 'byr-10',
   name: 'Dunmore Property Developers',
+  contactName: 'Aoife Kelly',
   referenceId: 'BYR-26-40276',
   email: 'engineering@dunmoredevelopers.ae',
   region: 'Gulf States',
@@ -135,6 +145,7 @@ export const buyers: Buyer[] = [
 {
   id: 'byr-11',
   name: 'Fintrust Remittance Technologies',
+  contactName: 'Kwame Mensah',
   referenceId: 'BYR-26-40299',
   email: 'vendorrisk@fintrustremit.com',
   region: 'North America',
@@ -147,6 +158,7 @@ export const buyers: Buyer[] = [
 {
   id: 'byr-12',
   name: 'Meridian Trading House',
+  contactName: 'Rafael Costa',
   referenceId: 'BYR-26-40312',
   email: 'treasury@meridiantradinghouse.eu',
   region: 'Western Europe',

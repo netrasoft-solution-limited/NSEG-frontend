@@ -136,7 +136,7 @@ export function BuyerRegister() {
 
   return (
     <AuthLayout audience="buyer" steps={steps} currentStep={step} switchLink={{ label: 'Already registered? Sign in', to: '/buyer/sign-in' }}>
-      <div className="lg:hidden">
+      <div>
         <StepProgress steps={steps} current={step} />
       </div>
 
@@ -147,9 +147,9 @@ export function BuyerRegister() {
           if (step === steps.length - 1) run('submit', create);else
           next();
         }}
-        className="mt-5 lg:mt-0">
+        className="mt-8">
 
-        <h1 ref={headingRef} tabIndex={-1} className="font-display text-[26px] font-semibold tracking-[-0.01em] text-gray-900 focus:outline-none">
+        <h1 ref={headingRef} tabIndex={-1} className="text-balance font-sora text-[30px] font-semibold leading-[1.1] tracking-[-0.03em] text-gray-900 focus:outline-none sm:text-[34px]">
           {step === 0 && 'Create your buyer account'}
           {step === 1 && 'Check your email'}
           {step === 2 && 'Your organisation'}

@@ -19,10 +19,9 @@ export function PageLoader() {
     <div role="status" aria-live="polite" className={`flex min-h-screen w-full flex-col items-center justify-center gap-5 ${surface}`}>
       <div className="relative flex h-20 w-20 items-center justify-center">
         <Spinner className="absolute inset-0 h-20 w-20 text-gate" />
-        <img
-          src={isLightApp ? '/brand/nseg-mark-color.svg' : '/brand/nseg-mark-white.svg'}
-          alt=""
-          className="h-10 w-auto" />
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-sm">
+          <img src="/brand/nseg-mark-color.svg" alt="" className="h-9 w-auto" />
+        </span>
 
       </div>
       <p className="text-[13px] font-medium">Loading…</p>

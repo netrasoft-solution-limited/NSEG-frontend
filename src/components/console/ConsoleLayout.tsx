@@ -1,4 +1,5 @@
 import React from 'react';
+import { PageTransition } from '../common/PageTransition';
 import { Link, useLocation } from 'react-router-dom';
 import {
   ActivityIcon,
@@ -202,7 +203,9 @@ export function ConsoleLayout({ breadcrumb, onExport, children }: ConsoleLayoutP
           </div>
         </header>
 
-        <main className="flex-1 px-6 py-6">{children}</main>
+        <PageTransition className="flex-1">
+          <main className="px-6 py-6">{children}</main>
+        </PageTransition>
       </div>
     </div>);
 

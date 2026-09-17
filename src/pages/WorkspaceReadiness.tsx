@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { CheckCircle2Icon, CircleDashedIcon, EyeIcon, HourglassIcon, LockIcon, SendIcon, XCircleIcon } from 'lucide-react';
-import { WorkspaceLayout } from '../components/workspace/WorkspaceLayout';
+import { WorkspaceLayout, profileTabs } from '../components/workspace/WorkspaceLayout';
 import { TierBadge } from '../components/workspace/TierBadge';
 import { evidenceLabels, trustTiers, type EvidenceKey } from '../data/trustTiers';
 import { documentKindLabels, vaultDocuments, type DocumentKind } from '../data/vaultDocuments';
@@ -108,8 +108,9 @@ export function WorkspaceReadiness() {
 
   return (
     <WorkspaceLayout
-      title="Readiness"
-      intro="Prepare at your own pace. This page is private to you — nothing here reaches an officer or a buyer unless you choose to share it.">
+      title="Capability profile"
+      intro="Prepare at your own pace. Evidence and readiness stay private to you — nothing reaches an officer or a buyer unless you choose to share it."
+      tabs={profileTabs}>
 
       <section
         aria-labelledby="privacy"

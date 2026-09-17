@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRightIcon, CheckIcon, CircleIcon, InfoIcon, LockIcon, UnlockIcon } from 'lucide-react';
-import { WorkspaceLayout } from '../components/workspace/WorkspaceLayout';
+import { WorkspaceLayout, profileTabs } from '../components/workspace/WorkspaceLayout';
 import { TierBadge } from '../components/workspace/TierBadge';
 import { evidenceLabels, trustTiers } from '../data/trustTiers';
 import { useExporterSession } from '../lib/exporterSession';
@@ -31,7 +31,7 @@ export function WorkspaceStanding() {
   const standing = exporterStanding(actor);
   const tierIndex = trustTiers.indexOf(standing.tier);
   const band = readinessTierFor(standing.score);
-  const actionTarget = standing.missingEvidence.length > 0 ? '/workspace/readiness' : '/workspace/readiness#diagnostic';
+  const actionTarget = standing.missingEvidence.length > 0 ? '/workspace/profile/evidence' : '/workspace/profile/evidence#diagnostic';
   const accounts = useAccounts();
   const isNewAccount = accounts.isNewAccount(actor.id);
   const identityKeys = trustTiers[1].evidence[actor.track];
@@ -46,20 +46,21 @@ export function WorkspaceStanding() {
     'Identity details sent for verification' :
     `Add your ${identityMissing.map((key) => evidenceLabels[key].toLowerCase()).join(' and ')} for verification`,
     done: identityStarted,
-    to: '/workspace/readiness'
+    to: '/workspace/profile/evidence'
   },
   {
     label: workspace.diagnosticSubmitted ? 'Readiness diagnostic sent for review' : 'Take the readiness diagnostic',
     done: computeReadinessScore(actor.diagnostic) > 0 || workspace.diagnosticSubmitted,
-    to: '/workspace/readiness#diagnostic'
+    to: '/workspace/profile/evidence#diagnostic'
   },
-  { label: 'Check which export requirements apply to you', done: false, to: '/workspace/requirements' }];
+  { label: 'Check which export requirements apply to you', done: false, to: '/workspace/requirements/pathway' }];
 
 
   return (
     <WorkspaceLayout
-      title="My standing"
-      intro="Your tier, what has been verified to get you there, and the one thing that moves you to the next tier.">
+      title="Capability profile"
+      intro="Your tier, what has been verified to get you there, and the one thing that moves you to the next tier."
+      tabs={profileTabs}>
 
       {isNewAccount &&
       <section aria-labelledby="setup" className="mb-6 rounded-2xl border border-gray-900 bg-white p-5 sm:p-6">

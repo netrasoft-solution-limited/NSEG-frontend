@@ -16,7 +16,10 @@ export interface CapabilityProfile {
 
 export interface ActorRecord {
   id: string;
+  /** The organisation (or, on the individual track, the professional's own name). */
   name: string;
+  /** The person who signs in and acts for this account. */
+  contactName?: string;
   email: string;
   /** D-04: the character after "NT-" is the entity type — B for a firm, I for an individual. */
   natepId: string;
@@ -57,6 +60,7 @@ const actorRecords: ActorRecord[] = [
 {
   id: 'act-01',
   name: 'Apex Software Global',
+  contactName: 'Chinedu Okafor',
   email: 'contact@apexsoftware.ng',
   natepId: 'NT-B26-94821',
   track: 'firm',
@@ -73,6 +77,7 @@ const actorRecords: ActorRecord[] = [
 {
   id: 'act-02',
   name: 'Lagos Delivery Collective',
+  contactName: 'Bisi Adeyemi',
   email: 'ops@lagosdelivery.ng',
   natepId: 'NT-B26-11029',
   track: 'firm',
@@ -89,6 +94,7 @@ const actorRecords: ActorRecord[] = [
 {
   id: 'act-03',
   name: 'Abuja Analytics Partners',
+  contactName: 'Ngozi Eze',
   email: 'hello@abujaanalytics.ng',
   natepId: 'NT-B26-55402',
   track: 'firm',
@@ -106,6 +112,7 @@ const actorRecords: ActorRecord[] = [
 {
   id: 'act-04',
   name: 'Northbridge Consulting NG',
+  contactName: 'Segun Aluko',
   email: 'team@northbridge.ng',
   natepId: 'NT-B26-70213',
   track: 'firm',
@@ -123,6 +130,7 @@ const actorRecords: ActorRecord[] = [
 {
   id: 'act-05',
   name: 'Kaduna Textile Exports',
+  contactName: 'Amina Bello',
   email: 'export@kadunatextile.ng',
   natepId: 'NT-B26-30871',
   track: 'firm',
@@ -140,6 +148,7 @@ const actorRecords: ActorRecord[] = [
 {
   id: 'act-06',
   name: 'Zenith Freight Partners',
+  contactName: 'Ifeanyi Nwosu',
   email: 'info@zenithfreight.ng',
   natepId: 'NT-B26-48210',
   track: 'firm',
@@ -156,6 +165,7 @@ const actorRecords: ActorRecord[] = [
 {
   id: 'act-07',
   name: 'Ibadan Creative Studio',
+  contactName: 'Folake Adebayo',
   email: 'studio@ibadancreative.ng',
   natepId: 'NT-B26-90144',
   track: 'firm',
@@ -173,6 +183,7 @@ const actorRecords: ActorRecord[] = [
 {
   id: 'act-08',
   name: 'Riverside BPO Hub',
+  contactName: 'Emeka Chukwu',
   email: 'contact@riversidebpo.ng',
   natepId: 'NT-B26-63357',
   track: 'firm',
@@ -189,6 +200,7 @@ const actorRecords: ActorRecord[] = [
 {
   id: 'act-09',
   name: 'Coastal Legal Advisory',
+  contactName: 'Yetunde Balogun',
   email: 'advisory@coastallegal.ng',
   natepId: 'NT-B26-20938',
   track: 'firm',
@@ -206,6 +218,7 @@ const actorRecords: ActorRecord[] = [
 {
   id: 'act-10',
   name: 'Savannah Healthtech Ltd',
+  contactName: 'Hauwa Ibrahim',
   email: 'contact@savannahhealthtech.ng',
   natepId: 'NT-B25-11567',
   track: 'firm',
@@ -223,6 +236,7 @@ const actorRecords: ActorRecord[] = [
 {
   id: 'act-11',
   name: 'Delta Engineering Works',
+  contactName: 'Tochukwu Nnamdi',
   email: 'projects@deltaengineering.ng',
   natepId: 'NT-B26-77630',
   track: 'firm',
@@ -239,6 +253,7 @@ const actorRecords: ActorRecord[] = [
 {
   id: 'act-12',
   name: 'Plateau Media Collective',
+  contactName: 'Dooshima Iorver',
   email: 'studio@plateaumedia.ng',
   natepId: 'NT-B26-40982',
   track: 'firm',

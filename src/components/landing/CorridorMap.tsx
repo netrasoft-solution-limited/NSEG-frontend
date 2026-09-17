@@ -75,7 +75,7 @@ export function CorridorMap() {
                 <motion.path
                   d={d}
                   fill="none"
-                  stroke="#008751"
+                  stroke="#4FB68F"
                   strokeWidth="1.4"
                   strokeLinecap="round"
                   initial={reduced ? { pathLength: 1, opacity: 0.35 } : { pathLength: 0, opacity: 0 }}
@@ -87,7 +87,7 @@ export function CorridorMap() {
                   } />
                 
                 {!reduced &&
-                <circle r="2.6" fill="#8ce3b6">
+                <circle r="2.6" fill="#A8D6C2">
                     <animateMotion dur="4.2s" repeatCount="indefinite" begin={`${origin.delay}s`} path={d} />
                     <animate
                     attributeName="opacity"
@@ -134,7 +134,7 @@ export function CorridorMap() {
             cx={hub.x}
             cy={hub.y}
             fill="none"
-            stroke="#008751"
+            stroke="#4FB68F"
             strokeWidth="1.2"
             initial={{ r: 8, opacity: 0.5 }}
             animate={{ r: [8, 20], opacity: [0.5, 0] }}
@@ -142,7 +142,7 @@ export function CorridorMap() {
 
           }
           <circle cx={hub.x} cy={hub.y} r="9" fill="rgba(22,179,100,0.18)" />
-          <circle cx={hub.x} cy={hub.y} r="4" fill="#008751" />
+          <circle cx={hub.x} cy={hub.y} r="4" fill="#4FB68F" />
           <text
             x={hub.x}
             y={hub.y + 24}
