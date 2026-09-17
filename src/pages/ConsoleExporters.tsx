@@ -10,6 +10,7 @@ import { downloadCsv } from '../lib/exportCsv';
 import { useOfficerProfile } from '../lib/officerProfile';
 import { useAuditLog } from '../lib/auditLog';
 import { canMutate } from '../lib/permissions';
+import { useRegistryDecisions } from '../lib/registryDecisions';
 import { computeReadinessScore } from '../lib/readinessScore';
 
 const emptyFilters: ActorFilterState = { search: '', status: 'all', tier: 'all' };
@@ -20,11 +21,11 @@ export function ConsoleExporters() {
   const mutable = canMutate(profile.role);
   const [filters, setFilters] = useState<ActorFilterState>(emptyFilters);
   const [verificationDecisions, setVerificationDecisions] = useState<Record<string, VerificationDecision>>({});
-  const [suspensionOverrides, setSuspensionOverrides] = useState<Record<string, boolean>>({});
+  const { isSuspended: suspendedFor, setSuspended } = useRegistryDecisions();
   const accounts = useAccounts();
   const actors = accounts.exporters;
 
-  const isSuspended = (actor: (typeof accounts.exporters)[number]) => suspensionOverrides[actor.id] ?? actor.suspended;
+  const isSuspended = (actor: (typeof accounts.exporters)[number]) => suspendedFor(actor.id, actor.suspended);
   const filtered = filterActors(actors, filters).map((actor) => ({ ...actor, suspended: isSuspended(actor) }));
   const verifiedCount = actors.filter((actor) => actor.tier !== 'registered').length;
   const newCount = actors.filter((actor) => actor.isNew).length;
@@ -128,7 +129,7 @@ export function ConsoleExporters() {
               // New registrations: approval verifies what they submitted; rejection never locks them out.
               accounts.decideExporterVerification(id, decision);
             } else if (decision === 'rejected') {
-              setSuspensionOverrides((current) => ({ ...current, [id]: true }));
+              setSuspended(id, true);
             }
             const actor = actors.find((item) => item.id === id);
             logEvent(
@@ -146,9 +147,10 @@ export function ConsoleExporters() {
           total={actors.length}
           filters={filters}
           onChange={setFilters}
+          hrefFor={(id) => `/console/exporters/${id}`}
           canMutate={mutable}
           onSuspendToggle={(id, nextSuspended) => {
-            setSuspensionOverrides((current) => ({ ...current, [id]: nextSuspended }));
+            setSuspended(id, nextSuspended);
             const actor = actors.find((item) => item.id === id);
             logEvent(
               `${nextSuspended ? 'Suspended' : 'Reinstated'} ${actor?.name ?? id}'s exporter account`,

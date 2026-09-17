@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ChevronDownIcon, MoreVerticalIcon, SearchIcon } from 'lucide-react';
 import type { Actor } from '../../data/actors';
 import { trackLabels, trustTiers } from '../../data/trustTiers';
@@ -12,6 +13,8 @@ interface ActorTableProps {
   filters: ActorFilterState;
   onChange: (filters: ActorFilterState) => void;
   onSuspendToggle: (actorId: string, nextSuspended: boolean) => void;
+  /** Where an exporter's own record lives, when there is one to open. */
+  hrefFor?: (actorId: string) => string;
   canMutate: boolean;
 }
 
@@ -44,7 +47,7 @@ function StatusPill({ actor }: {actor: Actor;}) {
 
 }
 
-export function ActorTable({ actors, total, filters, onChange, onSuspendToggle, canMutate }: ActorTableProps) {
+export function ActorTable({ actors, total, filters, onChange, onSuspendToggle, hrefFor, canMutate }: ActorTableProps) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   return (
@@ -134,7 +137,16 @@ export function ActorTable({ actors, total, filters, onChange, onSuspendToggle, 
                       {initialsOf(actor.name)}
                     </span>
                     <div className="min-w-0">
+                      {hrefFor ?
+                      <Link
+                        to={hrefFor(actor.id)}
+                        className="block truncate font-medium text-gray-900 underline-offset-4 hover:underline">
+
+                          {actor.name}
+                        </Link> :
+
                       <p className="truncate font-medium text-gray-900">{actor.name}</p>
+                      }
                       <p className="truncate font-mono text-[10.5px] text-gray-400">
                         {actor.natepId}
                         {actor.track === 'individual' &&

@@ -8,6 +8,7 @@ import { AuditLogProvider } from './lib/auditLog';
 import { GatewayExchangeProvider } from './lib/gatewayExchange';
 import { RegulatoryRegisterProvider } from './lib/regulatoryRegister';
 import { AccountsProvider, useAccounts } from './lib/accounts';
+import { RegistryDecisionsProvider } from './lib/registryDecisions';
 import { DocumentVerificationProvider } from './lib/documentVerification';
 import { EngagementLedgerProvider } from './lib/engagementLedger';
 
@@ -41,6 +42,7 @@ function usePreload(pages: {preload: () => void;}[]) {
 const Marketplace = lazyPage(() => import('./pages/Marketplace'), 'Marketplace');
 const ConsoleDashboard = lazyPage(() => import('./pages/ConsoleDashboard'), 'ConsoleDashboard');
 const ConsoleExporters = lazyPage(() => import('./pages/ConsoleExporters'), 'ConsoleExporters');
+const ConsoleExporterDetail = lazyPage(() => import('./pages/ConsoleExporterDetail'), 'ConsoleExporterDetail');
 const ConsoleOpportunities = lazyPage(() => import('./pages/ConsoleOpportunities'), 'ConsoleOpportunities');
 const ConsoleMarketIntelligence = lazyPage(() => import('./pages/ConsoleMarketIntelligence'), 'ConsoleMarketIntelligence');
 const ConsoleTrustBadging = lazyPage(() => import('./pages/ConsoleTrustBadging'), 'ConsoleTrustBadging');
@@ -89,6 +91,7 @@ function Console() {
     <Routes>
       <Route index element={<ConsoleDashboard />} />
       <Route path="exporters" element={<ConsoleExporters />} />
+      <Route path="exporters/:actorId" element={<ConsoleExporterDetail />} />
       <Route path="buyers" element={<ConsoleBuyers />} />
       <Route path="trust-badging" element={<ConsoleTrustBadging />} />
       <Route path="opportunities" element={<ConsoleOpportunities />} />
@@ -191,6 +194,7 @@ export function App({ heroVariant = 'stacked', liveDemos = true }: AppProps) {
     <OfficerProfileProvider>
       <AuditLogProvider>
         <DocumentVerificationProvider>
+        <RegistryDecisionsProvider>
         <EngagementLedgerProvider>
         <GatewayExchangeProvider>
         <RegulatoryRegisterProvider>
@@ -217,6 +221,7 @@ export function App({ heroVariant = 'stacked', liveDemos = true }: AppProps) {
         </RegulatoryRegisterProvider>
         </GatewayExchangeProvider>
         </EngagementLedgerProvider>
+        </RegistryDecisionsProvider>
         </DocumentVerificationProvider>
       </AuditLogProvider>
     </OfficerProfileProvider>);
