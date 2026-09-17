@@ -6,6 +6,7 @@ export type AuditCategory =
 'opportunities' |
 'engagements' |
 'outcomes' |
+'market-intelligence' |
 'readiness' |
 'compliance' |
 'incentives' |

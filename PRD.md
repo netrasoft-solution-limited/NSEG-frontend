@@ -121,7 +121,7 @@ matrix, non-goals, precedence order) constrain every module below.
 | 3.2 | Service Demand Opportunity & RFP Publishing | 🟡 | [ConsoleOpportunities.tsx](src/pages/ConsoleOpportunities.tsx), [opportunities.ts](src/data/opportunities.ts) — officer-side qualification exists; no buyer-facing RFP creation form |
 | 3.3 | Automated Matchmaking & Supplier Discovery | ✅ | [ShortlistReview.tsx](src/components/console/ShortlistReview.tsx), [shortlists.ts](src/data/shortlists.ts) |
 | 3.4 | Proposal Submission & Bid Management | 🟡 | [ConsoleEngagements.tsx](src/pages/ConsoleEngagements.tsx) tracks referral→interview→contract stages; no actual proposal/bid document submission |
-| 3.5 | Market Access Intelligence & Regulatory Insights | ⬜ | Not started (demand-side market playbooks / intelligence briefings) |
+| 3.5 | Market Access Intelligence & Regulatory Insights | ✅ | [ConsoleMarketIntelligence.tsx](src/pages/ConsoleMarketIntelligence.tsx), [MarketIntelligenceLibrary.tsx](src/components/console/MarketIntelligenceLibrary.tsx), [marketIntelligence.ts](src/data/marketIntelligence.ts) — destination-market briefs indexed by country/sector/mode with a draft→under-review→published authoring workflow |
 | 3.6 | Symmetric Trust Badging & Progressive Feature Unlocking | 🟡 | [trustTiers.ts](src/data/trustTiers.ts), [buyerTiers.ts](src/data/buyerTiers.ts) drive badges shown in tables; no feature-unlock gating logic |
 | 3.7 | Cross-Border Settlement & Verified Escrow | 🚫 | Constrained by Module 1 Non-Goal 1 — see §5. Track as milestone metadata only (already how `ConsoleEngagements` stages `contract-signed`/`commenced`) |
 | — | Outcome / Attribution Event (Canonical Information Package #8) | ✅ | [ConsoleOutcomes.tsx](src/pages/ConsoleOutcomes.tsx), [OutcomeLedger.tsx](src/components/console/OutcomeLedger.tsx), [outcomes.ts](src/data/outcomes.ts) — self-reported outcomes start Provisional, an officer independently verifies, and same-engagement duplicate self-reports are flagged for single-count decisions before anything would feed the Observatory |
@@ -219,8 +219,9 @@ Dispute Resolution) in any form yet.
 3. ~~Sectoral certification issuance workflow~~ — done: `ConsoleCertifications` filters the Evidence
    Vault to professional/sectoral credentials, with issue/reject actions and 30-day renewal-warning
    reminders, kept separate from `ConsoleCompliance`'s rules-register scope.
-4. Market Access Intelligence & Regulatory Insights (Module 3.5) — a demand-side playbooks/briefings
-   view, the one clearly-scoped Module 3 subsystem with zero coverage.
+4. ~~Market Access Intelligence & Regulatory Insights~~ — done: `ConsoleMarketIntelligence` is a
+   searchable library of destination-market briefs (country/sector/mode-indexed) with a
+   draft→under-review→published authoring workflow.
 5. Taxonomies & Master Data reference view (Module 2.7) — lightweight, likely folds into
    `ConsoleSettings`.
 
@@ -273,3 +274,7 @@ Dispute Resolution) in any form yet.
   professional/sectoral credentials (COREN, ISO 27001, etc.), separate from `ConsoleCompliance`'s
   rules-register scope, with issue/reject actions and 30-day renewal-warning reminders. Build order
   item 3 (§7) is now done.
+- **2026-09-17** — Added `ConsoleMarketIntelligence` (Module 3.5): a destination-market brief
+  library indexed by country/sector/WTO-GATS mode, with a draft→under-review→published authoring
+  workflow for NATEP Administrators. Build order item 4 (§7) is now done — only item 5 (Taxonomies
+  & Master Data) remains in the near-term list.

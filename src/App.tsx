@@ -5,6 +5,7 @@ import { Marketplace } from './pages/Marketplace';
 import { ConsoleDashboard } from './pages/ConsoleDashboard';
 import { ConsoleExporters } from './pages/ConsoleExporters';
 import { ConsoleOpportunities } from './pages/ConsoleOpportunities';
+import { ConsoleMarketIntelligence } from './pages/ConsoleMarketIntelligence';
 import { ConsoleEngagements } from './pages/ConsoleEngagements';
 import { ConsoleOutcomes } from './pages/ConsoleOutcomes';
 import { ConsoleCertifications } from './pages/ConsoleCertifications';
@@ -32,6 +33,7 @@ function Console() {
       <Route path="exporters" element={<ConsoleExporters />} />
       <Route path="buyers" element={<ConsoleBuyers />} />
       <Route path="opportunities" element={<ConsoleOpportunities />} />
+      <Route path="market-intelligence" element={<ConsoleMarketIntelligence />} />
       <Route path="engagements" element={<ConsoleEngagements />} />
       <Route path="outcomes" element={<ConsoleOutcomes />} />
       <Route path="readiness" element={<ConsoleReadiness />} />
