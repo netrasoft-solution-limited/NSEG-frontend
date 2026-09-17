@@ -145,28 +145,33 @@ matrix, non-goals, precedence order) constrain every module below.
 ### Module 6 — Portal 4: Global Promotion, Investment Facilitation & Delegation Matchmaking
 | # | Subsystem | Status |
 |---|---|---|
-| 6.1 | Investor Concierge & Landing Pad | ⬜ Not started |
-| 6.2 | International Trade Mission & Delegation Matchmaking | ⬜ Not started |
+| 6.1 | Investor Concierge & Landing Pad | 🚫 Out of scope — see §8 decision 1 |
+| 6.2 | International Trade Mission & Delegation Matchmaking | 🚫 Out of scope — see §8 decision 1 |
 
-Entire portal not started. Did not appear in the Architecture Outline's earlier 3-portal framing at
-all — see §5's open question on scope.
+Descoped from this prototype (2026-09-17): absent from the Architecture Outline's original 3-portal
+framing, and building it would dilute effort against validating the core Portals 1–3 + Observatory
+loop. Revisit only if the programme explicitly confirms this is next-priority.
 
 ### Module 7 — Portal 5: Financing, Outcomes-Based Capital & Escrow
 | # | Subsystem | Status |
 |---|---|---|
-| 7.1 | Export Contract & Invoice Factoring | ⬜ Not started |
-| 7.2 | Outcomes-Based Capital & Upskilling Bond | ⬜ Not started |
+| 7.1 | Export Contract & Invoice Factoring | 🚫 Out of scope — see §8 decision 2 |
+| 7.2 | Outcomes-Based Capital & Upskilling Bond | 🚫 Out of scope — see §8 decision 2 |
 
-Entire portal not started, and directly implicated by the Non-Goal 1 contradiction in §5 — if built,
-must be scoped as financing-readiness/eligibility tracking, not real factoring or capital transfer.
+Descoped from this prototype (2026-09-17), not just deprioritized: this portal's whole premise is
+financial-instrument administration (factoring liens, capital bonds), which conflicts with Module 1's
+Non-Goal 1 more directly than a "track milestones only" framing can responsibly paper over (unlike
+Module 3.7, which is narrow enough to stay in scope as metadata tracking). Treat this as likely scope
+creep from a later BRD draft rather than a requirement to reconcile.
 
 ### Module 8 — Portal 6: Dispute Resolution, Cross-Border Contract Enforcement
 | # | Subsystem | Status |
 |---|---|---|
-| 8.1 | Online Dispute Resolution (ODR) & Mediation | ⬜ Not started |
-| 8.2 | Digital Cross-Border Arbitration Tribunal | ⬜ Not started |
+| 8.1 | Online Dispute Resolution (ODR) & Mediation | 🚫 Out of scope — see §8 decision 1 |
+| 8.2 | Digital Cross-Border Arbitration Tribunal | 🚫 Out of scope — see §8 decision 1 |
 
-Entire portal not started. Also absent from the Architecture Outline's original framing.
+Descoped from this prototype (2026-09-17), same reasoning as Module 6: absent from the original
+framing, lowest validated priority of everything in the BRD.
 
 ### Public-facing surface (not a numbered BRD subsystem, but part of the delivered app)
 [Landing.tsx](src/pages/Landing.tsx) and [Marketplace.tsx](src/pages/Marketplace.tsx) provide the
@@ -187,10 +192,10 @@ milestones and metadata, never execute the transaction.** This is already the pa
 same pattern — a status tracker referencing an external settlement, not a payment feature.
 
 **3-portal outline vs. 6-portal detailed modules:** The Architecture Outline (§1) never mentions
-Portals 4–6 (Global Promotion/Investment, Financing/Escrow, Dispute Resolution). It's unclear
-whether these were added in a later scoping round the outline page was never updated to reflect, or
-whether they're aspirational/Phase 2 additions that shouldn't be prioritized against the original
-3-portal MVP. **This PRD does not resolve that — see §8, open question 1.**
+Portals 4–6 (Global Promotion/Investment, Financing/Escrow, Dispute Resolution). **Decided
+2026-09-17 (§8, decision 1): out of scope for this prototype.** They read as a later scope
+expansion the outline was never updated to reflect, not a validated core requirement — see §8 for
+the full reasoning and §4's Module 6/7/8 tables for status.
 
 ---
 
@@ -203,7 +208,7 @@ BRD specifies — verification queues, consent-gated disclosure, audit trails, s
 **Isn't:** a working IAM/SSO system, a real document vault (files aren't actually stored/scanned), a
 real payment/escrow engine (explicitly out of scope per Module 1 regardless), a live data pipeline
 into NEPC/NEXIM/CBN, or an implementation of Modules 6–8 (Investment Facilitation, Financing,
-Dispute Resolution) in any form yet.
+Dispute Resolution) — decided out of scope entirely, not just unbuilt so far (§8).
 
 ---
 
@@ -231,31 +236,53 @@ Dispute Resolution) in any form yet.
 6. Organization Delegation / multi-tenant context (Module 2.3) — an agency-delegate switcher.
 7. Predictive Policy Simulation (Module 5.3) and Automated Incentive Audit & Anti-Leakage (Module
    5.4) — extend `ConsoleObservatory`.
+8. Simulated multi-role login (Module 2.1) — decided in scope (§8, decision 3): extend
+   `officerProfile.tsx`'s existing desk-officer/administrator toggle into a full role switcher
+   (`ROLE_SYS_ADMIN` / `ROLE_ADSPA_OFFICER` / `ROLE_DATA_STEWARD` / `ROLE_ENTITY_ADMIN` /
+   `ROLE_ACTOR_USER`) so segregation-of-duties is demonstrable in the UI, not just implied by
+   `IncentiveQueue`'s `canApprove` gate.
 
-**Long-term — needs explicit go-ahead before starting (see §8):**
-8. Portal 4 (Global Promotion & Investment Facilitation) — Module 6.
-9. Portal 5 (Financing & Escrow) — Module 7, and only ever as milestone tracking (§5).
-10. Portal 6 (Dispute Resolution) — Module 8.
-11. Real IAM/SSO/RBAC (Module 2.1) — only meaningful once there's a real backend; a lightweight
-    role-switcher simulating `ROLE_SYS_ADMIN` / `ROLE_ADSPA_OFFICER` / `ROLE_DATA_STEWARD` /
-    `ROLE_ENTITY_ADMIN` / `ROLE_ACTOR_USER` could demonstrate segregation-of-duties sooner, in the
-    same spirit as `IncentiveQueue`'s `canApprove` gate.
+**Out of scope for this prototype (see §8):**
+- Portal 4 (Global Promotion & Investment Facilitation) — Module 6. Decision 1.
+- Portal 5 (Financing & Escrow) — Module 7. Decision 2 — descoped outright, not deferred.
+- Portal 6 (Dispute Resolution) — Module 8. Decision 1.
+- Real production IAM/SSO/RBAC (Module 2.1) — only meaningful once there's a real backend; the
+  simulated role switcher above (item 8) covers what a prototype can usefully show instead.
+- Wiring the Observatory to any live data source (Module 5.1's "real-time" framing) — decision 4:
+  static/demo data is a permanent property of this prototype, not a gap to close.
 
 ---
 
-## 8. Open questions for stakeholders
+## 8. Scope decisions
 
-1. **Are Portals 4–6 (Investment Facilitation, Financing/Escrow, Dispute Resolution) actually in scope
-   for this prototype**, or are they a later/aspirational addition to the BRD that shouldn't compete
-   for build time against finishing Portals 1–3 and the Observatory? (See §5.)
-2. **Should Module 7 (Financing/Escrow) be built at all**, given it sits closest to the platform's own
-   Non-Goal 1? If yes, confirm the "tracking only, never processing" framing in §5 is the right scope.
-3. **Is a simulated multi-role login (Module 2.1) worth building** to demonstrate segregation-of-duties
-   in the UI, or does the single-officer mock profile stay indefinitely since there's no real backend to
-   authenticate against?
-4. **Should the Observatory's "real-time" framing (Module 5.1) be treated as a prototype non-goal**
-   (i.e. static/demo data is fine indefinitely) or is there an expectation of eventually wiring live
-   metrics in this prototype phase?
+Four questions this PRD originally left open, resolved 2026-09-17. Revisit any of these if
+circumstances change — they're calls made with the information available at the time, not permanent
+constraints.
+
+1. **Are Portals 4–6 (Investment Facilitation, Financing/Escrow, Dispute Resolution) in scope?**
+   **Decision: no, out of scope.** None appear in the Architecture Outline's original 3-portal
+   framing — only in later, far more backend-heavy drafts (investor concierge, arbitration
+   tribunals, invoice factoring). Building UI mockups for them is technically easy, but doing so
+   would dilute effort against validating the core demand-to-outcome loop (Shared Foundation +
+   Portals 1–3 + Observatory) rather than speculatively building three new domains that haven't been
+   confirmed as real priorities. See §4's Module 6/8 tables.
+2. **Should Module 7 (Financing/Escrow) be built at all?** **Decision: no — descoped outright, not
+   just deferred like Modules 6/8.** Unlike Module 3.7 (narrow enough to stay in scope as
+   milestone-only metadata tracking), Module 7's entire premise is financial-instrument
+   administration — invoice factoring liens, outcomes-based capital bonds. That's a harder conflict
+   with Module 1's Non-Goal 1 than a "track it, don't process it" framing can responsibly cover.
+   Treat it as likely scope creep from a later BRD revision rather than a requirement to reconcile.
+   See §4's Module 7 table.
+3. **Is a simulated multi-role login worth building?** **Decision: yes.** `ConsoleSettings` already
+   simulates a desk-officer/administrator toggle that `IncentiveQueue` reacts to via its
+   `canApprove` gate — extending that same pattern to the BRD's other roles (Data Steward, Entity
+   Admin, Actor User) is low effort and makes segregation-of-duties, a major BRD theme, visibly
+   demonstrable rather than only implied. See §7, mid-term item 8.
+4. **Should the Observatory's "real-time" framing be a permanent prototype non-goal?** **Decision:
+   yes.** There's no live NEPC/NEXIM/CBN feed for a frontend-only prototype to wire up, and
+   "real-time" only becomes meaningful once a real backend exists — that's a future project's
+   concern, not something to simulate here. Static/demo data in `ConsoleObservatory` stays
+   indefinitely.
 
 ---
 
@@ -285,3 +312,8 @@ Dispute Resolution) in any form yet.
   metadata, deliberately excluded from `ConsoleSettings` per that page's own personal-settings-only
   scope note. All five near-term build-order items (§7) are now done; next is the mid-term list
   (Organization Delegation, Predictive Policy Simulation, Automated Incentive Audit).
+- **2026-09-17** — Resolved all four §8 open questions: Portals 4/6 (Investment Facilitation,
+  Dispute Resolution) and Module 7 (Financing/Escrow) are out of scope for this prototype — Module 7
+  descoped outright rather than deferred, given its direct conflict with Module 1's Non-Goal 1. A
+  simulated multi-role login is in scope as a mid-term item. The Observatory's "real-time" framing
+  is a permanent non-goal, not a gap. §4, §5, and §7 updated to reflect these decisions.
