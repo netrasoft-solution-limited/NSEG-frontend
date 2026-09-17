@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { BadgeCheckIcon, ClipboardCheckIcon, HandshakeIcon, KeyRoundIcon, RadioTowerIcon, ScaleIcon, ShieldCheckIcon } from "lucide-react";
+import { BadgeCheckIcon, ClipboardCheckIcon, HandshakeIcon, KeyRoundIcon, RadioTowerIcon, ScaleIcon } from "lucide-react";
 import type { IconComponent } from "../../types/icons";
 import { pipelineStages, StageIcon } from "../../data/site";
 import { EASE } from "../motion/Reveal";
@@ -25,12 +25,8 @@ export function PipelineRail({
     return () => window.clearInterval(timer);
   }, [reduced]);
   return <div className="rounded-2xl border border-white/10 bg-black/45 p-4 backdrop-blur-sm sm:p-5">
-      <div className="flex items-center justify-between gap-3 border-b border-white/8 pb-3.5">
+      <div className="border-b border-white/8 pb-3.5">
         <p className="text-[11px] uppercase tracking-[0.16em] text-white/50">Opportunity lifecycle</p>
-        <p className="inline-flex items-center gap-1.5 rounded-full border border-gate/25 bg-gate/[0.08] px-2.5 py-1 font-mono text-[10px] text-[#8ce3b6]">
-          <ShieldCheckIcon className="h-3 w-3" aria-hidden="true" />
-          audit-chained
-        </p>
       </div>
 
       <ol className={`mt-4 grid gap-x-3 gap-y-5 grid-cols-2 sm:grid-cols-3 ${compact ? '' : 'lg:grid-cols-6'}`}>

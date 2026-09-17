@@ -55,8 +55,10 @@ export function WorkspaceShell({
         Skip to content
       </a>
 
-      <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto flex max-w-4xl flex-wrap items-center gap-3 px-4 pt-3">
+      {/* Stays pinned while scrolling. On phones the section tabs become a fixed bottom bar — so no
+          backdrop-filter on the header, which would make that bar position against the header. */}
+      <header className="sticky top-0 z-40 border-b border-gray-200 bg-white">
+        <div className="mx-auto flex max-w-4xl flex-wrap items-center gap-3 px-4 py-2.5 md:pb-0 md:pt-3">
           <Link
             to={homeHref}
             className="flex items-center gap-2 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900">
@@ -84,22 +86,25 @@ export function WorkspaceShell({
           </div>
         </div>
 
-        <nav aria-label="Workspace sections" className="mx-auto mt-2 max-w-4xl overflow-x-auto px-4">
-          <ul className="flex gap-1">
+        <nav
+          aria-label="Workspace sections"
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-8px_24px_-12px_rgba(0,0,0,0.12)] md:static md:mx-auto md:mt-1 md:max-w-4xl md:border-0 md:bg-transparent md:px-4 md:pb-0 md:shadow-none">
+
+          <ul className="grid md:flex md:gap-1" style={{ gridTemplateColumns: `repeat(${navItems.length}, minmax(0, 1fr))` }}>
             {navItems.map(({ to, label, icon: Icon, end, count }) =>
-            <li key={to}>
+            <li key={to} className="relative">
                 <NavLink
                 to={to}
                 end={end}
                 className={({ isActive }) =>
-                `flex min-h-[44px] items-center gap-1.5 whitespace-nowrap border-b-2 px-3 text-[13.5px] font-medium transition-colors duration-150 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-gray-900 ${
+                `flex min-h-[60px] flex-col items-center justify-center gap-1 whitespace-nowrap border-t-2 px-1 text-[11.5px] font-medium transition-colors duration-150 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-gray-900 md:min-h-[44px] md:flex-row md:gap-1.5 md:border-b-2 md:border-t-0 md:px-3 md:text-[13.5px] ${
                 isActive ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-600 hover:text-gray-900'}`
                 }>
 
-                  <Icon className="h-4 w-4" aria-hidden="true" />
+                  <Icon className="h-5 w-5 md:h-4 md:w-4" aria-hidden="true" />
                   {label}
                   {Boolean(count) &&
-                  <span className="rounded-full bg-gray-900 px-1.5 py-0.5 text-[11px] font-semibold leading-none text-white">
+                  <span className="absolute left-1/2 top-2 ml-2 rounded-full bg-gray-900 px-1.5 py-0.5 text-[10.5px] font-semibold leading-none text-white md:static md:ml-0 md:text-[11px]">
                       {count}
                       <span className="sr-only"> waiting</span>
                     </span>
@@ -136,7 +141,7 @@ export function WorkspaceShell({
         <div className="mt-6">{children}</div>
       </main>
 
-      <footer className="mx-auto max-w-4xl px-4 pb-10">
+      <footer className="mx-auto max-w-4xl px-4 pb-28 md:pb-10">
         <Link
           to="/"
           className="inline-flex min-h-[44px] items-center gap-1.5 text-[13px] font-medium text-gray-600 hover:text-gray-900">

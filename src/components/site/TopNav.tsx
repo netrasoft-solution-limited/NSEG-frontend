@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowUpRightIcon, BriefcaseIcon, ChevronDownIcon, GlobeIcon, MenuIcon, XIcon } from 'lucide-react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { EASE } from '../motion/Reveal';
 import { useHashLink } from '../../hooks/useHashLink';
 import { ThemeToggle } from './ThemeToggle';
 
 const navItems = [
+{ label: 'Home', href: '#top' },
 { label: 'Portals', href: '#portals' },
 { label: 'Trust', href: '#trust' },
 { label: 'Observatory', href: '#observatory' },
@@ -25,6 +26,8 @@ export function TopNav() {
   const [signInOpen, setSignInOpen] = useState(false);
   const signInRef = useRef<HTMLDivElement>(null);
   const resolveHash = useHashLink();
+  const { pathname } = useLocation();
+  const isCurrent = (label: string) => label === 'Home' && pathname === '/' || label === 'Marketplace' && pathname === '/marketplace';
 
   useEffect(() => {
     if (!signInOpen) return;
@@ -74,7 +77,10 @@ export function TopNav() {
               <a
               href={'/' + item.href}
               onClick={resolveHash(item.href)}
-              className="rounded-lg px-3 py-1.5 text-[13px] text-white/60 transition-colors duration-150 ease-out hover:text-white">
+              aria-current={isCurrent(item.label) ? 'page' : undefined}
+              className={`rounded-lg px-3 py-1.5 text-[13px] transition-colors duration-150 ease-out hover:text-white ${
+              isCurrent(item.label) ? 'text-white' : 'text-white/60'}`
+              }>
 
                 {item.label}
               </a>
@@ -83,7 +89,10 @@ export function TopNav() {
           <li>
             <Link
               to="/marketplace"
-              className="rounded-lg px-3 py-1.5 text-[13px] text-white/60 transition-colors duration-150 ease-out hover:text-white">
+              aria-current={isCurrent('Marketplace') ? 'page' : undefined}
+              className={`rounded-lg px-3 py-1.5 text-[13px] transition-colors duration-150 ease-out hover:text-white ${
+              isCurrent('Marketplace') ? 'text-white' : 'text-white/60'}`
+              }>
 
               Marketplace
             </Link>
@@ -169,7 +178,8 @@ export function TopNav() {
                   resolveHash(item.href)(event);
                   setOpen(false);
                 }}
-                className="block rounded-lg px-3 py-2 text-[14px] text-white/60">
+                aria-current={isCurrent(item.label) ? 'page' : undefined}
+                className={`block rounded-lg px-3 py-2 text-[14px] ${isCurrent(item.label) ? 'bg-white/[0.06] text-white' : 'text-white/60'}`}>
 
                     {item.label}
                   </a>
@@ -179,7 +189,8 @@ export function TopNav() {
                 <Link
                 to="/marketplace"
                 onClick={() => setOpen(false)}
-                className="block rounded-lg px-3 py-2 text-[14px] text-white/60">
+                aria-current={isCurrent('Marketplace') ? 'page' : undefined}
+                className={`block rounded-lg px-3 py-2 text-[14px] ${isCurrent('Marketplace') ? 'bg-white/[0.06] text-white' : 'text-white/60'}`}>
 
                   Marketplace
                 </Link>
