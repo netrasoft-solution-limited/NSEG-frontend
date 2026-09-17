@@ -8,8 +8,14 @@ import { ConsoleOpportunities } from './pages/ConsoleOpportunities';
 import { ConsoleReadiness } from './pages/ConsoleReadiness';
 import { ConsoleCompliance } from './pages/ConsoleCompliance';
 import { ConsoleObservatory } from './pages/ConsoleObservatory';
+import { ConsoleIncentives } from './pages/ConsoleIncentives';
+import { ConsoleBuyers } from './pages/ConsoleBuyers';
+import { ConsoleVault } from './pages/ConsoleVault';
+import { ConsoleConsent } from './pages/ConsoleConsent';
+import { ConsoleAudit } from './pages/ConsoleAudit';
 import { ConsoleSettings } from './pages/ConsoleSettings';
 import { OfficerProfileProvider } from './lib/officerProfile';
+import { AuditLogProvider } from './lib/auditLog';
 
 interface AppProps {
   heroVariant?: 'stacked' | 'split';
@@ -18,26 +24,33 @@ interface AppProps {
 
 function Console() {
   return (
-    <OfficerProfileProvider>
-      <Routes>
-        <Route index element={<ConsoleDashboard />} />
-        <Route path="exporters" element={<ConsoleExporters />} />
-        <Route path="opportunities" element={<ConsoleOpportunities />} />
-        <Route path="readiness" element={<ConsoleReadiness />} />
-        <Route path="compliance" element={<ConsoleCompliance />} />
-        <Route path="observatory" element={<ConsoleObservatory />} />
-        <Route path="settings" element={<ConsoleSettings />} />
-      </Routes>
-    </OfficerProfileProvider>);
+    <Routes>
+      <Route index element={<ConsoleDashboard />} />
+      <Route path="exporters" element={<ConsoleExporters />} />
+      <Route path="buyers" element={<ConsoleBuyers />} />
+      <Route path="opportunities" element={<ConsoleOpportunities />} />
+      <Route path="readiness" element={<ConsoleReadiness />} />
+      <Route path="compliance" element={<ConsoleCompliance />} />
+      <Route path="observatory" element={<ConsoleObservatory />} />
+      <Route path="incentives" element={<ConsoleIncentives />} />
+      <Route path="vault" element={<ConsoleVault />} />
+      <Route path="consent" element={<ConsoleConsent />} />
+      <Route path="audit" element={<ConsoleAudit />} />
+      <Route path="settings" element={<ConsoleSettings />} />
+    </Routes>);
 
 }
 
 export function App({ heroVariant = 'stacked', liveDemos = true }: AppProps) {
   return (
-    <Routes>
-      <Route path="/" element={<Landing heroVariant={heroVariant} liveDemos={liveDemos} />} />
-      <Route path="/marketplace" element={<Marketplace />} />
-      <Route path="/console/*" element={<Console />} />
-    </Routes>);
+    <OfficerProfileProvider>
+      <AuditLogProvider>
+        <Routes>
+          <Route path="/" element={<Landing heroVariant={heroVariant} liveDemos={liveDemos} />} />
+          <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/console/*" element={<Console />} />
+        </Routes>
+      </AuditLogProvider>
+    </OfficerProfileProvider>);
 
 }

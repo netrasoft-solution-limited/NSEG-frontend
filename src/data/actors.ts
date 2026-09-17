@@ -1,4 +1,7 @@
 import type { TrustTier } from './trustTiers';
+import type { VerificationQueueStatus } from '../lib/verification';
+
+export type { VerificationQueueStatus };
 
 export interface Actor {
   id: string;
@@ -14,6 +17,17 @@ export interface Actor {
    * explicit flag rather than computed from `registeredOn` so this static demo dataset
    * never goes stale relative to the real device clock. */
   isNew: boolean;
+  /** Weighted profile completion (40% data completeness, 60% verification depth) — the
+   * metric that drives trust-tier progression. */
+  profileCompletion: number;
+  verificationQueue: VerificationQueueStatus;
+  /** Reason surfaced to the reviewing officer when verificationQueue isn't 'none'. */
+  verificationNote?: string;
+  /** Days until a verified sector credential lapses — kept relative rather than an
+   * absolute date for the same reason as `isNew`, so the demo dataset doesn't drift
+   * into "expired" once the real clock moves past whatever date this was authored on.
+   * Surfaced as a renewal warning starting 30 days out. */
+  credentialExpiresInDays?: number;
 }
 
 export const actors: Actor[] = [
@@ -27,7 +41,9 @@ export const actors: Actor[] = [
   matchCount: 42,
   tier: 'verified',
   suspended: false,
-  isNew: false
+  isNew: false,
+  profileCompletion: 68,
+  verificationQueue: 'none'
 },
 {
   id: 'act-02',
@@ -39,7 +55,9 @@ export const actors: Actor[] = [
   matchCount: 28,
   tier: 'verified',
   suspended: false,
-  isNew: false
+  isNew: false,
+  profileCompletion: 72,
+  verificationQueue: 'none'
 },
 {
   id: 'act-03',
@@ -51,7 +69,10 @@ export const actors: Actor[] = [
   matchCount: 61,
   tier: 'top-rated',
   suspended: false,
-  isNew: false
+  isNew: false,
+  profileCompletion: 91,
+  verificationQueue: 'none',
+  credentialExpiresInDays: 16
 },
 {
   id: 'act-04',
@@ -63,7 +84,10 @@ export const actors: Actor[] = [
   matchCount: 3,
   tier: 'registered',
   suspended: false,
-  isNew: true
+  isNew: true,
+  profileCompletion: 22,
+  verificationQueue: 'pending',
+  verificationNote: 'CAC registry lookup returned no match — AI document fallback awaiting officer confirmation.'
 },
 {
   id: 'act-05',
@@ -75,7 +99,10 @@ export const actors: Actor[] = [
   matchCount: 88,
   tier: 'top-rated',
   suspended: false,
-  isNew: false
+  isNew: false,
+  profileCompletion: 95,
+  verificationQueue: 'none',
+  credentialExpiresInDays: 12
 },
 {
   id: 'act-06',
@@ -87,7 +114,9 @@ export const actors: Actor[] = [
   matchCount: 9,
   tier: 'verified',
   suspended: true,
-  isNew: false
+  isNew: false,
+  profileCompletion: 55,
+  verificationQueue: 'none'
 },
 {
   id: 'act-07',
@@ -99,7 +128,10 @@ export const actors: Actor[] = [
   matchCount: 4,
   tier: 'registered',
   suspended: false,
-  isNew: true
+  isNew: true,
+  profileCompletion: 18,
+  verificationQueue: 'pending',
+  verificationNote: 'TIN validation pending — no match found in connected open registries yet.'
 },
 {
   id: 'act-08',
@@ -111,7 +143,9 @@ export const actors: Actor[] = [
   matchCount: 54,
   tier: 'verified',
   suspended: false,
-  isNew: false
+  isNew: false,
+  profileCompletion: 76,
+  verificationQueue: 'none'
 },
 {
   id: 'act-09',
@@ -123,7 +157,10 @@ export const actors: Actor[] = [
   matchCount: 2,
   tier: 'registered',
   suspended: false,
-  isNew: false
+  isNew: false,
+  profileCompletion: 34,
+  verificationQueue: 'flagged',
+  verificationNote: 'AI document check failed tamper analysis on the uploaded incorporation certificate — needs an officer decision.'
 },
 {
   id: 'act-10',
@@ -135,7 +172,10 @@ export const actors: Actor[] = [
   matchCount: 103,
   tier: 'top-rated',
   suspended: false,
-  isNew: false
+  isNew: false,
+  profileCompletion: 98,
+  verificationQueue: 'none',
+  credentialExpiresInDays: 4
 },
 {
   id: 'act-11',
@@ -147,7 +187,9 @@ export const actors: Actor[] = [
   matchCount: 15,
   tier: 'verified',
   suspended: true,
-  isNew: false
+  isNew: false,
+  profileCompletion: 61,
+  verificationQueue: 'none'
 },
 {
   id: 'act-12',
@@ -159,5 +201,8 @@ export const actors: Actor[] = [
   matchCount: 6,
   tier: 'registered',
   suspended: false,
-  isNew: false
+  isNew: false,
+  profileCompletion: 27,
+  verificationQueue: 'pending',
+  verificationNote: 'CAC registration number submitted — pending manual confirmation against the corporate registry.'
 }];

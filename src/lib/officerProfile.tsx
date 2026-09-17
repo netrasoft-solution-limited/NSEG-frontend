@@ -1,16 +1,27 @@
 import React, { createContext, useContext, useMemo, useState } from 'react';
 
+/**
+ * Desk officers handle day-to-day qualification/verification work; the BRD's two-tier
+ * incentive workflow (BR-P2-05.3) reserves final sign-off above a threshold for a
+ * designated NATEP/NEPC Administrator. This is a client-side role switch for this demo
+ * — there's no backend to enforce it, so it shapes what the UI offers, not a real
+ * permission boundary.
+ */
+export type OfficerRole = 'desk-officer' | 'administrator';
+
 interface OfficerProfile {
   name: string;
   title: string;
+  role: OfficerRole;
 }
 
 interface OfficerProfileContextValue {
   profile: OfficerProfile;
   setName: (name: string) => void;
+  setRole: (role: OfficerRole) => void;
 }
 
-const defaultProfile: OfficerProfile = { name: 'Ada Chukwu', title: 'NATEP Desk Officer' };
+const defaultProfile: OfficerProfile = { name: 'Ada Chukwu', title: 'NATEP Desk Officer', role: 'desk-officer' };
 
 const OfficerProfileContext = createContext<OfficerProfileContextValue | null>(null);
 
@@ -20,7 +31,8 @@ export function OfficerProfileProvider({ children }: {children: React.ReactNode;
   const value = useMemo<OfficerProfileContextValue>(
     () => ({
       profile,
-      setName: (name: string) => setProfile((current) => ({ ...current, name }))
+      setName: (name: string) => setProfile((current) => ({ ...current, name })),
+      setRole: (role: OfficerRole) => setProfile((current) => ({ ...current, role }))
     }),
     [profile]
   );

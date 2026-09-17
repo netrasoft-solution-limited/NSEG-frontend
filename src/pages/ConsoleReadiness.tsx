@@ -6,10 +6,15 @@ import { ReadinessQueue } from '../components/console/ReadinessQueue';
 import { readinessSubmissions, type AssertionStatus } from '../data/readinessSubmissions';
 import { actors } from '../data/actors';
 import { downloadCsv } from '../lib/exportCsv';
+import { computeReadinessScore, readinessTierFor } from '../lib/readinessScore';
+import { useOfficerProfile } from '../lib/officerProfile';
+import { useAuditLog } from '../lib/auditLog';
 
 const actorsById = new Map(actors.map((actor) => [actor.id, actor]));
 
 export function ConsoleReadiness() {
+  const { profile } = useOfficerProfile();
+  const { logEvent } = useAuditLog();
   const [decisions, setDecisions] = useState<Record<string, AssertionStatus>>({});
 
   const statusOf = (id: string, fallback: AssertionStatus) => decisions[id] ?? fallback;
@@ -20,20 +25,26 @@ export function ConsoleReadiness() {
   const issuedToday = Object.values(decisions).filter((status) => status === 'issued').length;
   const withheldToday = Object.values(decisions).filter((status) => status === 'withheld').length;
   const avgScore = Math.round(
-    readinessSubmissions.reduce((total, submission) => total + submission.selfScore, 0) / readinessSubmissions.length
+    readinessSubmissions.reduce((total, submission) => total + computeReadinessScore(submission.parameterScores), 0) /
+    readinessSubmissions.length
   );
 
   const handleExport = () => {
     downloadCsv(
       'nseg-readiness-submissions.csv',
-      readinessSubmissions.map((submission) => ({
-        exporter: actorsById.get(submission.actorId)?.name ?? submission.actorId,
-        submittedOn: submission.submittedOn,
-        selfScore: submission.selfScore,
-        evidenceGaps: submission.evidenceGaps.join('; '),
-        assertionStatus: statusOf(submission.id, submission.assertionStatus)
-      }))
+      readinessSubmissions.map((submission) => {
+        const score = computeReadinessScore(submission.parameterScores);
+        return {
+          exporter: actorsById.get(submission.actorId)?.name ?? submission.actorId,
+          submittedOn: submission.submittedOn,
+          diagnosticScore: score,
+          readinessTier: readinessTierFor(score).label,
+          evidenceGaps: submission.evidenceGaps.join('; '),
+          assertionStatus: statusOf(submission.id, submission.assertionStatus)
+        };
+      })
     );
+    logEvent(`Exported readiness submissions (${readinessSubmissions.length} rows)`, 'readiness', profile.name);
   };
 
   return (
@@ -72,7 +83,7 @@ export function ConsoleReadiness() {
 
         <StatCard
           icon={TrendingUpIcon}
-          label="Average self-score"
+          label="Average diagnostic score"
           value={avgScore.toString()}
           delta="all submissions"
           positive
@@ -85,7 +96,16 @@ export function ConsoleReadiness() {
           submissions={readinessSubmissions}
           actorsById={actorsById}
           decisions={decisions}
-          onDecide={(id, status) => setDecisions((current) => ({ ...current, [id]: status }))} />
+          onDecide={(id, status) => {
+            setDecisions((current) => ({ ...current, [id]: status }));
+            const submission = readinessSubmissions.find((item) => item.id === id);
+            const actor = submission ? actorsById.get(submission.actorId) : undefined;
+            logEvent(
+              `${status === 'issued' ? 'Issued' : 'Withheld'} a Readiness Assertion for ${actor?.name ?? 'an exporter'}`,
+              'readiness',
+              profile.name
+            );
+          }} />
 
       </div>
     </ConsoleLayout>);

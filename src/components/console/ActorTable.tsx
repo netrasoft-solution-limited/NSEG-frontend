@@ -10,6 +10,7 @@ interface ActorTableProps {
   total: number;
   filters: ActorFilterState;
   onChange: (filters: ActorFilterState) => void;
+  onSuspendToggle: (actorId: string, nextSuspended: boolean) => void;
 }
 
 function StatusPill({ actor }: {actor: Actor;}) {
@@ -41,7 +42,7 @@ function StatusPill({ actor }: {actor: Actor;}) {
 
 }
 
-export function ActorTable({ actors, total, filters, onChange }: ActorTableProps) {
+export function ActorTable({ actors, total, filters, onChange, onSuspendToggle }: ActorTableProps) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   return (
@@ -117,6 +118,7 @@ export function ActorTable({ actors, total, filters, onChange }: ActorTableProps
               <th className="py-2.5 pr-3 font-medium">Registered</th>
               <th className="py-2.5 pr-3 font-medium">Last active</th>
               <th className="py-2.5 pr-3 font-medium">Matches</th>
+              <th className="py-2.5 pr-3 font-medium">Completion</th>
               <th className="py-2.5 pr-3 font-medium">Status</th>
               <th className="py-2.5 pl-3 text-right font-medium">Actions</th>
             </tr>
@@ -140,7 +142,22 @@ export function ActorTable({ actors, total, filters, onChange }: ActorTableProps
                 <td className="py-3 pr-3 text-gray-500">{formatLastActive(actor.lastActiveDaysAgo)}</td>
                 <td className="py-3 pr-3 text-gray-500">{actor.matchCount}</td>
                 <td className="py-3 pr-3">
-                  <StatusPill actor={actor} />
+                  <div className="flex items-center gap-2">
+                    <span className="w-8 shrink-0 font-mono text-[11px] text-gray-500">{actor.profileCompletion}%</span>
+                    <span className="h-1.5 w-16 overflow-hidden rounded-full bg-gray-100">
+                      <span className="block h-full rounded-full bg-gray-900" style={{ width: `${actor.profileCompletion}%` }} />
+                    </span>
+                  </div>
+                </td>
+                <td className="py-3 pr-3">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <StatusPill actor={actor} />
+                    {actor.credentialExpiresInDays !== undefined && actor.credentialExpiresInDays <= 30 &&
+                    <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[10.5px] font-medium text-amber-700">
+                        Credential expires in {actor.credentialExpiresInDays}d
+                      </span>
+                    }
+                  </div>
                 </td>
                 <td className="py-3 pl-3 text-right">
                   <div className="relative inline-block">
@@ -154,8 +171,18 @@ export function ActorTable({ actors, total, filters, onChange }: ActorTableProps
                       <MoreVerticalIcon className="h-4 w-4" aria-hidden="true" />
                     </button>
                     {openMenuId === actor.id &&
-                  <div className="absolute right-0 top-full z-10 mt-1 w-44 rounded-xl border border-gray-100 bg-white p-1.5 text-left shadow-lg">
-                        {['View profile', 'Message exporter', 'Suspend account'].map((label) =>
+                  <div className="absolute right-0 top-full z-10 mt-1 w-48 rounded-xl border border-gray-100 bg-white p-1.5 text-left shadow-lg">
+                        <button
+                      type="button"
+                      onClick={() => {
+                        onSuspendToggle(actor.id, !actor.suspended);
+                        setOpenMenuId(null);
+                      }}
+                      className="block w-full rounded-lg px-2.5 py-1.5 text-left text-[12.5px] text-gray-700 hover:bg-gray-50">
+
+                          {actor.suspended ? 'Reinstate account' : 'Suspend account'}
+                        </button>
+                        {['View profile', 'Message exporter'].map((label) =>
                     <span
                       key={label}
                       className="block cursor-not-allowed rounded-lg px-2.5 py-1.5 text-[12.5px] text-gray-300">
@@ -164,7 +191,7 @@ export function ActorTable({ actors, total, filters, onChange }: ActorTableProps
                           </span>
                     )}
                         <p className="border-t border-gray-50 px-2.5 pt-1.5 text-[10.5px] text-gray-300">
-                          Actions require sign-in
+                          Profile view and messaging require sign-in
                         </p>
                       </div>
                   }

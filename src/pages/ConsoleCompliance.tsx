@@ -5,6 +5,8 @@ import { StatCard } from '../components/console/StatCard';
 import { ComplianceRegister, type ComplianceFilterState } from '../components/console/ComplianceRegister';
 import { regulatoryRequirements } from '../data/regulations';
 import { downloadCsv } from '../lib/exportCsv';
+import { useOfficerProfile } from '../lib/officerProfile';
+import { useAuditLog } from '../lib/auditLog';
 
 const emptyFilters: ComplianceFilterState = { search: '', category: 'all', status: 'all' };
 
@@ -14,6 +16,8 @@ interface OverrideState {
 }
 
 export function ConsoleCompliance() {
+  const { profile } = useOfficerProfile();
+  const { logEvent } = useAuditLog();
   const [filters, setFilters] = useState<ComplianceFilterState>(emptyFilters);
   const [overrides, setOverrides] = useState<Record<string, OverrideState>>({});
 
@@ -53,6 +57,7 @@ export function ConsoleCompliance() {
         };
       })
     );
+    logEvent(`Exported the regulatory register (${regulatoryRequirements.length} rows)`, 'compliance', profile.name);
   };
 
   return (
@@ -106,7 +111,17 @@ export function ConsoleCompliance() {
           filters={filters}
           onFilterChange={setFilters}
           overrides={overrides}
-          onAction={(id, next) => setOverrides((current) => ({ ...current, [id]: next }))} />
+          onAction={(id, next) => {
+            setOverrides((current) => ({ ...current, [id]: next }));
+            const requirement = regulatoryRequirements.find((item) => item.id === id);
+            logEvent(
+              next.status === 'current' ?
+              `Marked "${requirement?.title ?? id}" as reviewed` :
+              `Flagged "${requirement?.title ?? id}" for review`,
+              'compliance',
+              profile.name
+            );
+          }} />
 
       </div>
     </ConsoleLayout>);

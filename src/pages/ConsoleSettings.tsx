@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
-import { useOfficerProfile } from '../lib/officerProfile';
+import { useOfficerProfile, type OfficerRole } from '../lib/officerProfile';
 import { initialsOf } from '../lib/initials';
+import { useAuditLog } from '../lib/auditLog';
+
+const roleLabels: Record<OfficerRole, string> = {
+  'desk-officer': 'Desk Officer',
+  administrator: 'NATEP/NEPC Administrator'
+};
 
 interface NotificationPreference {
   id: string;
@@ -16,12 +22,6 @@ const defaultPreferences: NotificationPreference[] = [
 { id: 'readiness', label: 'Readiness submission received', detail: 'Ping when an exporter submits a self-assessment', enabled: true },
 { id: 'compliance', label: 'Compliance requirement due', detail: 'Ping when a regulatory requirement needs review', enabled: false },
 { id: 'digest', label: 'Weekly digest email', detail: 'A Monday-morning summary across every section', enabled: false }];
-
-
-const activity = [
-{ id: 'p1', text: 'Updated notification preferences', when: '3 days ago' },
-{ id: 'p2', text: 'Signed in from a new device', when: '5 days ago' },
-{ id: 'p3', text: 'Updated display name', when: '2 weeks ago' }];
 
 
 function ToggleSwitch({ enabled, onToggle, label }: {enabled: boolean;onToggle: () => void;label: string;}) {
@@ -46,7 +46,8 @@ function ToggleSwitch({ enabled, onToggle, label }: {enabled: boolean;onToggle: 
 }
 
 export function ConsoleSettings() {
-  const { profile, setName } = useOfficerProfile();
+  const { profile, setName, setRole } = useOfficerProfile();
+  const { entries, logEvent } = useAuditLog();
   const [draftName, setDraftName] = useState(profile.name);
   const [preferences, setPreferences] = useState<NotificationPreference[]>(defaultPreferences);
 
@@ -56,6 +57,14 @@ export function ConsoleSettings() {
     preference.id === id ? { ...preference, enabled: !preference.enabled } : preference
     )
     );
+    const preference = preferences.find((item) => item.id === id);
+    if (preference) {
+      logEvent(
+        `Turned ${preference.enabled ? 'off' : 'on'} notifications for "${preference.label}"`,
+        'settings',
+        profile.name
+      );
+    }
   };
 
   return (
@@ -77,7 +86,7 @@ export function ConsoleSettings() {
               {initialsOf(draftName || profile.name)}
             </span>
             <div>
-              <p className="text-[14px] font-semibold text-gray-900">{profile.name}</p>
+              <p className="text-[14px] font-semibold text-gray-900">{draftName || profile.name}</p>
               <p className="font-mono text-[11px] text-gray-400">OFC-2024-0182</p>
             </div>
           </div>
@@ -85,7 +94,11 @@ export function ConsoleSettings() {
           <form
             onSubmit={(event) => {
               event.preventDefault();
-              if (draftName.trim()) setName(draftName.trim());
+              const trimmed = draftName.trim();
+              if (trimmed) {
+                setName(trimmed);
+                logEvent(`Updated display name to "${trimmed}"`, 'settings', profile.name);
+              }
             }}
             className="mt-5 space-y-4">
 
@@ -103,9 +116,32 @@ export function ConsoleSettings() {
             </div>
 
             <div>
-              <label className="block text-[12.5px] font-medium text-gray-600">Role</label>
+              <label className="block text-[12.5px] font-medium text-gray-600">Job title</label>
               <p className="mt-1.5 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2.5 text-[13.5px] text-gray-500">
                 {profile.title} · not editable here
+              </p>
+            </div>
+
+            <div>
+              <label htmlFor="sign-off-clearance" className="block text-[12.5px] font-medium text-gray-600">
+                Sign-off clearance
+              </label>
+              <select
+                id="sign-off-clearance"
+                value={profile.role}
+                onChange={(event) => {
+                  const nextRole = event.target.value as OfficerRole;
+                  setRole(nextRole);
+                  logEvent(`Switched sign-off clearance to "${roleLabels[nextRole]}"`, 'settings', profile.name);
+                }}
+                className="mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-[13.5px] text-gray-900 focus:border-gray-400 focus:outline-none">
+
+                <option value="desk-officer">{roleLabels['desk-officer']}</option>
+                <option value="administrator">{roleLabels.administrator}</option>
+              </select>
+              <p className="mt-1.5 text-[11px] text-gray-400">
+                Demo control only — a real deployment assigns this via IAM, not a self-service dropdown. Gates
+                high-value incentive sign-off on the Incentives page.
               </p>
             </div>
 
@@ -144,17 +180,16 @@ export function ConsoleSettings() {
       <div className="mt-6 rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
         <h2 className="text-[16px] font-semibold text-gray-900">Your recent activity</h2>
         <ul className="mt-4 space-y-3">
-          {activity.map((item) =>
-          <li key={item.id} className="flex gap-3 border-b border-gray-50 pb-3 last:border-0 last:pb-0">
+          {entries.slice(0, 8).map((entry) =>
+          <li key={entry.id} className="flex gap-3 border-b border-gray-50 pb-3 last:border-0 last:pb-0">
               <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gray-300" />
               <span>
-                <span className="block text-[13px] text-gray-700">{item.text}</span>
-                <span className="block text-[11.5px] text-gray-400">{item.when}</span>
+                <span className="block text-[13px] text-gray-700">{entry.message}</span>
+                <span className="block text-[11.5px] text-gray-400">{entry.when}</span>
               </span>
             </li>
           )}
         </ul>
-        <p className="mt-4 text-[11.5px] text-gray-300">Example activity — a real audit trail isn't wired up yet.</p>
       </div>
     </ConsoleLayout>);
 

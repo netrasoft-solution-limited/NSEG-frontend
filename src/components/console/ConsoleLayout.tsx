@@ -4,16 +4,21 @@ import {
   ActivityIcon,
   BellIcon,
   BriefcaseIcon,
+  BuildingIcon,
   CalendarIcon,
   CompassIcon,
   DownloadIcon,
+  FileTextIcon,
+  HistoryIcon,
   InfoIcon,
   LayoutGridIcon,
   LogOutIcon,
   SearchIcon,
   SettingsIcon,
   ShieldCheckIcon,
-  UsersIcon } from
+  ShieldIcon,
+  UsersIcon,
+  WalletIcon } from
 'lucide-react';
 import type { IconComponent } from '../../types/icons';
 import { useOfficerProfile } from '../../lib/officerProfile';
@@ -28,10 +33,15 @@ interface SidebarItem {
 const sidebarItems: SidebarItem[] = [
 { icon: LayoutGridIcon, label: 'Dashboard', href: '/console' },
 { icon: UsersIcon, label: 'Exporters', href: '/console/exporters' },
+{ icon: BuildingIcon, label: 'Buyers', href: '/console/buyers' },
 { icon: BriefcaseIcon, label: 'Opportunities', href: '/console/opportunities' },
 { icon: CompassIcon, label: 'Readiness', href: '/console/readiness' },
 { icon: ActivityIcon, label: 'Observatory', href: '/console/observatory' },
 { icon: ShieldCheckIcon, label: 'Compliance', href: '/console/compliance' },
+{ icon: WalletIcon, label: 'Incentives', href: '/console/incentives' },
+{ icon: FileTextIcon, label: 'Vault', href: '/console/vault' },
+{ icon: ShieldIcon, label: 'Consent', href: '/console/consent' },
+{ icon: HistoryIcon, label: 'Audit log', href: '/console/audit' },
 { icon: SettingsIcon, label: 'Settings', href: '/console/settings' }];
 
 
@@ -55,7 +65,7 @@ export function ConsoleLayout({ breadcrumb, onExport, children }: ConsoleLayoutP
           <span className="h-2.5 w-2.5 rounded-sm bg-black" />
         </Link>
 
-        <nav className="flex flex-1 flex-col items-center gap-1" aria-label="Console sections">
+        <nav className="flex flex-1 flex-col items-center gap-1 overflow-y-auto" aria-label="Console sections">
           {sidebarItems.map((item) => {
             const Icon = item.icon;
             const isActive = item.href === location.pathname;

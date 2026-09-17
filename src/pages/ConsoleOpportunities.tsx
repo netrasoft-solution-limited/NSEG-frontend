@@ -9,6 +9,8 @@ import { opportunities } from '../data/opportunities';
 import { shortlists } from '../data/shortlists';
 import { supportingMetrics } from '../data/observatory';
 import { downloadCsv } from '../lib/exportCsv';
+import { useOfficerProfile } from '../lib/officerProfile';
+import { useAuditLog } from '../lib/auditLog';
 
 const medianQualificationTime =
 supportingMetrics.find((metric) => metric.label === 'Median officer qualification time')?.value ?? '—';
@@ -21,6 +23,8 @@ map((shortlist) => {
 filter((item): item is {opportunity: (typeof opportunities)[number];shortlist: (typeof shortlists)[number];} => item !== null);
 
 export function ConsoleOpportunities() {
+  const { profile } = useOfficerProfile();
+  const { logEvent } = useAuditLog();
   const [signalDecisions, setSignalDecisions] = useState<Record<string, SignalDecision>>({});
   const [shortlistDecisions, setShortlistDecisions] = useState<Record<string, ShortlistDecision>>({});
 
@@ -42,6 +46,7 @@ export function ConsoleOpportunities() {
         decision: signalDecisions[signal.id] ?? 'pending'
       }))
     );
+    logEvent(`Exported the signal queue (${signals.length} rows)`, 'opportunities', profile.name);
   };
 
   return (
@@ -92,13 +97,31 @@ export function ConsoleOpportunities() {
         <SignalQueue
           signals={signals}
           decisions={signalDecisions}
-          onDecide={(id, decision) => setSignalDecisions((current) => ({ ...current, [id]: decision }))} />
+          onDecide={(id, decision) => {
+            setSignalDecisions((current) => ({ ...current, [id]: decision }));
+            const signal = signals.find((item) => item.id === id);
+            logEvent(
+              `${decision === 'qualified' ? 'Qualified' : 'Rejected'} a signal from ${signal?.origin ?? 'an unknown origin'}`,
+              'opportunities',
+              profile.name
+            );
+          }} />
 
 
         <ShortlistReview
           items={shortlistItems}
           decisions={shortlistDecisions}
-          onDecide={(id, decision) => setShortlistDecisions((current) => ({ ...current, [id]: decision }))} />
+          onDecide={(id, decision) => {
+            setShortlistDecisions((current) => ({ ...current, [id]: decision }));
+            const opportunity = opportunities.find((item) => item.id === id);
+            logEvent(
+              decision === 'approved' ?
+              `Approved the shortlist for "${opportunity?.title ?? id}"` :
+              `Requested adjustment on the shortlist for "${opportunity?.title ?? id}"`,
+              'opportunities',
+              profile.name
+            );
+          }} />
 
       </div>
     </ConsoleLayout>);
