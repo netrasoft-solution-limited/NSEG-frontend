@@ -8,6 +8,7 @@ import { useBuyerSession } from '../lib/buyerSession';
 import { useGatewayExchange } from '../lib/gatewayExchange';
 import { registryTypeLabels, useAccounts, type RegistryType } from '../lib/accounts';
 import { useAuditLog } from '../lib/auditLog';
+import { usePendingAction } from '../lib/usePendingAction';
 import { Field, PrimaryButton, inputClass } from '../components/workspace/FormField';
 import {
   buyerEngagements,
@@ -37,6 +38,7 @@ export function BuyerOverview() {
   const [identifier, setIdentifier] = useState('');
   const [identifierError, setIdentifierError] = useState('');
   const isNew = accounts.isNewAccount(buyer.id);
+  const { run, isPending } = usePendingAction();
   const standing = buyerStanding(buyer);
   const tierIndex = buyerTiers.indexOf(standing.tier);
 
@@ -118,9 +120,11 @@ export function BuyerOverview() {
               setIdentifierError('Enter the identifier exactly as it appears in the registry.');
               return;
             }
-            if (isNew) accounts.requestBuyerVerification(buyer.id, registry, identifier.trim());
-            logEvent(`${buyer.name} submitted ${registryTypeLabels[registry]} for company verification`, 'buyers', buyer.contactName ?? buyer.name);
-            setVerifyOpen(false);
+            run('verify', () => {
+              if (isNew) accounts.requestBuyerVerification(buyer.id, registry, identifier.trim());
+              logEvent(`${buyer.name} submitted ${registryTypeLabels[registry]} for company verification`, 'buyers', buyer.contactName ?? buyer.name);
+              setVerifyOpen(false);
+            });
           }}
           className="mt-4 space-y-4 rounded-xl border border-gray-200 p-4">
 
@@ -153,7 +157,7 @@ export function BuyerOverview() {
             }
             </Field>
             <div className="flex flex-wrap gap-2">
-              <PrimaryButton type="submit">Submit for verification</PrimaryButton>
+              <PrimaryButton type="submit" loading={isPending('verify')} loadingLabel="Checking registries…">Submit for verification</PrimaryButton>
               <button type="button" onClick={() => setVerifyOpen(false)} className="min-h-[44px] rounded-full px-4 text-[13.5px] font-medium text-gray-700 hover:text-gray-900">
                 Not now
               </button>

@@ -10,6 +10,8 @@ import { useExporterSession } from '../lib/exporterSession';
 import { useGatewayExchange, type IntroductionRequest } from '../lib/gatewayExchange';
 import { modeLabel, sectorLabel } from '../lib/marketplaceLookups';
 import { useAuditLog } from '../lib/auditLog';
+import { usePendingAction } from '../lib/usePendingAction';
+import { Spinner } from '../components/common/Spinner';
 
 /** What an accepted introduction discloses (FND-05/06): enough to decide on a conversation,
  * nothing more. */
@@ -31,13 +33,19 @@ export function WorkspaceIntroductions() {
   const closed = mine.filter((item) => item.response === 'declined' || item.response === 'withdrawn');
   const earlierGrants = consentGrants.filter((grant) => grant.actorId === actor.id);
 
-  const respond = (introduction: IntroductionRequest, response: IntroductionRequest['response']) => {
+  const { run, pending: inFlight, isPending } = usePendingAction();
+
+  const respond = (introduction: IntroductionRequest, response: IntroductionRequest['response']) =>
+  run(`${introduction.id}-${response}`, () => {
     const buyer = buyers.find((item) => item.id === introduction.buyerId);
     const opportunity = opportunities.find((item) => item.id === introduction.opportunityId);
     respondToIntroduction(introduction.id, response);
     const verb = response === 'accepted' ? 'shared their profile with' : response === 'declined' ? 'declined an introduction to' : 'withdrew consent from';
     logEvent(`${actor.name} ${verb} ${buyer?.name ?? 'a buyer'} for "${opportunity?.title ?? introduction.opportunityId}"`, 'consent', actor.name);
-  };
+  });
+
+  const busy = (introduction: IntroductionRequest, response: IntroductionRequest['response']) =>
+  isPending(`${introduction.id}-${response}`);
 
   const renderCard = (introduction: IntroductionRequest) => {
     const buyer = buyers.find((item) => item.id === introduction.buyerId)!;
@@ -93,18 +101,22 @@ export function WorkspaceIntroductions() {
               <button
               type="button"
               onClick={() => respond(introduction, 'accepted')}
-              className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-gray-900 px-5 text-[13.5px] font-semibold text-white hover:bg-black">
+              disabled={Boolean(inFlight)}
+              aria-busy={busy(introduction, 'accepted') || undefined}
+              className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-gray-900 px-5 text-[13.5px] font-semibold text-white hover:bg-black disabled:cursor-progress disabled:bg-gray-800">
 
-                <CheckIcon className="h-4 w-4" aria-hidden="true" />
-                Accept and share
+                {busy(introduction, 'accepted') ? <Spinner /> : <CheckIcon className="h-4 w-4" aria-hidden="true" />}
+                {busy(introduction, 'accepted') ? 'Sharing your profile…' : 'Accept and share'}
               </button>
               <button
               type="button"
               onClick={() => respond(introduction, 'declined')}
-              className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-gray-300 px-5 text-[13.5px] font-medium text-gray-800 hover:border-gray-500">
+              disabled={Boolean(inFlight)}
+              aria-busy={busy(introduction, 'declined') || undefined}
+              className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-gray-300 px-5 text-[13.5px] font-medium text-gray-800 hover:border-gray-500 disabled:cursor-progress">
 
-                <XIcon className="h-4 w-4" aria-hidden="true" />
-                Decline
+                {busy(introduction, 'declined') ? <Spinner /> : <XIcon className="h-4 w-4" aria-hidden="true" />}
+                {busy(introduction, 'declined') ? 'Declining…' : 'Decline'}
               </button>
             </div>
           </>
@@ -119,10 +131,12 @@ export function WorkspaceIntroductions() {
             <button
             type="button"
             onClick={() => respond(introduction, 'withdrawn')}
-            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-gray-300 px-4 text-[13px] font-medium text-gray-800 hover:border-rose-400 hover:text-rose-800">
+            disabled={Boolean(inFlight)}
+            aria-busy={busy(introduction, 'withdrawn') || undefined}
+            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-gray-300 px-4 text-[13px] font-medium text-gray-800 hover:border-rose-400 hover:text-rose-800 disabled:cursor-progress">
 
-              <ShieldOffIcon className="h-4 w-4" aria-hidden="true" />
-              Withdraw consent
+              {busy(introduction, 'withdrawn') ? <Spinner /> : <ShieldOffIcon className="h-4 w-4" aria-hidden="true" />}
+              {busy(introduction, 'withdrawn') ? 'Withdrawing…' : 'Withdraw consent'}
             </button>
           </div>
         }

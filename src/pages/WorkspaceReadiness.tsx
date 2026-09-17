@@ -11,6 +11,8 @@ import { computeReadinessScore, readinessParameterWeights, readinessTierFor } fr
 import { useAuditLog } from '../lib/auditLog';
 import { useRegulatoryRegister } from '../lib/regulatoryRegister';
 import { useAccounts } from '../lib/accounts';
+import { usePendingAction } from '../lib/usePendingAction';
+import { Spinner } from '../components/common/Spinner';
 
 /** Which vault document backs each evidence item. Delivery history comes from verified
  * outcomes, not an upload, so it has no document kind. */
@@ -96,10 +98,13 @@ export function WorkspaceReadiness() {
     );
   };
 
-  const submitDiagnostic = () => {
+  const { run, isPending } = usePendingAction();
+
+  const submitDiagnostic = () =>
+  run('diagnostic', () => {
     updateWorkspace({ diagnosticSubmitted: true });
     logEvent(`${actor.name} submitted an updated readiness diagnostic (score ${draftScore})`, 'readiness', actor.name);
-  };
+  });
 
   return (
     <WorkspaceLayout
@@ -262,9 +267,11 @@ export function WorkspaceReadiness() {
                         setEvidenceError(`Check the format. ${evidenceFormats[key]!.hint}`);
                         return;
                       }
-                      accounts.submitExporterEvidence(actor.id, key, value);
-                      logEvent(`${actor.name} submitted ${evidenceLabels[key].toLowerCase()} for verification`, 'exporters', actor.name);
-                      setAddingKey(null);
+                      run(`evidence-${key}`, () => {
+                        accounts.submitExporterEvidence(actor.id, key, value);
+                        logEvent(`${actor.name} submitted ${evidenceLabels[key].toLowerCase()} for verification`, 'exporters', actor.name);
+                        setAddingKey(null);
+                      });
                     }}
                     className="mt-2 flex flex-wrap items-end gap-2">
 
@@ -286,8 +293,14 @@ export function WorkspaceReadiness() {
 
                         {evidenceError && <p id={`evidence-${key}-error`} className="mt-1 text-[12.5px] text-rose-700">{evidenceError}</p>}
                       </div>
-                      <button type="submit" className="min-h-[40px] rounded-full bg-gray-900 px-4 text-[13px] font-semibold text-white hover:bg-black">
-                        Submit
+                      <button
+                      type="submit"
+                      disabled={isPending(`evidence-${key}`)}
+                      aria-busy={isPending(`evidence-${key}`) || undefined}
+                      className="inline-flex min-h-[40px] items-center gap-1.5 rounded-full bg-gray-900 px-4 text-[13px] font-semibold text-white hover:bg-black disabled:cursor-progress disabled:bg-gray-800">
+
+                        {isPending(`evidence-${key}`) && <Spinner className="h-3.5 w-3.5" />}
+                        {isPending(`evidence-${key}`) ? 'Submitting…' : 'Submit'}
                       </button>
                       <button type="button" onClick={() => setAddingKey(null)} className="min-h-[40px] rounded-full px-3 text-[13px] font-medium text-gray-700">
                         Cancel
@@ -427,11 +440,16 @@ export function WorkspaceReadiness() {
           <button
             type="button"
             onClick={submitDiagnostic}
-            disabled={!draftChanged || workspace.diagnosticSubmitted}
-            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-gray-900 px-5 text-[13.5px] font-semibold text-white transition-colors duration-150 ease-out hover:bg-black disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-600">
+            disabled={!draftChanged || workspace.diagnosticSubmitted || isPending('diagnostic')}
+            aria-busy={isPending('diagnostic') || undefined}
+            className={`inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-5 text-[13.5px] font-semibold text-white transition-colors duration-150 ease-out ${
+            isPending('diagnostic') ?
+            'cursor-progress bg-gray-800' :
+            'bg-gray-900 hover:bg-black disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-600'}`
+            }>
 
-            <SendIcon className="h-4 w-4" aria-hidden="true" />
-            Submit for review
+            {isPending('diagnostic') ? <Spinner /> : <SendIcon className="h-4 w-4" aria-hidden="true" />}
+            {isPending('diagnostic') ? 'Submitting…' : 'Submit for review'}
           </button>
           <button
             type="button"

@@ -9,6 +9,8 @@ import { engagementStageLabels, type EngagementStage } from '../lib/engagementSt
 import { useBuyerSession } from '../lib/buyerSession';
 import { buyerEngagements } from '../lib/buyerWorkspace';
 import { useAuditLog } from '../lib/auditLog';
+import { usePendingAction } from '../lib/usePendingAction';
+import { Spinner } from '../components/common/Spinner';
 import { useGatewayExchange } from '../lib/gatewayExchange';
 
 const stageOrder: EngagementStage[] = [
@@ -27,6 +29,7 @@ function ConfirmDelivery({ engagementId, title }: {engagementId: string;title: s
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
+  const { run, isPending } = usePendingAction();
 
   const confirmed = deliveryConfirmations.find((item) => item.engagementId === engagementId);
   const seededReport = outcomeReports.find((report) => report.engagementId === engagementId && report.reportedBy === 'buyer');
@@ -51,12 +54,14 @@ function ConfirmDelivery({ engagementId, title }: {engagementId: string;title: s
           setError('Enter the value delivered in US dollars.');
           return;
         }
-        confirmDelivery({ engagementId, amount: Number(amount), note });
-        logEvent(
-          `${buyer.name} confirmed delivery of "${title}" (USD ${Number(amount).toLocaleString()}, provisional)`,
-          'outcomes',
-          buyer.name
-        );
+        run('confirm', () => {
+          confirmDelivery({ engagementId, amount: Number(amount), note });
+          logEvent(
+            `${buyer.name} confirmed delivery of "${title}" (USD ${Number(amount).toLocaleString()}, provisional)`,
+            'outcomes',
+            buyer.name
+          );
+        });
       }}
       className="mt-4 rounded-xl border border-gray-200 p-4">
 
@@ -101,9 +106,12 @@ function ConfirmDelivery({ engagementId, title }: {engagementId: string;title: s
       }
       <button
         type="submit"
-        className="mt-3 inline-flex min-h-[44px] items-center rounded-full bg-gray-900 px-5 text-[13.5px] font-semibold text-white hover:bg-black">
+        disabled={isPending('confirm')}
+        aria-busy={isPending('confirm') || undefined}
+        className="mt-3 inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-gray-900 px-5 text-[13.5px] font-semibold text-white hover:bg-black disabled:cursor-progress disabled:bg-gray-800">
 
-        Confirm delivery
+        {isPending('confirm') && <Spinner />}
+        {isPending('confirm') ? 'Recording delivery…' : 'Confirm delivery'}
       </button>
     </form>);
 

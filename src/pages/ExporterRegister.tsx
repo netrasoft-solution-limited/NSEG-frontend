@@ -16,6 +16,7 @@ import { targetMarkets, type SupplyModeId, type TargetMarketId } from '../data/r
 import { trackLabels, type ExporterTrack } from '../data/trustTiers';
 import { useAccounts } from '../lib/accounts';
 import { useAuditLog } from '../lib/auditLog';
+import { usePendingAction } from '../lib/usePendingAction';
 import { sectorLabel, modeLabel } from '../lib/marketplaceLookups';
 
 const steps = ['Your account', 'Verify your email', 'How you export', 'Identity', 'What you offer', 'Review'];
@@ -118,10 +119,15 @@ export function ExporterRegister() {
     return next;
   };
 
+  const { run, isPending } = usePendingAction();
+
   const next = () => {
     const found = validate(step);
     setErrors(found);
-    if (Object.keys(found).length === 0) setStep((current) => current + 1);
+    if (Object.keys(found).length > 0) return;
+    // Checking the email code is a server round-trip in production.
+    if (step === 1) run('submit', () => setStep((current) => current + 1));else
+    setStep((current) => current + 1);
   };
 
   const create = () => {
@@ -153,7 +159,7 @@ export function ExporterRegister() {
         noValidate
         onSubmit={(event) => {
           event.preventDefault();
-          if (step === steps.length - 1) create();else
+          if (step === steps.length - 1) run('submit', create);else
           next();
         }}
         className="mt-5 lg:mt-0">
@@ -382,7 +388,10 @@ export function ExporterRegister() {
               I already have an account
             </Link>
           }
-          <PrimaryButton type="submit">
+          <PrimaryButton
+            type="submit"
+            loading={isPending('submit')}
+            loadingLabel={step === 1 ? 'Verifying…' : 'Creating account…'}>
             {step === 0 && 'Continue'}
             {step === 1 && 'Verify email'}
             {step > 1 && step < 5 && 'Continue'}

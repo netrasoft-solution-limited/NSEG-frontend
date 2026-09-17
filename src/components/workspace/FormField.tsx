@@ -1,4 +1,5 @@
 import React from 'react';
+import { Spinner } from '../common/Spinner';
 
 export const inputClass =
 'mt-1 w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-[14px] text-gray-900 placeholder:text-gray-500 focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/15 aria-[invalid=true]:border-rose-600';
@@ -36,13 +37,32 @@ export function Field({ id, label, error, hint, optional, children }: FieldProps
 
 }
 
-export function PrimaryButton({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+interface PrimaryButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  /** Shows a spinner and this label, and blocks clicks, while an action is in flight. */
+  loading?: boolean;
+  loadingLabel?: string;
+}
+
+export function PrimaryButton({ children, loading = false, loadingLabel, disabled, ...props }: PrimaryButtonProps) {
   return (
     <button
       {...props}
-      className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-full bg-gray-900 px-5 text-[14px] font-semibold text-white transition-colors duration-150 ease-out hover:bg-black disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-600">
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
+      className={`inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-full px-5 text-[14px] font-semibold transition-colors duration-150 ease-out ${
+      loading ?
+      'cursor-progress bg-gray-800 text-white' :
+      'bg-gray-900 text-white hover:bg-black disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-600'}`
+      }>
 
-      {children}
+      {loading ?
+      <>
+          <Spinner />
+          {loadingLabel ?? children}
+        </> :
+
+      children
+      }
     </button>);
 
 }

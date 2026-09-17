@@ -13,6 +13,7 @@ import {
 import { sectors } from '../data/sectors';
 import { useAccounts } from '../lib/accounts';
 import { useAuditLog } from '../lib/auditLog';
+import { usePendingAction } from '../lib/usePendingAction';
 import { sectorLabel } from '../lib/marketplaceLookups';
 
 const steps = ['Your account', 'Verify your email', 'Your organisation', 'Review'];
@@ -108,10 +109,15 @@ export function BuyerRegister() {
     return next;
   };
 
+  const { run, isPending } = usePendingAction();
+
   const next = () => {
     const found = validate(step);
     setErrors(found);
-    if (Object.keys(found).length === 0) setStep((current) => current + 1);
+    if (Object.keys(found).length > 0) return;
+    // Checking the email code is a server round-trip in production.
+    if (step === 1) run('submit', () => setStep((current) => current + 1));else
+    setStep((current) => current + 1);
   };
 
   const create = () => {
@@ -138,7 +144,7 @@ export function BuyerRegister() {
         noValidate
         onSubmit={(event) => {
           event.preventDefault();
-          if (step === steps.length - 1) create();else
+          if (step === steps.length - 1) run('submit', create);else
           next();
         }}
         className="mt-5 lg:mt-0">
@@ -287,7 +293,10 @@ export function BuyerRegister() {
               I already have an account
             </Link>
           }
-          <PrimaryButton type="submit">
+          <PrimaryButton
+            type="submit"
+            loading={isPending('submit')}
+            loadingLabel={step === 1 ? 'Verifying…' : 'Creating account…'}>
             {step === 1 ? 'Verify email' : step === 3 ? 'Create account' : 'Continue'}
             <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
           </PrimaryButton>

@@ -1,45 +1,54 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Landing } from './pages/Landing';
-import { Marketplace } from './pages/Marketplace';
-import { ConsoleDashboard } from './pages/ConsoleDashboard';
-import { ConsoleExporters } from './pages/ConsoleExporters';
-import { ConsoleOpportunities } from './pages/ConsoleOpportunities';
-import { ConsoleMarketIntelligence } from './pages/ConsoleMarketIntelligence';
-import { ConsoleTrustBadging } from './pages/ConsoleTrustBadging';
-import { ConsoleEngagements } from './pages/ConsoleEngagements';
-import { ConsoleOutcomes } from './pages/ConsoleOutcomes';
-import { ConsoleCertifications } from './pages/ConsoleCertifications';
-import { ConsoleReadiness } from './pages/ConsoleReadiness';
-import { ConsoleCompliance } from './pages/ConsoleCompliance';
-import { ConsoleObservatory } from './pages/ConsoleObservatory';
-import { ConsoleIncentives } from './pages/ConsoleIncentives';
-import { ConsoleBuyers } from './pages/ConsoleBuyers';
-import { ConsoleVault } from './pages/ConsoleVault';
-import { ConsoleConsent } from './pages/ConsoleConsent';
-import { ConsoleDelegations } from './pages/ConsoleDelegations';
-import { ConsoleTaxonomies } from './pages/ConsoleTaxonomies';
-import { ConsoleAudit } from './pages/ConsoleAudit';
-import { ConsoleSettings } from './pages/ConsoleSettings';
-import { WorkspaceStanding } from './pages/WorkspaceStanding';
-import { WorkspaceRequirements } from './pages/WorkspaceRequirements';
-import { WorkspaceReadiness } from './pages/WorkspaceReadiness';
-import { WorkspaceIntroductions } from './pages/WorkspaceIntroductions';
 import { ExporterSessionProvider } from './lib/exporterSession';
-import { BuyerOverview } from './pages/BuyerOverview';
-import { BuyerRequests } from './pages/BuyerRequests';
-import { BuyerShortlists } from './pages/BuyerShortlists';
-import { BuyerEngagements } from './pages/BuyerEngagements';
 import { BuyerSessionProvider } from './lib/buyerSession';
 import { OfficerProfileProvider } from './lib/officerProfile';
 import { AuditLogProvider } from './lib/auditLog';
 import { GatewayExchangeProvider } from './lib/gatewayExchange';
 import { RegulatoryRegisterProvider } from './lib/regulatoryRegister';
 import { AccountsProvider, useAccounts } from './lib/accounts';
-import { ExporterSignIn } from './pages/ExporterSignIn';
-import { ExporterRegister } from './pages/ExporterRegister';
-import { BuyerSignIn } from './pages/BuyerSignIn';
-import { BuyerRegister } from './pages/BuyerRegister';
+
+import { PageLoader } from './components/common/PageLoader';
+
+/** Each area downloads on first visit; the landing page stays in the main bundle so the
+ * homepage paints immediately. */
+function lazyPage<K extends string>(load: () => Promise<Record<K, React.ComponentType>>, name: K) {
+  return lazy(() => load().then((module) => ({ default: module[name] })));
+}
+
+const Marketplace = lazyPage(() => import('./pages/Marketplace'), 'Marketplace');
+const ConsoleDashboard = lazyPage(() => import('./pages/ConsoleDashboard'), 'ConsoleDashboard');
+const ConsoleExporters = lazyPage(() => import('./pages/ConsoleExporters'), 'ConsoleExporters');
+const ConsoleOpportunities = lazyPage(() => import('./pages/ConsoleOpportunities'), 'ConsoleOpportunities');
+const ConsoleMarketIntelligence = lazyPage(() => import('./pages/ConsoleMarketIntelligence'), 'ConsoleMarketIntelligence');
+const ConsoleTrustBadging = lazyPage(() => import('./pages/ConsoleTrustBadging'), 'ConsoleTrustBadging');
+const ConsoleEngagements = lazyPage(() => import('./pages/ConsoleEngagements'), 'ConsoleEngagements');
+const ConsoleOutcomes = lazyPage(() => import('./pages/ConsoleOutcomes'), 'ConsoleOutcomes');
+const ConsoleCertifications = lazyPage(() => import('./pages/ConsoleCertifications'), 'ConsoleCertifications');
+const ConsoleReadiness = lazyPage(() => import('./pages/ConsoleReadiness'), 'ConsoleReadiness');
+const ConsoleCompliance = lazyPage(() => import('./pages/ConsoleCompliance'), 'ConsoleCompliance');
+const ConsoleObservatory = lazyPage(() => import('./pages/ConsoleObservatory'), 'ConsoleObservatory');
+const ConsoleIncentives = lazyPage(() => import('./pages/ConsoleIncentives'), 'ConsoleIncentives');
+const ConsoleBuyers = lazyPage(() => import('./pages/ConsoleBuyers'), 'ConsoleBuyers');
+const ConsoleVault = lazyPage(() => import('./pages/ConsoleVault'), 'ConsoleVault');
+const ConsoleConsent = lazyPage(() => import('./pages/ConsoleConsent'), 'ConsoleConsent');
+const ConsoleDelegations = lazyPage(() => import('./pages/ConsoleDelegations'), 'ConsoleDelegations');
+const ConsoleTaxonomies = lazyPage(() => import('./pages/ConsoleTaxonomies'), 'ConsoleTaxonomies');
+const ConsoleAudit = lazyPage(() => import('./pages/ConsoleAudit'), 'ConsoleAudit');
+const ConsoleSettings = lazyPage(() => import('./pages/ConsoleSettings'), 'ConsoleSettings');
+const WorkspaceStanding = lazyPage(() => import('./pages/WorkspaceStanding'), 'WorkspaceStanding');
+const WorkspaceRequirements = lazyPage(() => import('./pages/WorkspaceRequirements'), 'WorkspaceRequirements');
+const WorkspaceReadiness = lazyPage(() => import('./pages/WorkspaceReadiness'), 'WorkspaceReadiness');
+const WorkspaceIntroductions = lazyPage(() => import('./pages/WorkspaceIntroductions'), 'WorkspaceIntroductions');
+const BuyerOverview = lazyPage(() => import('./pages/BuyerOverview'), 'BuyerOverview');
+const BuyerRequests = lazyPage(() => import('./pages/BuyerRequests'), 'BuyerRequests');
+const BuyerShortlists = lazyPage(() => import('./pages/BuyerShortlists'), 'BuyerShortlists');
+const BuyerEngagements = lazyPage(() => import('./pages/BuyerEngagements'), 'BuyerEngagements');
+const ExporterSignIn = lazyPage(() => import('./pages/ExporterSignIn'), 'ExporterSignIn');
+const ExporterRegister = lazyPage(() => import('./pages/ExporterRegister'), 'ExporterRegister');
+const BuyerSignIn = lazyPage(() => import('./pages/BuyerSignIn'), 'BuyerSignIn');
+const BuyerRegister = lazyPage(() => import('./pages/BuyerRegister'), 'BuyerRegister');
 
 interface AppProps {
   heroVariant?: 'stacked' | 'split';
@@ -128,6 +137,7 @@ export function App({ heroVariant = 'stacked', liveDemos = true }: AppProps) {
         <AccountsProvider>
         <ExporterSessionProvider>
         <BuyerSessionProvider>
+        <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<Landing heroVariant={heroVariant} liveDemos={liveDemos} />} />
           <Route path="/marketplace" element={<Marketplace />} />
@@ -135,6 +145,7 @@ export function App({ heroVariant = 'stacked', liveDemos = true }: AppProps) {
           <Route path="/workspace/*" element={<Workspace />} />
           <Route path="/buyer/*" element={<BuyerWorkspace />} />
         </Routes>
+        </Suspense>
         </BuyerSessionProvider>
         </ExporterSessionProvider>
         </AccountsProvider>

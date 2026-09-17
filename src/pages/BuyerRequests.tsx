@@ -16,6 +16,8 @@ import {
 '../lib/buyerWorkspace';
 import { modeLabel, sectorLabel } from '../lib/marketplaceLookups';
 import { useAuditLog } from '../lib/auditLog';
+import { usePendingAction } from '../lib/usePendingAction';
+import { Spinner } from '../components/common/Spinner';
 import { useGatewayExchange, type RequestDecision } from '../lib/gatewayExchange';
 
 const criteriaKinds: { id: CriteriaKind; label: string; help: string }[] = [
@@ -137,6 +139,8 @@ export function BuyerRequests() {
   const seeded = buyerOpportunities(buyer);
   const submitted = exchange.requests.filter((request) => request.buyerId === buyer.id);
 
+  const { run, pending, isPending } = usePendingAction();
+
   const sendForQualification = (request: BuyerDraftRequest) => {
     exchange.submitRequest({ ...request, buyerId: buyer.id });
     logEvent(`${buyer.name} submitted "${request.title}" for qualification`, 'opportunities', buyer.name);
@@ -175,13 +179,16 @@ export function BuyerRequests() {
       criteria: form.criteria.filter((criterion) => criterion.label.trim())
     };
     if (submit) {
-      sendForQualification(request);
+      run('submit-new', () => {
+        sendForQualification(request);
+        closeForm();
+      });
     } else {
       update({ drafts: [request, ...state.drafts] });
       setNoticeIsWarning(false);
       setNotice(`"${request.title}" was saved as a draft.`);
+      closeForm();
     }
-    closeForm();
   };
 
   const submitDraft = (request: BuyerDraftRequest) => {
@@ -190,8 +197,10 @@ export function BuyerRequests() {
       setNotice(`Verify your company registration before submitting "${request.title}". ${standing.nextAction}`);
       return;
     }
-    update({ drafts: state.drafts.filter((item) => item.id !== request.id) });
-    sendForQualification(request);
+    run(request.id, () => {
+      update({ drafts: state.drafts.filter((item) => item.id !== request.id) });
+      sendForQualification(request);
+    });
   };
 
   const errorList = Object.values(errors).filter(Boolean);
@@ -487,13 +496,16 @@ export function BuyerRequests() {
             <div className="flex flex-wrap gap-2 border-t border-gray-100 pt-4">
               <button
               type="submit"
-              className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-gray-900 px-5 text-[13.5px] font-semibold text-white hover:bg-black">
+              disabled={Boolean(pending)}
+              aria-busy={isPending('submit-new') || undefined}
+              className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-gray-900 px-5 text-[13.5px] font-semibold text-white hover:bg-black disabled:cursor-progress disabled:bg-gray-800">
 
-                <SendIcon className="h-4 w-4" aria-hidden="true" />
-                Submit for qualification
+                {isPending('submit-new') ? <Spinner /> : <SendIcon className="h-4 w-4" aria-hidden="true" />}
+                {isPending('submit-new') ? 'Sending to a desk officer…' : 'Submit for qualification'}
               </button>
               <button
               type="button"
+              disabled={Boolean(pending)}
               onClick={() => save(false)}
               className="inline-flex min-h-[44px] items-center rounded-full border border-gray-300 px-5 text-[13.5px] font-medium text-gray-800 hover:border-gray-500">
 
@@ -527,10 +539,12 @@ export function BuyerRequests() {
               <button
                 type="button"
                 onClick={() => submitDraft(request as BuyerDraftRequest)}
-                className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-gray-300 px-4 text-[13px] font-medium text-gray-800 hover:border-gray-500">
+                disabled={Boolean(pending)}
+                aria-busy={isPending(request.id) || undefined}
+                className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-gray-300 px-4 text-[13px] font-medium text-gray-800 hover:border-gray-500 disabled:cursor-progress">
 
-                    <SendIcon className="h-3.5 w-3.5" aria-hidden="true" />
-                    Submit
+                    {isPending(request.id) ? <Spinner className="h-3.5 w-3.5" /> : <SendIcon className="h-3.5 w-3.5" aria-hidden="true" />}
+                    {isPending(request.id) ? 'Sending…' : 'Submit'}
                   </button>
               }
               </div>

@@ -7,12 +7,15 @@ import { useBuyerSession } from '../lib/buyerSession';
 import { buyerOpportunities, buyerShortlist, engagedCandidateId, requestStatusFor } from '../lib/buyerWorkspace';
 import { sectorLabel } from '../lib/marketplaceLookups';
 import { useAuditLog } from '../lib/auditLog';
+import { usePendingAction } from '../lib/usePendingAction';
+import { Spinner } from '../components/common/Spinner';
 import { useGatewayExchange } from '../lib/gatewayExchange';
 
 export function BuyerShortlists() {
   const { buyer, state, update } = useBuyerSession();
   const { logEvent } = useAuditLog();
   const { introductions, requestIntroduction } = useGatewayExchange();
+  const { run, pending, isPending } = usePendingAction();
 
   const withShortlists = buyerOpportunities(buyer).
   map((opportunity) => ({ opportunity, candidates: buyerShortlist(opportunity, introductions) })).
@@ -115,18 +118,22 @@ export function BuyerShortlists() {
 
                         <button
                           type="button"
-                          onClick={() => {
+                          onClick={() =>
+                          run(`proceed-${candidate.id}`, () => {
                             update({ selections: { ...state.selections, [opportunity.id]: candidate.id } });
                             logEvent(
                               `${buyer.name} chose to proceed with ${candidate.name} for "${opportunity.title}"`,
                               'engagements',
                               buyer.name
                             );
-                          }}
-                          className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-gray-900 px-4 text-[13px] font-semibold text-white hover:bg-black">
+                          })
+                          }
+                          disabled={Boolean(pending)}
+                          aria-busy={isPending(`proceed-${candidate.id}`) || undefined}
+                          className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-gray-900 px-4 text-[13px] font-semibold text-white hover:bg-black disabled:cursor-progress disabled:bg-gray-800">
 
-                              <UserCheckIcon className="h-4 w-4" aria-hidden="true" />
-                              Proceed with this exporter
+                              {isPending(`proceed-${candidate.id}`) ? <Spinner /> : <UserCheckIcon className="h-4 w-4" aria-hidden="true" />}
+                              {isPending(`proceed-${candidate.id}`) ? 'Recording your choice…' : 'Proceed with this exporter'}
                             </button> :
 
                         response === 'pending' ?
@@ -146,21 +153,26 @@ export function BuyerShortlists() {
                           type="button"
                           onClick={() => {
                             if (!actor) return;
-                            requestIntroduction({
-                              id: candidate.id,
-                              opportunityId: opportunity.id,
-                              buyerId: buyer.id,
-                              actorId: actor.id
+                            run(`intro-${candidate.id}`, () => {
+                              requestIntroduction({
+                                id: candidate.id,
+                                opportunityId: opportunity.id,
+                                buyerId: buyer.id,
+                                actorId: actor.id
+                              });
+                              logEvent(
+                                `${buyer.name} requested an introduction to a shortlisted exporter for "${opportunity.title}"`,
+                                'consent',
+                                buyer.name
+                              );
                             });
-                            logEvent(
-                              `${buyer.name} requested an introduction to a shortlisted exporter for "${opportunity.title}"`,
-                              'consent',
-                              buyer.name
-                            );
                           }}
-                          className="inline-flex min-h-[44px] items-center rounded-full border border-gray-300 px-4 text-[13px] font-medium text-gray-800 hover:border-gray-500">
+                          disabled={Boolean(pending)}
+                          aria-busy={isPending(`intro-${candidate.id}`) || undefined}
+                          className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-gray-300 px-4 text-[13px] font-medium text-gray-800 hover:border-gray-500 disabled:cursor-progress">
 
-                            Request introduction
+                            {isPending(`intro-${candidate.id}`) && <Spinner />}
+                            {isPending(`intro-${candidate.id}`) ? 'Sending request…' : 'Request introduction'}
                           </button>
                         }
                       </div>

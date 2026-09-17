@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDownIcon, InfoIcon } from 'lucide-react';
 import { Field, PrimaryButton, inputClass } from './FormField';
+import { Spinner } from '../common/Spinner';
+import { usePendingAction } from '../../lib/usePendingAction';
 
 interface DemoAccount {
   id: string;
@@ -40,10 +42,13 @@ export function SignInCard({
   const [errors, setErrors] = useState<{email?: string;password?: string;}>({});
   const [showDemo, setShowDemo] = useState(false);
 
-  const complete = (id: string) => {
+  const { run, pending, isPending } = usePendingAction();
+
+  const complete = (id: string, key: string) =>
+  run(key, () => {
     signIn(id);
     navigate(from, { replace: true });
-  };
+  });
 
   return (
     <>
@@ -60,7 +65,7 @@ export function SignInCard({
           if (!account) next.email = 'No account uses this email. Check it, or create an account.';
           if (!password) next.password = 'Enter your password.';
           setErrors(next);
-          if (account && Object.keys(next).length === 0) complete(account.id);
+          if (account && Object.keys(next).length === 0) complete(account.id, 'sign-in');
         }}
         className="mt-6 space-y-4">
 
@@ -93,7 +98,7 @@ export function SignInCard({
           }
         </Field>
         <div className="[&>button]:w-full">
-          <PrimaryButton type="submit">Sign in</PrimaryButton>
+          <PrimaryButton type="submit" loading={isPending('sign-in')} loadingLabel="Signing in…">Sign in</PrimaryButton>
         </div>
         <p className="flex gap-2 text-[12.5px] text-gray-600">
           <InfoIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
@@ -133,14 +138,23 @@ export function SignInCard({
           <li key={account.id}>
                 <button
               type="button"
-              onClick={() => complete(account.id)}
-              className="flex min-h-[56px] w-full flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-left hover:bg-gray-50">
+              onClick={() => complete(account.id, account.id)}
+              disabled={Boolean(pending)}
+              aria-busy={isPending(account.id) || undefined}
+              className="flex min-h-[56px] w-full flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-left hover:bg-gray-50 disabled:cursor-progress">
 
                   <span>
                     <span className="block text-[14px] font-medium text-gray-900">{account.name}</span>
                     <span className="block text-[12px] text-gray-600">{account.detail}</span>
                   </span>
-                  {account.badge}
+                  {isPending(account.id) ?
+                <span className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-gray-700">
+                      <Spinner />
+                      Signing in…
+                    </span> :
+
+                account.badge
+                }
                 </button>
               </li>
           )}
