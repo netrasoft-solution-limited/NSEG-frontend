@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { CorridorMap } from './CorridorMap';
 import { EASE } from '../motion/Reveal';
 import { opportunities } from '../../data/opportunities';
-import { outcomeReports } from '../../data/outcomes';
+import { headlineMetric } from '../../data/observatory';
 import { competentAuthorities } from '../../data/regulations';
 import { useRegulatoryRegister } from '../../lib/regulatoryRegister';
 
@@ -49,23 +49,13 @@ function RotatingWord({ reduced }: {reduced: boolean;}) {
 
 }
 
-const compactUsd = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  notation: 'compact',
-  maximumFractionDigits: 1
-});
-
 /** Live figures for the strip under the hero, read from the same records the console uses. */
 function useGatewayFigures() {
   const { requirements } = useRegulatoryRegister();
-  const verifiedValue = outcomeReports.
-  filter((report) => report.verification === 'verified').
-  reduce((total, report) => total + report.amount, 0);
   return [
   { label: 'Published requirements', value: requirements.filter((item) => item.status === 'current').length.toString() },
   { label: 'Live opportunities', value: opportunities.length.toString() },
-  { label: 'Verified export value', value: compactUsd.format(verifiedValue) },
+  { label: 'Verified export value', value: `$${headlineMetric.value}M` },
   { label: 'Validating institutions', value: competentAuthorities.length.toString() }];
 
 }
@@ -156,7 +146,7 @@ export function Hero(_props: {variant?: HeroVariant;}) {
               </div>
             )}
           </dl>
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-3 text-[12.5px]">
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2 border-t border-white/10 pt-3 text-[12.5px]">
             <span className="inline-flex items-center gap-2 text-white/75">
               <span className="relative flex h-2 w-2" aria-hidden="true">
                 <span className="absolute inline-flex h-full w-full rounded-full bg-gate-tint opacity-60 motion-safe:animate-ping" />

@@ -29,7 +29,33 @@ export function TopNav() {
   const signInRef = useRef<HTMLDivElement>(null);
   const resolveHash = useHashLink();
   const { pathname } = useLocation();
-  const isCurrent = (label: string) => label === 'Home' && pathname === '/';
+  const [activeHash, setActiveHash] = useState('#top');
+  const isCurrent = (label: string) =>
+  pathname === '/' && navItems.find((item) => item.label === label)?.href === activeHash;
+
+  // Which section is in view decides the current menu item, so the menu follows the reader
+  // rather than always claiming "Home".
+  useEffect(() => {
+    if (pathname !== '/') return;
+    const onScroll = () => {
+      const line = window.scrollY + window.innerHeight * 0.35;
+      const current = navItems.
+      slice(1).
+      filter((item) => {
+        const section = document.getElementById(item.href.slice(1));
+        return section ? section.offsetTop <= line : false;
+      }).
+      pop();
+      setActiveHash(current?.href ?? '#top');
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [pathname]);
 
   useEffect(() => {
     if (!signInOpen) return;
@@ -115,8 +141,8 @@ export function TopNav() {
               href={'/' + item.href}
               onClick={resolveHash(item.href)}
               aria-current={isCurrent(item.label) ? 'page' : undefined}
-              className={`rounded-lg px-3 py-1.5 text-[13px] transition-colors duration-150 ease-out hover:text-white ${
-              isCurrent(item.label) ? 'text-white' : 'text-white/60'}`
+              className={`rounded-lg px-3 py-2 text-[14.5px] transition-colors duration-150 ease-out hover:text-white ${
+              isCurrent(item.label) ? 'font-semibold text-white' : 'text-white/85'}`
               }>
 
                 {item.label}
@@ -131,7 +157,7 @@ export function TopNav() {
             onClick={() => setSignInOpen((value) => !value)}
             aria-expanded={signInOpen}
             aria-controls="sign-in-menu"
-            className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[13px] text-white/80 transition-colors duration-150 ease-out hover:text-white">
+            className="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-[14.5px] text-white/85 transition-colors duration-150 ease-out hover:text-white">
 
             Sign in
             <ChevronDownIcon
@@ -168,7 +194,7 @@ export function TopNav() {
         <a
           href="/#who-its-for"
           onClick={resolveHash('#who-its-for')}
-          className="hidden items-center gap-1.5 rounded-xl bg-gate px-3.5 py-2 text-[13px] font-semibold text-white transition-colors duration-150 ease-out hover:bg-gate-deep lg:ml-0 lg:inline-flex">
+          className="hidden items-center gap-1.5 rounded-xl bg-gate px-4 py-2 text-[14px] font-semibold text-white transition-colors duration-150 ease-out hover:bg-gate-deep lg:ml-0 lg:inline-flex">
 
           Get started
           <ArrowRightIcon className="h-3.5 w-3.5" aria-hidden="true" />
