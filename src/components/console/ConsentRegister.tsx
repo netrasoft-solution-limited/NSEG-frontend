@@ -2,12 +2,17 @@ import React from 'react';
 import { ShieldOffIcon } from 'lucide-react';
 import type { Actor } from '../../data/actors';
 import type { ConsentGrant, ConsentStatus } from '../../data/consentGrants';
+import type { VaultDocument } from '../../data/vaultDocuments';
+import { buildDisclosurePackage } from '../../lib/disclosurePackage';
+import { DisclosurePackageViewer } from './DisclosurePackageViewer';
 
 interface ConsentRegisterProps {
   grants: ConsentGrant[];
   actorsById: Map<string, Actor>;
+  vaultDocuments: VaultDocument[];
   overrides: Record<string, ConsentStatus>;
   onRevoke: (grantId: string) => void;
+  onViewPackage: (grantId: string) => void;
 }
 
 const statusStyles: Record<ConsentStatus, string> = {
@@ -16,7 +21,14 @@ const statusStyles: Record<ConsentStatus, string> = {
   expired: 'bg-gray-100 text-gray-500'
 };
 
-export function ConsentRegister({ grants, actorsById, overrides, onRevoke }: ConsentRegisterProps) {
+export function ConsentRegister({
+  grants,
+  actorsById,
+  vaultDocuments,
+  overrides,
+  onRevoke,
+  onViewPackage
+}: ConsentRegisterProps) {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
       <div>
@@ -52,6 +64,10 @@ export function ConsentRegister({ grants, actorsById, overrides, onRevoke }: Con
                     )}
                   </div>
                   <p className="mt-1.5 text-[11.5px] text-gray-400">Granted {grant.grantedOn}</p>
+                  <DisclosurePackageViewer
+                    package={buildDisclosurePackage({ ...grant, status }, actor, vaultDocuments)}
+                    onView={() => onViewPackage(grant.id)} />
+
                 </div>
 
                 <div className="flex shrink-0 items-center gap-2">

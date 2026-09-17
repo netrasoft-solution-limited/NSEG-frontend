@@ -109,7 +109,7 @@ matrix, non-goals, precedence order) constrain every module below.
 | 2.3 | Organization Delegation & Multi-Tenant Context | ⬜ | Not started |
 | 2.4 | Shared Evidence & Zero-Duplicate Document Vault | ✅ | [ConsoleVault.tsx](src/pages/ConsoleVault.tsx), [EvidenceVault.tsx](src/components/console/EvidenceVault.tsx), [vaultDocuments.ts](src/data/vaultDocuments.ts) |
 | 2.5 | Granular User Consent & Privacy (NDPA 2023) | ✅ | [ConsoleConsent.tsx](src/pages/ConsoleConsent.tsx), [ConsentRegister.tsx](src/components/console/ConsentRegister.tsx), [consentGrants.ts](src/data/consentGrants.ts) |
-| 2.6 | Immutable Disclosure Package | 🟡 | [ConsoleEngagements.tsx](src/pages/ConsoleEngagements.tsx) joins consent + vault to imply a package, but there's no standalone package viewer/envelope artifact |
+| 2.6 | Immutable Disclosure Package | ✅ | [DisclosurePackageViewer.tsx](src/components/console/DisclosurePackageViewer.tsx), [disclosurePackage.ts](src/lib/disclosurePackage.ts) — built as a derived artifact (not stored), so revoking or expiring the underlying consent grant instantly voids it; surfaced from both `ConsoleConsent` and `ConsoleEngagements`; each view is audit-logged |
 | 2.7 | Controlled Taxonomies & Master Data | 🟡 | Taxonomies exist as static data ([sectors.ts](src/data/sectors.ts), [trustTiers.ts](src/data/trustTiers.ts), [buyerTiers.ts](src/data/buyerTiers.ts)) but with no admin/versioning UI |
 | 2.8 | Configurable Workflow & Task Engine | 🟡 | Each portal has its own ad hoc queue ([SignalQueue.tsx](src/components/console/SignalQueue.tsx), [IncentiveQueue.tsx](src/components/console/IncentiveQueue.tsx), etc.) but no generic/SLA-aware task engine |
 | 2.9 | Event Bus, Universal Gateway & Tamper-Evident Audit | 🟡 | [auditLog.tsx](src/lib/auditLog.tsx), [ConsoleAudit.tsx](src/pages/ConsoleAudit.tsx) cover the audit trail; event bus/API gateway are backend concerns, N/A for a frontend prototype |
@@ -213,8 +213,9 @@ Dispute Resolution) in any form yet.
 1. ~~Outcome Verification & Attribution~~ — done: `ConsoleOutcomes` closes the loop `ConsoleEngagements`
    starts (`commenced` → self-reported → independently verified export value), including duplicate-report
    detection when both exporter and buyer self-report the same engagement.
-2. Disclosure Package viewer (Module 2.6) — a concrete "view package" surface off
-   `ConsoleEngagements`/`ConsoleConsent` showing exactly what was bundled and sent.
+2. ~~Disclosure Package viewer~~ — done: a "view package" surface on both `ConsoleEngagements` and
+   `ConsoleConsent` shows exactly what was bundled and sent, and instantly reflects Void when the
+   underlying consent grant is revoked or expired.
 3. Sectoral certification issuance workflow (Module 4.2) — extends `ConsoleCompliance` with an
    actual issue/renew/revoke certification flow, not just the register.
 4. Market Access Intelligence & Regulatory Insights (Module 3.5) — a demand-side playbooks/briefings
@@ -263,3 +264,7 @@ Dispute Resolution) in any form yet.
   export value starts Provisional, requires independent officer verification, and same-engagement
   duplicate self-reports (exporter + buyer both reporting) are flagged so only one is ever counted.
   Build order item 1 (§7) is now done.
+- **2026-09-17** — Added the Disclosure Package viewer (Module 2.6): a derived, on-demand package
+  view (not a stored record) shown from `ConsoleConsent` and `ConsoleEngagements`, so revoking the
+  underlying consent grant voids it instantly with no separate cleanup. Build order item 2 (§7) is now
+  done.

@@ -139,6 +139,15 @@ export function ConsoleEngagements() {
               'engagements',
               profile.name
             );
+          }}
+          onViewPackage={(id) => {
+            const engagement = engagements.find((item) => item.id === id);
+            const consent = engagement ? consentGrantsById.get(engagement.consentGrantId) : undefined;
+            logEvent(
+              `Viewed the disclosure package sent to ${consent?.recipient ?? 'a recipient'}`,
+              'consent',
+              profile.name
+            );
           }} />
 
       </div>

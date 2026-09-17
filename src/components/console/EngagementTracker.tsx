@@ -5,7 +5,9 @@ import type { ConsentGrant, ConsentStatus } from '../../data/consentGrants';
 import type { Engagement } from '../../data/engagements';
 import type { Opportunity } from '../../data/opportunities';
 import type { VaultDocument } from '../../data/vaultDocuments';
+import { buildDisclosurePackage } from '../../lib/disclosurePackage';
 import { engagementStageLabels, isTerminalStage, nextStage, type EngagementStage } from '../../lib/engagementStage';
+import { DisclosurePackageViewer } from './DisclosurePackageViewer';
 
 interface EngagementTrackerProps {
   engagements: Engagement[];
@@ -16,6 +18,7 @@ interface EngagementTrackerProps {
   stages: Record<string, EngagementStage>;
   onAdvance: (id: string) => void;
   onDecline: (id: string) => void;
+  onViewPackage: (engagementId: string) => void;
 }
 
 const consentStyles: Record<ConsentStatus, string> = {
@@ -42,7 +45,8 @@ export function EngagementTracker({
   vaultDocuments,
   stages,
   onAdvance,
-  onDecline
+  onDecline,
+  onViewPackage
 }: EngagementTrackerProps) {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
@@ -111,6 +115,12 @@ export function EngagementTracker({
                       <AlertTriangleIcon className="h-3 w-3" aria-hidden="true" />
                       Consent is {consent?.status} — disclosure access must be invalidated, not advanced.
                     </p>
+                  }
+                  {consent &&
+                  <DisclosurePackageViewer
+                    package={buildDisclosurePackage(consent, actor, vaultDocuments)}
+                    onView={() => onViewPackage(engagement.id)} />
+
                   }
                 </div>
 

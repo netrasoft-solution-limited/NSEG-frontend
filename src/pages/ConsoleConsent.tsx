@@ -5,6 +5,7 @@ import { StatCard } from '../components/console/StatCard';
 import { ConsentRegister } from '../components/console/ConsentRegister';
 import { consentGrants, type ConsentStatus } from '../data/consentGrants';
 import { actors } from '../data/actors';
+import { vaultDocuments } from '../data/vaultDocuments';
 import { downloadCsv } from '../lib/exportCsv';
 import { useOfficerProfile } from '../lib/officerProfile';
 import { useAuditLog } from '../lib/auditLog';
@@ -85,6 +86,7 @@ export function ConsoleConsent() {
         <ConsentRegister
           grants={consentGrants}
           actorsById={actorsById}
+          vaultDocuments={vaultDocuments}
           overrides={overrides}
           onRevoke={(id) => {
             setOverrides((current) => ({ ...current, [id]: 'revoked' }));
@@ -92,6 +94,15 @@ export function ConsoleConsent() {
             const actor = grant ? actorsById.get(grant.actorId) : undefined;
             logEvent(
               `Revoked ${actor?.name ?? 'an exporter'}'s consent grant to ${grant?.recipient ?? 'a recipient'}`,
+              'consent',
+              profile.name
+            );
+          }}
+          onViewPackage={(id) => {
+            const grant = consentGrants.find((item) => item.id === id);
+            const actor = grant ? actorsById.get(grant.actorId) : undefined;
+            logEvent(
+              `Viewed the disclosure package for ${actor?.name ?? 'an exporter'} sent to ${grant?.recipient ?? 'a recipient'}`,
               'consent',
               profile.name
             );
