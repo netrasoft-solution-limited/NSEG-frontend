@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  ActivityIcon,
   BanknoteIcon,
   BriefcaseIcon,
   BuildingIcon,
@@ -32,6 +33,7 @@ const categoryMeta: Record<AuditCategory, { label: string; icon: IconComponent }
   readiness: { label: 'Readiness', icon: CompassIcon },
   compliance: { label: 'Compliance', icon: ShieldCheckIcon },
   incentives: { label: 'Incentives', icon: WalletIcon },
+  observatory: { label: 'Observatory', icon: ActivityIcon },
   vault: { label: 'Vault', icon: FileTextIcon },
   consent: { label: 'Consent', icon: ShieldIcon },
   taxonomies: { label: 'Taxonomies', icon: LayersIcon },

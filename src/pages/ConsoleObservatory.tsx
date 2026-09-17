@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { AlertTriangleIcon, BuildingIcon, CheckCircleIcon, DollarSignIcon } from 'lucide-react';
+import { AlertTriangleIcon, BuildingIcon, CheckCircleIcon, DollarSignIcon, ShieldCheckIcon, XCircleIcon } from 'lucide-react';
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
 import { StatCard } from '../components/console/StatCard';
 import { ReconciliationPanel } from '../components/console/ReconciliationPanel';
 import { ShareBarList } from '../components/console/ShareBarList';
+import { PolicySimulator } from '../components/console/PolicySimulator';
+import { IncentiveAuditLedger } from '../components/console/IncentiveAuditLedger';
 import {
   headlineMetric,
   institutionReconciliation,
@@ -11,10 +13,23 @@ import {
   inclusionBreakdown,
   type ReconciliationStatus } from
 '../data/observatory';
+import { policyScenarioReports, type PolicyScenarioReport } from '../data/policyScenarios';
+import { runPolicySimulation, type PolicyScenarioInputs } from '../lib/policySimulation';
+import { incentiveApplications } from '../data/incentives';
+import { actors } from '../data/actors';
+import { auditIncentiveApplication } from '../lib/incentiveAudit';
 import { downloadCsv } from '../lib/exportCsv';
+import { useOfficerProfile } from '../lib/officerProfile';
+import { useAuditLog } from '../lib/auditLog';
+
+const actorsById = new Map(actors.map((actor) => [actor.id, actor]));
+const baselineExportVolumeUsd = 14250000;
 
 export function ConsoleObservatory() {
+  const { profile } = useOfficerProfile();
+  const { logEvent } = useAuditLog();
   const [overrides, setOverrides] = useState<Record<string, ReconciliationStatus>>({});
+  const [scenarioReports, setScenarioReports] = useState<PolicyScenarioReport[]>(policyScenarioReports);
 
   const statusOf = (item: (typeof institutionReconciliation)[number]) => overrides[item.institution] ?? item.status;
 
@@ -23,6 +38,13 @@ export function ConsoleObservatory() {
     (total, item) => total + (statusOf(item) === 'reconciled' ? 0 : item.flaggedClaims),
     0
   );
+
+  const auditResults = incentiveApplications.map((application) => ({
+    application,
+    result: auditIncentiveApplication(application, actorsById.get(application.actorId))
+  }));
+  const avtIssuedCount = auditResults.filter((item) => item.result.passed).length;
+  const auditRejectedCount = auditResults.filter((item) => !item.result.passed).length;
 
   const handleExport = () => {
     downloadCsv(
@@ -35,6 +57,7 @@ export function ConsoleObservatory() {
         flaggedClaims: statusOf(item) === 'reconciled' ? 0 : item.flaggedClaims
       }))
     );
+    logEvent(`Exported the Observatory reconciliation register (${institutionReconciliation.length} rows)`, 'observatory', profile.name);
   };
 
   return (
@@ -81,6 +104,25 @@ export function ConsoleObservatory() {
 
       </div>
 
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <StatCard
+          icon={ShieldCheckIcon}
+          label="Audit Verification Tokens issued"
+          value={avtIssuedCount.toString()}
+          delta="Cleared all 3 conditions"
+          positive
+          accent="gate" />
+
+        <StatCard
+          icon={XCircleIcon}
+          label="Rejected by anti-leakage audit"
+          value={auditRejectedCount.toString()}
+          delta="Blocked before payout"
+          positive={false}
+          accent="rose" />
+
+      </div>
+
       <div className="mt-6 space-y-6">
         <ReconciliationPanel
           institutions={institutionReconciliation}
@@ -100,6 +142,27 @@ export function ConsoleObservatory() {
             items={inclusionBreakdown.map((item) => ({ label: item.segment, share: item.share }))} />
 
         </div>
+
+        <IncentiveAuditLedger applications={incentiveApplications} actorsById={actorsById} />
+
+        <PolicySimulator
+          reports={scenarioReports}
+          onRun={(inputs: PolicyScenarioInputs) => {
+            const report: PolicyScenarioReport = {
+              id: `sim-${Date.now()}`,
+              runOn: 'Just now',
+              runBy: `${profile.name}, ${profile.title}`,
+              inputs,
+              projections: runPolicySimulation(inputs, baselineExportVolumeUsd)
+            };
+            setScenarioReports((current) => [report, ...current]);
+            logEvent(
+              `Ran a policy simulation (grant match ${inputs.grantMatchPercent}%, tax rebate ${inputs.taxRebatePercent}%)`,
+              'observatory',
+              profile.name
+            );
+          }} />
+
       </div>
     </ConsoleLayout>);
 

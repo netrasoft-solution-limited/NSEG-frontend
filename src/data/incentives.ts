@@ -80,4 +80,14 @@ export const incentiveApplications: IncentiveApplication[] = [
   autoPreQualified: false,
   submittedOn: '2026-08-20',
   reviewStatus: 'declined'
+},
+{
+  id: 'inc-07',
+  actorId: 'act-06',
+  type: 'export-expansion-grant',
+  requestedAmount: 12000,
+  verifiedExportVolume: 72000,
+  autoPreQualified: true,
+  submittedOn: '2026-09-13',
+  reviewStatus: 'pending'
 }];

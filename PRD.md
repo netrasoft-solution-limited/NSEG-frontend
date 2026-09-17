@@ -139,8 +139,8 @@ matrix, non-goals, precedence order) constrain every module below.
 |---|---|---|---|
 | 5.1 | Real-Time Macroeconomic Trade Observatory | 🟡 | [ConsoleObservatory.tsx](src/pages/ConsoleObservatory.tsx), [observatory.ts](src/data/observatory.ts), [ShareBarList.tsx](src/components/console/ShareBarList.tsx) — static demo metrics, not real-time |
 | 5.2 | Inter-Agency Governance & Compliance Gateway | 🟡 | [ReconciliationPanel.tsx](src/components/console/ReconciliationPanel.tsx) — double-counting reconciliation across NEPC/NEXIM/CBN |
-| 5.3 | Predictive Policy Simulation & Modeling | ⬜ | Not started |
-| 5.4 | Automated Incentive Audit & Anti-Leakage | ⬜ | Not started (Incentives module has manual sign-off, no anti-leakage automation) |
+| 5.3 | Predictive Policy Simulation & Modeling | ✅ | [PolicySimulator.tsx](src/components/console/PolicySimulator.tsx), [policySimulation.ts](src/lib/policySimulation.ts), [policyScenarios.ts](src/data/policyScenarios.ts) — a sandbox over the three BRD-specified policy variables producing immutable 12/24/36-month projections; the math is illustrative (not real econometrics), but deterministic and transparently derived from the inputs |
+| 5.4 | Automated Incentive Audit & Anti-Leakage | ✅ | [IncentiveAuditLedger.tsx](src/components/console/IncentiveAuditLedger.tsx), [incentiveAudit.ts](src/lib/incentiveAudit.ts) — runs all three BRD conditions (standing, trade volume, compliance flags) independently of `ConsoleIncentives`'s own `autoPreQualified` flag, issuing an AVT or a coded rejection; catches a suspended-but-otherwise-qualified exporter that the shallower check lets through (see `incentives.ts`'s `inc-07` seed) |
 
 ### Module 6 — Portal 4: Global Promotion, Investment Facilitation & Delegation Matchmaking
 | # | Subsystem | Status |
@@ -236,8 +236,11 @@ Dispute Resolution) — decided out of scope entirely, not just unbuilt so far (
 6. ~~Organization Delegation / multi-tenant context~~ — done: `ConsoleDelegations` models each
    exporter/buyer as an org with named delegates, surfaces the 365-day recertification cap as a
    30-day warning, and reserves revocation for officer compliance action, not routine self-service.
-7. Predictive Policy Simulation (Module 5.3) and Automated Incentive Audit & Anti-Leakage (Module
-   5.4) — extend `ConsoleObservatory`.
+7. ~~Predictive Policy Simulation and Automated Incentive Audit & Anti-Leakage~~ — done: both extend
+   `ConsoleObservatory`. The simulator runs a deterministic sandbox over the BRD's three policy
+   variables into immutable scenario reports; the audit ledger independently re-checks every
+   incentive application against all three BRD conditions (not just `ConsoleIncentives`'s own
+   `autoPreQualified` threshold), catching cases the shallower check misses.
 8. Simulated multi-role login (Module 2.1) — decided in scope (§8, decision 3): extend
    `officerProfile.tsx`'s existing desk-officer/administrator toggle into a full role switcher
    (`ROLE_SYS_ADMIN` / `ROLE_ADSPA_OFFICER` / `ROLE_DATA_STEWARD` / `ROLE_ENTITY_ADMIN` /
@@ -323,3 +326,10 @@ constraints.
   an organization with named delegates rather than a single login, surfaces the BRD's 365-day
   delegation cap as a 30-day expiry warning, and keeps revocation an officer-oversight action
   mirroring `ConsentRegister`. Build order item 6 (§7) is now done.
+- **2026-09-17** — Extended `ConsoleObservatory` with the Policy Simulation sandbox (Module 5.3)
+  and the Incentive Audit & Anti-Leakage ledger (Module 5.4). The audit ledger deliberately
+  re-derives all three BRD conditions independently of `ConsoleIncentives`'s own `autoPreQualified`
+  flag — added `inc-07` (a suspended exporter with otherwise-sufficient trade volume) to
+  `incentives.ts` specifically to demonstrate a case the shallower check passes but the deeper audit
+  correctly rejects. Build order item 7 (§7) is now done; only item 8 (simulated multi-role login)
+  remains in the mid-term list.

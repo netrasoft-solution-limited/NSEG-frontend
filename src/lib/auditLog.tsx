@@ -11,6 +11,7 @@ export type AuditCategory =
 'readiness' |
 'compliance' |
 'incentives' |
+'observatory' |
 'vault' |
 'consent' |
 'taxonomies' |
