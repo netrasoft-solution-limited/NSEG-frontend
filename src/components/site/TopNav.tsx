@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { NigeriaFlag } from '../common/NigeriaFlag';
 import { BrandLogo } from '../common/BrandLogo';
-import { ArrowRightIcon, BriefcaseIcon, ChevronDownIcon, GlobeIcon, LandmarkIcon, LifeBuoyIcon, MenuIcon, ShieldCheckIcon, XIcon } from 'lucide-react';
+import { ArrowRightIcon, BriefcaseIcon, ChevronDownIcon, GlobeIcon, LifeBuoyIcon, MenuIcon, ShieldCheckIcon, XIcon } from 'lucide-react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { EASE } from '../motion/Reveal';
@@ -65,7 +66,7 @@ export function TopNav() {
       <div className="mx-auto mb-2 max-w-shell">
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-xl border border-white/10 bg-[#0A100D]/85 px-3 py-1.5 text-[12px] text-white/75 backdrop-blur-xl">
           <span className="inline-flex items-center gap-1.5">
-            <LandmarkIcon className="h-3.5 w-3.5 text-gate-tint" aria-hidden="true" />
+            <NigeriaFlag className="h-3" />
             <span className="sm:hidden">Official FMITI platform</span>
             <span className="hidden sm:inline">An official platform of the Federal Ministry of Industry, Trade and Investment</span>
           </span>
