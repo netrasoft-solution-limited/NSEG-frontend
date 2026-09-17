@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Landing } from './pages/Landing';
 import { Marketplace } from './pages/Marketplace';
 import { ConsoleDashboard } from './pages/ConsoleDashboard';
@@ -35,6 +35,11 @@ import { OfficerProfileProvider } from './lib/officerProfile';
 import { AuditLogProvider } from './lib/auditLog';
 import { GatewayExchangeProvider } from './lib/gatewayExchange';
 import { RegulatoryRegisterProvider } from './lib/regulatoryRegister';
+import { AccountsProvider, useAccounts } from './lib/accounts';
+import { ExporterSignIn } from './pages/ExporterSignIn';
+import { ExporterRegister } from './pages/ExporterRegister';
+import { BuyerSignIn } from './pages/BuyerSignIn';
+import { BuyerRegister } from './pages/BuyerRegister';
 
 interface AppProps {
   heroVariant?: 'stacked' | 'split';
@@ -67,29 +72,50 @@ function Console() {
 
 }
 
+/** Workspace pages need a signed-in account; anyone else goes to sign in, then comes back. */
+function RequireAccount({ signedIn, signInPath, children }: {signedIn: boolean;signInPath: string;children: React.ReactElement;}) {
+  const location = useLocation();
+  if (!signedIn) return <Navigate to={signInPath} replace state={{ from: location.pathname }} />;
+  return children;
+}
+
 function Workspace() {
+  const { signedInExporterId } = useAccounts();
+  const guard = (element: React.ReactElement) =>
+  <RequireAccount signedIn={Boolean(signedInExporterId)} signInPath="/workspace/sign-in">
+      {element}
+    </RequireAccount>;
+
+
   return (
-    <ExporterSessionProvider>
-      <Routes>
-        <Route index element={<WorkspaceStanding />} />
-        <Route path="requirements" element={<WorkspaceRequirements />} />
-        <Route path="readiness" element={<WorkspaceReadiness />} />
-        <Route path="introductions" element={<WorkspaceIntroductions />} />
-      </Routes>
-    </ExporterSessionProvider>);
+    <Routes>
+      <Route path="sign-in" element={<ExporterSignIn />} />
+      <Route path="register" element={<ExporterRegister />} />
+      <Route index element={guard(<WorkspaceStanding />)} />
+      <Route path="requirements" element={guard(<WorkspaceRequirements />)} />
+      <Route path="readiness" element={guard(<WorkspaceReadiness />)} />
+      <Route path="introductions" element={guard(<WorkspaceIntroductions />)} />
+    </Routes>);
 
 }
 
 function BuyerWorkspace() {
+  const { signedInBuyerId } = useAccounts();
+  const guard = (element: React.ReactElement) =>
+  <RequireAccount signedIn={Boolean(signedInBuyerId)} signInPath="/buyer/sign-in">
+      {element}
+    </RequireAccount>;
+
+
   return (
-    <BuyerSessionProvider>
-      <Routes>
-        <Route index element={<BuyerOverview />} />
-        <Route path="requests" element={<BuyerRequests />} />
-        <Route path="shortlists" element={<BuyerShortlists />} />
-        <Route path="engagements" element={<BuyerEngagements />} />
-      </Routes>
-    </BuyerSessionProvider>);
+    <Routes>
+      <Route path="sign-in" element={<BuyerSignIn />} />
+      <Route path="register" element={<BuyerRegister />} />
+      <Route index element={guard(<BuyerOverview />)} />
+      <Route path="requests" element={guard(<BuyerRequests />)} />
+      <Route path="shortlists" element={guard(<BuyerShortlists />)} />
+      <Route path="engagements" element={guard(<BuyerEngagements />)} />
+    </Routes>);
 
 }
 
@@ -99,6 +125,9 @@ export function App({ heroVariant = 'stacked', liveDemos = true }: AppProps) {
       <AuditLogProvider>
         <GatewayExchangeProvider>
         <RegulatoryRegisterProvider>
+        <AccountsProvider>
+        <ExporterSessionProvider>
+        <BuyerSessionProvider>
         <Routes>
           <Route path="/" element={<Landing heroVariant={heroVariant} liveDemos={liveDemos} />} />
           <Route path="/marketplace" element={<Marketplace />} />
@@ -106,6 +135,9 @@ export function App({ heroVariant = 'stacked', liveDemos = true }: AppProps) {
           <Route path="/workspace/*" element={<Workspace />} />
           <Route path="/buyer/*" element={<BuyerWorkspace />} />
         </Routes>
+        </BuyerSessionProvider>
+        </ExporterSessionProvider>
+        </AccountsProvider>
         </RegulatoryRegisterProvider>
         </GatewayExchangeProvider>
       </AuditLogProvider>

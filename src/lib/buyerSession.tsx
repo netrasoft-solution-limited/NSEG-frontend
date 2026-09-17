@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useMemo, useState } from 'react';
-import { buyers, type Buyer } from '../data/buyers';
+import type { Buyer } from '../data/buyers';
+import { useAccounts } from './accounts';
 import type { CriteriaKind } from '../data/opportunities';
 import type { SupplyModeId } from '../data/regulations';
 
@@ -30,15 +31,11 @@ interface BuyerWorkspaceState {
 }
 
 interface BuyerSessionValue {
-  buyer: Buyer;
-  setBuyerId: (id: string) => void;
+  buyer: Buyer | undefined;
+  signOut: () => void;
   state: BuyerWorkspaceState;
   update: (patch: Partial<BuyerWorkspaceState>) => void;
 }
-
-/** Ferrovia Manufacturing Group has requests at every stage — published, shortlisted, in
- * delivery — so the default view shows the whole flow end to end. */
-const DEFAULT_BUYER_ID = 'byr-08';
 
 const emptyState: BuyerWorkspaceState = {
   drafts: [],
@@ -47,33 +44,37 @@ const emptyState: BuyerWorkspaceState = {
 
 const BuyerSessionContext = createContext<BuyerSessionValue | null>(null);
 
-/** Stands in for a signed-in buyer, the same way ExporterSessionProvider does. */
+/** The signed-in buyer and their private workspace state, the same way ExporterSessionProvider works. */
 export function BuyerSessionProvider({ children }: {children: React.ReactNode;}) {
-  const [buyerId, setBuyerId] = useState(DEFAULT_BUYER_ID);
+  const accounts = useAccounts();
   const [states, setStates] = useState<Record<string, BuyerWorkspaceState>>({});
 
-  const buyer = buyers.find((item) => item.id === buyerId) ?? buyers[0];
-  const state = states[buyer.id] ?? emptyState;
+  const buyer = accounts.buyers.find((item) => item.id === accounts.signedInBuyerId);
+  const state = buyer ? states[buyer.id] ?? emptyState : emptyState;
 
   const value = useMemo<BuyerSessionValue>(
     () => ({
       buyer,
-      setBuyerId,
+      signOut: accounts.signOutBuyer,
       state,
-      update: (patch) =>
-      setStates((current) => ({
-        ...current,
-        [buyer.id]: { ...(current[buyer.id] ?? emptyState), ...patch }
-      }))
+      update: (patch) => {
+        if (!buyer) return;
+        setStates((current) => ({
+          ...current,
+          [buyer.id]: { ...(current[buyer.id] ?? emptyState), ...patch }
+        }));
+      }
     }),
-    [buyer, state]
+    [buyer, state, accounts.signOutBuyer]
   );
 
   return <BuyerSessionContext.Provider value={value}>{children}</BuyerSessionContext.Provider>;
 }
 
-export function useBuyerSession(): BuyerSessionValue {
+/** For pages behind the sign-in guard: the buyer is always present there. */
+export function useBuyerSession(): BuyerSessionValue & {buyer: Buyer;} {
   const context = useContext(BuyerSessionContext);
   if (!context) throw new Error('useBuyerSession must be used inside BuyerSessionProvider');
-  return context;
+  if (!context.buyer) throw new Error('useBuyerSession needs a signed-in buyer — wrap the route in RequireBuyer');
+  return context as BuyerSessionValue & {buyer: Buyer;};
 }

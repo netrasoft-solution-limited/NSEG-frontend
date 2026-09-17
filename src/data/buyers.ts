@@ -12,6 +12,11 @@ export interface Buyer {
   opportunitiesPosted: number;
   verificationQueue: VerificationQueueStatus;
   verificationNote?: string;
+  /** Captured at onboarding for accounts created through the buyer workspace. */
+  contactName?: string;
+  jobTitle?: string;
+  country?: string;
+  sectorsOfInterest?: string[];
 }
 
 export const buyers: Buyer[] = [

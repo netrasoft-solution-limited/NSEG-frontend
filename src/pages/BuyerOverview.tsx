@@ -1,11 +1,14 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowRightIcon, CheckIcon, CircleIcon, HourglassIcon, InfoIcon, LockIcon, UnlockIcon } from 'lucide-react';
 import { BuyerLayout } from '../components/workspace/BuyerLayout';
 import { BuyerTierBadge } from '../components/workspace/TierBadge';
 import { buyerTiers } from '../data/buyerTiers';
 import { useBuyerSession } from '../lib/buyerSession';
 import { useGatewayExchange } from '../lib/gatewayExchange';
+import { registryTypeLabels, useAccounts, type RegistryType } from '../lib/accounts';
+import { useAuditLog } from '../lib/auditLog';
+import { Field, PrimaryButton, inputClass } from '../components/workspace/FormField';
 import {
   buyerEngagements,
   buyerOpportunities,
@@ -25,6 +28,15 @@ const tierChecks: Record<string, string[]> = {
 export function BuyerOverview() {
   const { buyer, state } = useBuyerSession();
   const exchange = useGatewayExchange();
+  const accounts = useAccounts();
+  const { logEvent } = useAuditLog();
+  const [searchParams] = useSearchParams();
+  const canStartVerification = buyer.tier === 'registered' && buyer.verificationQueue === 'none';
+  const [verifyOpen, setVerifyOpen] = useState(searchParams.get('verify') === '1');
+  const [registry, setRegistry] = useState<RegistryType>('lei');
+  const [identifier, setIdentifier] = useState('');
+  const [identifierError, setIdentifierError] = useState('');
+  const isNew = accounts.isNewAccount(buyer.id);
   const standing = buyerStanding(buyer);
   const tierIndex = buyerTiers.indexOf(standing.tier);
 
@@ -81,8 +93,93 @@ export function BuyerOverview() {
             {standing.next ? standing.checkInProgress ? 'Check in progress' : 'Your next step' : 'Holding your tier'}
           </p>
           <p className="mt-1.5 text-[15px] leading-snug">{standing.nextAction}</p>
+          {canStartVerification && !verifyOpen &&
+          <button
+            type="button"
+            onClick={() => setVerifyOpen(true)}
+            className="mt-3 inline-flex min-h-[44px] items-center rounded-full bg-white px-4 text-[13px] font-semibold text-gray-900 hover:bg-gray-100">
+
+              Verify your company
+            </button>
+          }
         </div>
+
+        {buyer.verificationQueue === 'none' && buyer.verificationNote &&
+        <p className="mt-3 rounded-xl bg-rose-50 p-3 text-[13px] leading-relaxed text-rose-900">{buyer.verificationNote}</p>
+        }
+
+        {canStartVerification && verifyOpen &&
+        <form
+          id="verify"
+          noValidate
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (identifier.trim().length < 5) {
+              setIdentifierError('Enter the identifier exactly as it appears in the registry.');
+              return;
+            }
+            if (isNew) accounts.requestBuyerVerification(buyer.id, registry, identifier.trim());
+            logEvent(`${buyer.name} submitted ${registryTypeLabels[registry]} for company verification`, 'buyers', buyer.contactName ?? buyer.name);
+            setVerifyOpen(false);
+          }}
+          className="mt-4 space-y-4 rounded-xl border border-gray-200 p-4">
+
+            <p className="text-[13.5px] text-gray-700">
+              We check open registries first (GLEIF, Companies House, VIES). If there's no automatic match, a desk officer
+              reviews it. You can keep using your account while that happens.
+            </p>
+            <Field id="verify-registry" label="Registry">
+              {(d) =>
+            <select id="verify-registry" value={registry} onChange={(e) => setRegistry(e.target.value as RegistryType)} aria-describedby={d} className={inputClass}>
+                  {(Object.keys(registryTypeLabels) as RegistryType[]).map((key) =>
+              <option key={key} value={key}>{registryTypeLabels[key]}</option>
+              )}
+                </select>
+            }
+            </Field>
+            <Field id="verify-identifier" label="Identifier" error={identifierError}>
+              {(d) =>
+            <input
+              id="verify-identifier"
+              value={identifier}
+              onChange={(e) => {
+                setIdentifier(e.target.value);
+                setIdentifierError('');
+              }}
+              aria-invalid={Boolean(identifierError)}
+              aria-describedby={d}
+              className={inputClass} />
+
+            }
+            </Field>
+            <div className="flex flex-wrap gap-2">
+              <PrimaryButton type="submit">Submit for verification</PrimaryButton>
+              <button type="button" onClick={() => setVerifyOpen(false)} className="min-h-[44px] rounded-full px-4 text-[13.5px] font-medium text-gray-700 hover:text-gray-900">
+                Not now
+              </button>
+            </div>
+          </form>
+        }
       </section>
+
+      {isNew && requests.length === 0 && drafts.length === 0 && submitted.length === 0 &&
+      <section aria-labelledby="welcome" className="mt-6 rounded-2xl border border-gray-900 bg-white p-5 sm:p-6">
+          <h2 id="welcome" className="text-[15px] font-semibold text-gray-900">
+            Welcome, {buyer.contactName?.split(' ')[0] ?? buyer.name}
+          </h2>
+          <p className="mt-1 text-[13.5px] leading-relaxed text-gray-700">
+            Your account is ready ({buyer.referenceId}). Start by drafting a request — you'll only be asked to verify your
+            company when you send it for qualification.
+          </p>
+          <Link
+            to="/buyer/requests"
+            className="mt-3 inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-gray-900 px-5 text-[13.5px] font-semibold text-white hover:bg-black">
+
+            Draft your first request
+            <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
+          </Link>
+        </section>
+      }
 
       <dl className="mt-6 grid grid-cols-3 gap-3">
         {stats.map((stat) =>

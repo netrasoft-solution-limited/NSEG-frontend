@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useMemo, useState } from 'react';
-import { actors, type Actor } from '../data/actors';
+import type { Actor } from '../data/actors';
+import { useAccounts } from './accounts';
 import type { ReadinessParameterScores } from './readinessScore';
 import type { SupplyModeId, TargetMarketId } from '../data/regulations';
 import type { ExporterTrack } from '../data/trustTiers';
@@ -22,15 +23,12 @@ export interface PrivateWorkspace {
 }
 
 interface ExporterSessionValue {
-  actor: Actor;
-  setActorId: (id: string) => void;
+  /** Undefined until someone signs in — workspace routes are guarded, see App.tsx. */
+  actor: Actor | undefined;
+  signOut: () => void;
   workspace: PrivateWorkspace;
   updateWorkspace: (patch: Partial<PrivateWorkspace>) => void;
 }
-
-/** Lagos Delivery Collective: Identity Verified with a score already past 80, so the only
- * thing between them and the next tier is evidence — the most instructive default. */
-const DEFAULT_ACTOR_ID = 'act-02';
 
 export const settlementCheckItems: { id: string; label: string; detail: string }[] = [
 {
@@ -68,7 +66,12 @@ function initialWorkspace(actor: Actor): PrivateWorkspace {
   2 :
   0;
   return {
-    wizard: { track: actor.track, sectorCode: actor.sectorCode },
+    wizard: {
+      track: actor.track,
+      sectorCode: actor.sectorCode,
+      mode: actor.capability?.modes[0],
+      market: actor.capability?.markets[0]
+    },
     diagnosticDraft: { ...actor.diagnostic },
     settlementChecks: settlementCheckItems.slice(0, seededChecks).map((item) => item.id),
     sharedWithOfficer: false,
@@ -78,34 +81,38 @@ function initialWorkspace(actor: Actor): PrivateWorkspace {
 
 const ExporterSessionContext = createContext<ExporterSessionValue | null>(null);
 
-/** Stands in for a signed-in exporter. The "viewing as" switch is a prototype affordance so
- * reviewers can see the workspace from each tier and track — not a real account model. */
+/** The signed-in exporter and their private workspace state, kept per account for the session. */
 export function ExporterSessionProvider({ children }: {children: React.ReactNode;}) {
-  const [actorId, setActorId] = useState(DEFAULT_ACTOR_ID);
+  const accounts = useAccounts();
   const [workspaces, setWorkspaces] = useState<Record<string, PrivateWorkspace>>({});
 
-  const actor = actors.find((item) => item.id === actorId) ?? actors[0];
-  const workspace = workspaces[actor.id] ?? initialWorkspace(actor);
+  const actor = accounts.exporters.find((item) => item.id === accounts.signedInExporterId);
+  const emptyWorkspace = { wizard: { track: 'firm' }, diagnosticDraft: { exportCapacity: 0, financialStability: 0, qualitySystems: 0, crossBorderExperience: 0, legalIpProtection: 0 }, settlementChecks: [], sharedWithOfficer: false, diagnosticSubmitted: false } as PrivateWorkspace;
+  const workspace = actor ? workspaces[actor.id] ?? initialWorkspace(actor) : emptyWorkspace;
 
   const value = useMemo<ExporterSessionValue>(
     () => ({
       actor,
-      setActorId,
+      signOut: accounts.signOutExporter,
       workspace,
-      updateWorkspace: (patch) =>
-      setWorkspaces((current) => ({
-        ...current,
-        [actor.id]: { ...(current[actor.id] ?? initialWorkspace(actor)), ...patch }
-      }))
+      updateWorkspace: (patch) => {
+        if (!actor) return;
+        setWorkspaces((current) => ({
+          ...current,
+          [actor.id]: { ...(current[actor.id] ?? initialWorkspace(actor)), ...patch }
+        }));
+      }
     }),
-    [actor, workspace]
+    [actor, workspace, accounts.signOutExporter]
   );
 
   return <ExporterSessionContext.Provider value={value}>{children}</ExporterSessionContext.Provider>;
 }
 
-export function useExporterSession(): ExporterSessionValue {
+/** For pages behind the sign-in guard: the actor is always present there. */
+export function useExporterSession(): ExporterSessionValue & {actor: Actor;} {
   const context = useContext(ExporterSessionContext);
   if (!context) throw new Error('useExporterSession must be used inside ExporterSessionProvider');
-  return context;
+  if (!context.actor) throw new Error('useExporterSession needs a signed-in exporter — wrap the route in RequireExporter');
+  return context as ExporterSessionValue & {actor: Actor;};
 }

@@ -1,6 +1,8 @@
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowRightIcon, ShieldCheckIcon } from 'lucide-react';
+import { ArrowRightIcon, BriefcaseIcon, GlobeIcon, ShieldCheckIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import type { IconComponent } from '../../types/icons';
 import { PipelineRail } from './PipelineRail';
 import { CorridorMap } from './CorridorMap';
 import { HeroMessage } from './HeroMessage';
@@ -8,8 +10,57 @@ import { EASE } from '../motion/Reveal';
 
 export type HeroVariant = 'stacked' | 'split';
 
+const audiences: { to: string; eyebrow: string; label: string; detail: string; icon: IconComponent }[] = [
+{
+  to: '/workspace',
+  eyebrow: 'For service exporters',
+  label: 'Exporter workspace',
+  detail: 'Track your standing and readiness',
+  icon: BriefcaseIcon
+},
+{
+  to: '/buyer',
+  eyebrow: 'For international buyers',
+  label: 'Buyer workspace',
+  detail: 'Post requests and review shortlists',
+  icon: GlobeIcon
+}];
+
+
+function AudienceEntries({ align }: {align: 'center' | 'start';}) {
+  return (
+    <ul
+      aria-label="Sign in to a workspace"
+      className={`mt-5 grid max-w-2xl gap-3 sm:grid-cols-2 ${align === 'center' ? 'mx-auto' : ''}`}>
+
+      {audiences.map(({ to, eyebrow, label, detail, icon: Icon }) =>
+      <li key={to}>
+          <Link
+          to={to}
+          className="group flex h-full items-center gap-3 rounded-2xl border border-white/12 bg-black/40 p-4 text-left backdrop-blur-md transition-colors duration-150 ease-out hover:border-gate/50 hover:bg-black/55 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gate">
+
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gate/15 text-gate">
+              <Icon className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[11px] uppercase tracking-[0.12em] text-white/60">{eyebrow}</span>
+              <span className="mt-0.5 block text-[15px] font-semibold text-white">{label}</span>
+              <span className="block text-[12.5px] text-white/65">{detail}</span>
+            </span>
+            <ArrowRightIcon
+            className="h-4 w-4 shrink-0 text-white/50 transition-transform duration-150 ease-out group-hover:translate-x-0.5 group-hover:text-gate"
+            aria-hidden="true" />
+
+          </Link>
+        </li>
+      )}
+    </ul>);
+
+}
+
 function Actions({ align = 'center' }: {align?: 'center' | 'start';}) {
   return (
+    <>
     <div className={`flex flex-wrap items-center gap-3 ${align === 'center' ? 'justify-center' : 'justify-start'}`}>
       <a
         href="#portals"
@@ -24,7 +75,9 @@ function Actions({ align = 'center' }: {align?: 'center' | 'start';}) {
 
         Institutional onboarding
       </a>
-    </div>);
+    </div>
+    <AudienceEntries align={align} />
+    </>);
 
 }
 

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { ArrowLeftIcon, ChevronDownIcon } from 'lucide-react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { ArrowLeftIcon, LogOutIcon } from 'lucide-react';
 import type { IconComponent } from '../../types/icons';
 import { initialsOf } from '../../lib/initials';
 
@@ -13,17 +13,14 @@ export interface WorkspaceNavItem {
   count?: number;
 }
 
-interface SwitcherGroup {
-  label: string;
-  options: { value: string; label: string }[];
-}
-
 interface WorkspaceShellProps {
   /** e.g. "Exporter workspace" — names who this workspace is for. */
   audience: string;
   homeHref: string;
   navItems: WorkspaceNavItem[];
-  switcher: { value: string; groups: SwitcherGroup[]; onChange: (value: string) => void };
+  /** Where signing out lands — the workspace's sign-in page. */
+  signInHref: string;
+  onSignOut: () => void;
   identity: { name: string; detail: React.ReactNode; badge: React.ReactNode };
   banner?: React.ReactNode;
   title: string;
@@ -39,13 +36,16 @@ export function WorkspaceShell({
   audience,
   homeHref,
   navItems,
-  switcher,
+  signInHref,
+  onSignOut,
   identity,
   banner,
   title,
   intro,
   children
 }: WorkspaceShellProps) {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen w-full bg-gray-50 text-gray-900 [color-scheme:light]">
       <a
@@ -71,32 +71,21 @@ export function WorkspaceShell({
           </Link>
 
           <div className="ml-auto flex items-center gap-2">
-            <label htmlFor="viewing-as" className="hidden text-[12px] text-gray-600 sm:block">
-              Viewing as <span className="text-gray-500">(demo)</span>
-            </label>
-            <div className="relative">
-              <select
-                id="viewing-as"
-                value={switcher.value}
-                onChange={(event) => switcher.onChange(event.target.value)}
-                aria-label="Viewing as (demo account switcher)"
-                className="max-w-[190px] appearance-none truncate rounded-full border border-gray-300 bg-white py-2 pl-3 pr-8 text-[13px] text-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900">
+            <span className="hidden text-right leading-tight sm:block">
+              <span className="block text-[12.5px] font-medium text-gray-900">{identity.name}</span>
+              <span className="block text-[11.5px] text-gray-600">Signed in</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                onSignOut();
+                navigate(signInHref);
+              }}
+              className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-gray-300 px-3.5 text-[13px] font-medium text-gray-800 hover:border-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900">
 
-                {switcher.groups.map((group) =>
-                <optgroup key={group.label} label={group.label}>
-                    {group.options.map((option) =>
-                  <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                  )}
-                  </optgroup>
-                )}
-              </select>
-              <ChevronDownIcon
-                className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-500"
-                aria-hidden="true" />
-
-            </div>
+              <LogOutIcon className="h-4 w-4" aria-hidden="true" />
+              Sign out
+            </button>
           </div>
         </div>
 

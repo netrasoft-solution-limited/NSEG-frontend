@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { PlusIcon, SendIcon, ShieldAlertIcon, Trash2Icon, XIcon } from 'lucide-react';
 import { BuyerLayout } from '../components/workspace/BuyerLayout';
 import { sectors } from '../data/sectors';
@@ -474,6 +475,11 @@ export function BuyerRequests() {
                     Desk officers only qualify requests from companies confirmed against a business registry. {standing.nextAction} You
                     can save this as a draft in the meantime.
                   </p>
+                  {buyer.verificationQueue === 'none' &&
+                <Link to="/buyer?verify=1" className="mt-2 inline-flex min-h-[44px] items-center font-semibold text-amber-950 underline underline-offset-2">
+                      Verify your company now
+                    </Link>
+                }
                 </div>
               </div>
           }

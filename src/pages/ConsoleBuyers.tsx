@@ -4,7 +4,7 @@ import { ConsoleLayout } from '../components/console/ConsoleLayout';
 import { StatCard } from '../components/console/StatCard';
 import { BuyerTable } from '../components/console/BuyerTable';
 import { VerificationQueue, type VerificationDecision } from '../components/console/VerificationQueue';
-import { buyers } from '../data/buyers';
+import { useAccounts } from '../lib/accounts';
 import { filterBuyers, type BuyerFilterState } from '../lib/buyerFilters';
 import { downloadCsv } from '../lib/exportCsv';
 import { useOfficerProfile } from '../lib/officerProfile';
@@ -19,6 +19,8 @@ export function ConsoleBuyers() {
   const mutable = canMutate(profile.role);
   const [filters, setFilters] = useState<BuyerFilterState>(emptyFilters);
   const [verificationDecisions, setVerificationDecisions] = useState<Record<string, VerificationDecision>>({});
+  const accounts = useAccounts();
+  const buyers = accounts.buyers;
 
   const filtered = filterBuyers(buyers, filters);
   const registryVerifiedOrAbove = buyers.filter((buyer) => buyer.tier !== 'registered').length;
@@ -98,11 +100,15 @@ export function ConsoleBuyers() {
 
       <div className="mt-6">
         <VerificationQueue
-          entities={buyers}
+          entities={buyers.map((buyer) => ({
+            ...buyer,
+            verificationQueue: verificationDecisions[buyer.id] && buyer.verificationQueue === 'none' ? 'pending' : buyer.verificationQueue
+          }))}
           decisions={verificationDecisions}
           canMutate={mutable}
           onDecide={(id, decision) => {
             setVerificationDecisions((current) => ({ ...current, [id]: decision }));
+            if (accounts.isNewAccount(id)) accounts.decideBuyerVerification(id, decision);
             const buyer = buyers.find((item) => item.id === id);
             logEvent(
               `${decision === 'approved' ? 'Verified' : 'Rejected'} ${buyer?.name ?? id}'s buyer account`,

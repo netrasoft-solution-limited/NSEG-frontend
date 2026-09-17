@@ -5,6 +5,8 @@ import { WorkspaceLayout } from '../components/workspace/WorkspaceLayout';
 import { TierBadge } from '../components/workspace/TierBadge';
 import { evidenceLabels, trustTiers } from '../data/trustTiers';
 import { useExporterSession } from '../lib/exporterSession';
+import { useAccounts } from '../lib/accounts';
+import { computeReadinessScore } from '../lib/readinessScore';
 import { exporterStanding } from '../lib/exporterTier';
 import { readinessParameterWeights, readinessTierFor } from '../lib/readinessScore';
 
@@ -25,16 +27,69 @@ function Requirement({ met, children }: {met: boolean;children: React.ReactNode;
 }
 
 export function WorkspaceStanding() {
-  const { actor } = useExporterSession();
+  const { actor, workspace } = useExporterSession();
   const standing = exporterStanding(actor);
   const tierIndex = trustTiers.indexOf(standing.tier);
   const band = readinessTierFor(standing.score);
   const actionTarget = standing.missingEvidence.length > 0 ? '/workspace/readiness' : '/workspace/readiness#diagnostic';
+  const accounts = useAccounts();
+  const isNewAccount = accounts.isNewAccount(actor.id);
+  const identityKeys = trustTiers[1].evidence[actor.track];
+  const identityMissing = identityKeys.filter(
+    (key) => !actor.verifiedEvidence.includes(key) && !actor.pendingEvidence?.includes(key)
+  );
+  const identityStarted = identityMissing.length === 0;
+  const setupSteps = [
+  { label: `Account created · ${actor.natepId}`, done: true, to: undefined },
+  {
+    label: identityStarted ?
+    'Identity details sent for verification' :
+    `Add your ${identityMissing.map((key) => evidenceLabels[key].toLowerCase()).join(' and ')} for verification`,
+    done: identityStarted,
+    to: '/workspace/readiness'
+  },
+  {
+    label: workspace.diagnosticSubmitted ? 'Readiness diagnostic sent for review' : 'Take the readiness diagnostic',
+    done: computeReadinessScore(actor.diagnostic) > 0 || workspace.diagnosticSubmitted,
+    to: '/workspace/readiness#diagnostic'
+  },
+  { label: 'Check which export requirements apply to you', done: false, to: '/workspace/requirements' }];
+
 
   return (
     <WorkspaceLayout
       title="My standing"
       intro="Your tier, what has been verified to get you there, and the one thing that moves you to the next tier.">
+
+      {isNewAccount &&
+      <section aria-labelledby="setup" className="mb-6 rounded-2xl border border-gray-900 bg-white p-5 sm:p-6">
+          <h2 id="setup" className="text-[15px] font-semibold text-gray-900">
+            Finish setting up
+          </h2>
+          <p className="mt-1 text-[13.5px] text-gray-700">
+            You can explore everything now. Verification only matters when you're ready to bid.
+          </p>
+          <ol className="mt-3 space-y-1.5">
+            {setupSteps.map((item) =>
+          <li key={item.label} className="flex items-start gap-2 text-[13.5px]">
+                {item.done ?
+            <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" aria-hidden="true" /> :
+
+            <CircleIcon className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" aria-hidden="true" />
+            }
+                {item.to && !item.done ?
+            <Link to={item.to} className="font-medium text-gray-900 underline underline-offset-2">
+                    {item.label}
+                  </Link> :
+
+            <span className={item.done ? 'text-gray-700' : 'text-gray-900'}>{item.label}</span>
+            }
+                <span className="sr-only">{item.done ? '(done)' : '(to do)'}</span>
+              </li>
+          )}
+          </ol>
+        </section>
+      }
 
       <section aria-labelledby="current-tier" className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">

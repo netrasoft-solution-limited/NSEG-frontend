@@ -2,10 +2,19 @@ import type { EvidenceKey, ExporterTierId, ExporterTrack } from './trustTiers';
 import type { VerificationQueueStatus } from '../lib/verification';
 import type { ReadinessParameterScores } from '../lib/readinessScore';
 import { deriveExporterTier } from '../lib/exporterTier';
+import type { SupplyModeId, TargetMarketId } from './regulations';
 
 export type { VerificationQueueStatus };
 
-interface ActorRecord {
+/** SUP-01 capability profile captured at onboarding. Private by default. */
+export interface CapabilityProfile {
+  modes: SupplyModeId[];
+  markets: TargetMarketId[];
+  teamSize: string;
+  description: string;
+}
+
+export interface ActorRecord {
   id: string;
   name: string;
   email: string;
@@ -34,6 +43,9 @@ interface ActorRecord {
    * into "expired" once the real clock moves past whatever date this was authored on.
    * Surfaced as a renewal warning starting 30 days out. */
   credentialExpiresInDays?: number;
+  /** Evidence submitted at onboarding and waiting for a registry check. */
+  pendingEvidence?: EvidenceKey[];
+  capability?: CapabilityProfile;
 }
 
 export interface Actor extends ActorRecord {
@@ -293,7 +305,8 @@ const actorRecords: ActorRecord[] = [
 }];
 
 
-export const actors: Actor[] = actorRecords.map((record) => ({
-  ...record,
-  tier: deriveExporterTier(record).id
-}));
+export function toActor(record: ActorRecord): Actor {
+  return { ...record, tier: deriveExporterTier(record).id };
+}
+
+export const actors: Actor[] = actorRecords.map(toActor);

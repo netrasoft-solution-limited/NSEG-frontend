@@ -1,6 +1,5 @@
 import React from 'react';
 import { CompassIcon, HandshakeIcon, LockIcon, OctagonAlertIcon, ShieldCheckIcon } from 'lucide-react';
-import { actors } from '../../data/actors';
 import { trackLabels, trustTiers } from '../../data/trustTiers';
 import { useExporterSession } from '../../lib/exporterSession';
 import { useGatewayExchange } from '../../lib/gatewayExchange';
@@ -15,7 +14,7 @@ interface WorkspaceLayoutProps {
 }
 
 export function WorkspaceLayout({ title, intro, children }: WorkspaceLayoutProps) {
-  const { actor, setActorId } = useExporterSession();
+  const { actor, signOut } = useExporterSession();
   const tier = trustTiers.find((item) => item.id === actor.tier)!;
   const { introductions } = useGatewayExchange();
   const pendingIntroductions = introductions.filter(
@@ -34,14 +33,8 @@ export function WorkspaceLayout({ title, intro, children }: WorkspaceLayoutProps
       audience="Exporter workspace"
       homeHref="/workspace"
       navItems={navItems}
-      switcher={{
-        value: actor.id,
-        onChange: setActorId,
-        groups: (['firm', 'individual'] as const).map((track) => ({
-          label: trackLabels[track],
-          options: actors.filter((item) => item.track === track).map((item) => ({ value: item.id, label: item.name }))
-        }))
-      }}
+      signInHref="/workspace/sign-in"
+      onSignOut={signOut}
       identity={{
         name: actor.name,
         detail:

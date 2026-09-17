@@ -4,7 +4,7 @@ import { ConsoleLayout } from '../components/console/ConsoleLayout';
 import { StatCard } from '../components/console/StatCard';
 import { ActorTable } from '../components/console/ActorTable';
 import { VerificationQueue, type VerificationDecision } from '../components/console/VerificationQueue';
-import { actors } from '../data/actors';
+import { useAccounts } from '../lib/accounts';
 import { filterActors, type ActorFilterState } from '../lib/actorFilters';
 import { downloadCsv } from '../lib/exportCsv';
 import { useOfficerProfile } from '../lib/officerProfile';
@@ -21,8 +21,10 @@ export function ConsoleExporters() {
   const [filters, setFilters] = useState<ActorFilterState>(emptyFilters);
   const [verificationDecisions, setVerificationDecisions] = useState<Record<string, VerificationDecision>>({});
   const [suspensionOverrides, setSuspensionOverrides] = useState<Record<string, boolean>>({});
+  const accounts = useAccounts();
+  const actors = accounts.exporters;
 
-  const isSuspended = (actor: (typeof actors)[number]) => suspensionOverrides[actor.id] ?? actor.suspended;
+  const isSuspended = (actor: (typeof accounts.exporters)[number]) => suspensionOverrides[actor.id] ?? actor.suspended;
   const filtered = filterActors(actors, filters).map((actor) => ({ ...actor, suspended: isSuspended(actor) }));
   const verifiedCount = actors.filter((actor) => actor.tier !== 'registered').length;
   const newCount = actors.filter((actor) => actor.isNew).length;
@@ -112,12 +114,20 @@ export function ConsoleExporters() {
 
       <div className="mt-6">
         <VerificationQueue
-          entities={actors.map((actor) => ({ ...actor, referenceId: actor.natepId }))}
+          entities={actors.map((actor) => ({
+            ...actor,
+            referenceId: actor.natepId,
+            // Keep a decided registration visible as resolved after its queue clears.
+            verificationQueue: verificationDecisions[actor.id] && actor.verificationQueue === 'none' ? 'pending' : actor.verificationQueue
+          }))}
           decisions={verificationDecisions}
           canMutate={mutable}
           onDecide={(id, decision) => {
             setVerificationDecisions((current) => ({ ...current, [id]: decision }));
-            if (decision === 'rejected') {
+            if (accounts.isNewAccount(id)) {
+              // New registrations: approval verifies what they submitted; rejection never locks them out.
+              accounts.decideExporterVerification(id, decision);
+            } else if (decision === 'rejected') {
               setSuspensionOverrides((current) => ({ ...current, [id]: true }));
             }
             const actor = actors.find((item) => item.id === id);

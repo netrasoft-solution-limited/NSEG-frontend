@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { CheckCircle2Icon, CircleDashedIcon, EyeIcon, HourglassIcon, LockIcon, SendIcon, XCircleIcon } from 'lucide-react';
 import { WorkspaceLayout } from '../components/workspace/WorkspaceLayout';
@@ -10,6 +10,7 @@ import { deriveExporterTier } from '../lib/exporterTier';
 import { computeReadinessScore, readinessParameterWeights, readinessTierFor } from '../lib/readinessScore';
 import { useAuditLog } from '../lib/auditLog';
 import { useRegulatoryRegister } from '../lib/regulatoryRegister';
+import { useAccounts } from '../lib/accounts';
 
 /** Which vault document backs each evidence item. Delivery history comes from verified
  * outcomes, not an upload, so it has no document kind. */
@@ -47,8 +48,22 @@ export function WorkspaceReadiness() {
   const actorDocuments = vaultDocuments.filter((doc) => doc.actorId === actor.id);
   const requiredEvidence = trustTiers[trustTiers.length - 1].evidence[actor.track];
 
+  const accounts = useAccounts();
+  const isNewAccount = accounts.isNewAccount(actor.id);
+  const [addingKey, setAddingKey] = useState<EvidenceKey | null>(null);
+  const [evidenceValue, setEvidenceValue] = useState('');
+  const [evidenceError, setEvidenceError] = useState('');
+
+  const evidenceFormats: Partial<Record<EvidenceKey, {pattern: RegExp;hint: string;}>> = {
+    cac: { pattern: /^(RC|BN|IT)?\s?\d{5,8}$/i, hint: 'As on your CAC certificate, e.g. RC 1234567.' },
+    tin: { pattern: /^\d{8}-?\d{4}$/, hint: '12 digits, e.g. 12345678-0001.' },
+    nin: { pattern: /^\d{11}$/, hint: '11 digits.' },
+    'professional-credential': { pattern: /.{4,}/, hint: 'Name and number, e.g. ICAN membership 12345.' }
+  };
+
   const evidenceState = (key: EvidenceKey): EvidenceState => {
     if (actor.verifiedEvidence.includes(key)) return 'verified';
+    if (actor.pendingEvidence?.includes(key)) return 'in-review';
     const kind = evidenceDocumentKind[key];
     const doc = kind && actorDocuments.find((item) => item.kind === kind);
     if (doc?.verification === 'pending') return 'in-review';
@@ -223,6 +238,61 @@ export function WorkspaceReadiness() {
                   <p className="text-[12.5px] text-gray-600">
                       Verified automatically once a buyer confirms a completed engagement.
                     </p>
+                  }
+                  {isNewAccount && state === 'not-started' && evidenceFormats[key] && addingKey !== key &&
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAddingKey(key);
+                      setEvidenceValue('');
+                      setEvidenceError('');
+                    }}
+                    className="mt-1 inline-flex min-h-[40px] items-center text-[13px] font-semibold text-gray-900 underline underline-offset-2">
+
+                      Add for verification<span className="sr-only">: {evidenceLabels[key]}</span>
+                    </button>
+                  }
+                  {addingKey === key &&
+                  <form
+                    noValidate
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      const value = evidenceValue.trim();
+                      if (!evidenceFormats[key]!.pattern.test(value)) {
+                        setEvidenceError(`Check the format. ${evidenceFormats[key]!.hint}`);
+                        return;
+                      }
+                      accounts.submitExporterEvidence(actor.id, key, value);
+                      logEvent(`${actor.name} submitted ${evidenceLabels[key].toLowerCase()} for verification`, 'exporters', actor.name);
+                      setAddingKey(null);
+                    }}
+                    className="mt-2 flex flex-wrap items-end gap-2">
+
+                      <div>
+                        <label htmlFor={`evidence-${key}`} className="block text-[12.5px] font-medium text-gray-800">
+                          {evidenceLabels[key]}
+                        </label>
+                        <p id={`evidence-${key}-hint`} className="text-[12px] text-gray-600">{evidenceFormats[key]!.hint}</p>
+                        <input
+                        id={`evidence-${key}`}
+                        value={evidenceValue}
+                        onChange={(event) => {
+                          setEvidenceValue(event.target.value);
+                          setEvidenceError('');
+                        }}
+                        aria-invalid={Boolean(evidenceError)}
+                        aria-describedby={`evidence-${key}-hint${evidenceError ? ` evidence-${key}-error` : ''}`}
+                        className="mt-1 w-56 rounded-xl border border-gray-300 px-3 py-2 text-[14px] focus:border-gray-900 focus:outline-none aria-[invalid=true]:border-rose-600" />
+
+                        {evidenceError && <p id={`evidence-${key}-error`} className="mt-1 text-[12.5px] text-rose-700">{evidenceError}</p>}
+                      </div>
+                      <button type="submit" className="min-h-[40px] rounded-full bg-gray-900 px-4 text-[13px] font-semibold text-white hover:bg-black">
+                        Submit
+                      </button>
+                      <button type="button" onClick={() => setAddingKey(null)} className="min-h-[40px] rounded-full px-3 text-[13px] font-medium text-gray-700">
+                        Cancel
+                      </button>
+                    </form>
                   }
                 </div>
                 <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[12px] font-medium ${meta.className}`}>
