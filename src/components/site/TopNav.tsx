@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NigeriaFlag } from '../common/NigeriaFlag';
 import { BrandLogo } from '../common/BrandLogo';
-import { ArrowRightIcon, LifeBuoyIcon, MenuIcon, ShieldCheckIcon, XIcon } from 'lucide-react';
+import { ArrowRightIcon, LifeBuoyIcon, MenuIcon, XIcon } from 'lucide-react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import { EASE } from '../motion/Reveal';
@@ -22,7 +22,6 @@ export function TopNav() {
   const reduced = useReducedMotion();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const [verifyOpen, setVerifyOpen] = useState(false);
   const [getStartedOpen, setGetStartedOpen] = useState(false);
   const resolveHash = useHashLink();
   const { pathname } = useLocation();
@@ -79,16 +78,6 @@ export function TopNav() {
             <span className="hidden sm:inline">An official platform of the Federal Ministry of Industry, Trade and Investment</span>
           </span>
           <span className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setVerifyOpen((value) => !value)}
-              aria-expanded={verifyOpen}
-              aria-controls="verify-site"
-              className="inline-flex items-center gap-1 text-white/80 underline-offset-2 hover:text-white hover:underline">
-
-              <ShieldCheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
-              Verify this site
-            </button>
             <a
               href="/#support"
               onClick={resolveHash('#support')}
@@ -99,12 +88,6 @@ export function TopNav() {
             </a>
           </span>
         </div>
-        {verifyOpen &&
-        <p id="verify-site" className="mt-1.5 rounded-xl border border-white/10 bg-[#0A100D]/95 px-3 py-2 text-[12.5px] leading-relaxed text-white/80">
-            Official Gateway pages are served from a <span className="font-semibold text-white">.gov.ng</span> address over a
-            secure connection. We will never ask for your password by email or phone. This is a prototype build.
-          </p>
-        }
       </div>
       <nav
         aria-label="Primary"
