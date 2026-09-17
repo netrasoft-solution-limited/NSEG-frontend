@@ -64,11 +64,8 @@ export function TopNav() {
         scrolled ? 'shadow-lg shadow-black/30' : ''}`
         }>
 
-        <a href="#top" className="flex items-center gap-2.5 pl-1">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gate">
-            <span className="h-2.5 w-2.5 rounded-sm bg-black" />
-          </span>
-          <span className="font-display text-[15px] font-semibold tracking-tight text-white">Service Export Gateway</span>
+        <a href="/#top" className="flex items-center pl-1">
+          <img src="/brand/nseg-logo-white.svg" alt="NSEG — Nigeria Service Export Gateway" className="h-9 w-auto sm:h-10" />
         </a>
 
         <ul className="ml-auto hidden items-center gap-1 md:flex">
@@ -135,7 +132,7 @@ export function TopNav() {
 
         <a
           href="#governance"
-          className="hidden items-center gap-1.5 rounded-xl bg-gate px-3.5 py-2 text-[13px] font-semibold text-black transition-colors duration-150 ease-out hover:bg-gate-deep md:ml-0 md:inline-flex">
+          className="hidden items-center gap-1.5 rounded-xl bg-gate px-3.5 py-2 text-[13px] font-semibold text-white transition-colors duration-150 ease-out hover:bg-gate-deep md:ml-0 md:inline-flex">
 
           Request access
           <ArrowUpRightIcon className="h-3.5 w-3.5" aria-hidden="true" />
@@ -208,7 +205,7 @@ export function TopNav() {
             <a
             href="#governance"
             onClick={() => setOpen(false)}
-            className="mt-2 block rounded-xl bg-gate px-3.5 py-2.5 text-center text-[14px] font-semibold text-black">
+            className="mt-2 block rounded-xl bg-gate px-3.5 py-2.5 text-center text-[14px] font-semibold text-white">
 
               Request access
             </a>

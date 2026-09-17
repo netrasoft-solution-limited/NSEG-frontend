@@ -35,7 +35,7 @@ export function ReadinessDemo() {
               cy="40"
               r={RADIUS}
               fill="none"
-              stroke="#16b364"
+              stroke="#008751"
               strokeWidth="6"
               strokeLinecap="round"
               strokeDasharray={CIRCUMFERENCE}

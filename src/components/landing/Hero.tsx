@@ -64,7 +64,7 @@ function Actions({ align = 'center' }: {align?: 'center' | 'start';}) {
     <div className={`flex flex-wrap items-center gap-3 ${align === 'center' ? 'justify-center' : 'justify-start'}`}>
       <a
         href="#portals"
-        className="inline-flex items-center gap-2 rounded-xl bg-gate px-5 py-3 text-[14px] font-semibold text-black transition-colors duration-150 ease-out hover:bg-gate-deep">
+        className="inline-flex items-center gap-2 rounded-xl bg-gate px-5 py-3 text-[14px] font-semibold text-white transition-colors duration-150 ease-out hover:bg-gate-deep">
 
         See how the Gateway works
         <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />

@@ -36,7 +36,7 @@ export function StatCard({ icon: Icon, label, value, delta, positive, accent }: 
         <svg width="68" height="30" viewBox="0 0 68 30" fill="none" aria-hidden="true">
           <path
             d={squigglePaths[accent]}
-            stroke={positive ? '#16b364' : '#e11d48'}
+            stroke={positive ? '#008751' : '#e11d48'}
             strokeWidth="1.5"
             strokeLinecap="round" />
 

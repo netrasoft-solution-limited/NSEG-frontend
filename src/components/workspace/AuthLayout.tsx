@@ -19,7 +19,7 @@ const story: Record<Audience, {eyebrow: string;title: React.ReactNode;points: {i
     eyebrow: 'Exporter workspace',
     title:
     <>
-        Your route to <span className="text-gate">verified</span> export work.
+        Your route to <span className="text-gate-tint">verified</span> export work.
       </>,
 
     points: [
@@ -80,8 +80,8 @@ interface AuthLayoutProps {
  * itself stays dark-on-white for contrast; the atmosphere lives around it. */
 export function AuthLayout({ audience, switchLink, steps, currentStep = 0, children }: AuthLayoutProps) {
   const content = story[audience];
-  const accentText = audience === 'exporter' ? 'text-gate' : 'text-[#8cc8ff]';
-  const accentRing = audience === 'exporter' ? 'bg-gate text-black' : 'bg-[#8cc8ff] text-black';
+  const accentText = audience === 'exporter' ? 'text-gate-tint' : 'text-[#8cc8ff]';
+  const accentRing = audience === 'exporter' ? 'bg-gate text-white' : 'bg-[#8cc8ff] text-black';
 
   return (
     <div
@@ -111,13 +111,7 @@ export function AuthLayout({ audience, switchLink, steps, currentStep = 0, child
             to="/"
             className="flex items-center gap-2.5 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
 
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gate" aria-hidden="true">
-              <span className="h-2.5 w-2.5 rounded-sm bg-black" />
-            </span>
-            <span className="leading-tight">
-              <span className="block font-display text-[15px] font-semibold">Service Export Gateway</span>
-              <span className="block text-[12px] text-white/70">{content.eyebrow}</span>
-            </span>
+            <img src="/brand/nseg-logo-white.svg" alt="NSEG — Nigeria Service Export Gateway" className="h-10 w-auto sm:h-11" />
           </Link>
           <Link
             to={switchLink.to}
@@ -131,7 +125,7 @@ export function AuthLayout({ audience, switchLink, steps, currentStep = 0, child
       <div className="relative mx-auto grid max-w-6xl gap-8 px-4 pb-12 pt-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,540px)] lg:gap-14 lg:pt-10">
         <aside className="lg:pt-6">
           <p className={`inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[11.5px] uppercase tracking-[0.14em] ${accentText}`}>
-            <span className={`h-1.5 w-1.5 rounded-full ${audience === 'exporter' ? 'bg-gate' : 'bg-[#8cc8ff]'}`} aria-hidden="true" />
+            <span className={`h-1.5 w-1.5 rounded-full ${audience === 'exporter' ? 'bg-gate-tint' : 'bg-[#8cc8ff]'}`} aria-hidden="true" />
             {content.eyebrow}
           </p>
           <p className="mt-4 max-w-md text-balance font-display text-[32px] font-semibold leading-[1.08] tracking-[-0.02em] sm:text-[40px] lg:text-[48px]">

@@ -75,7 +75,7 @@ export function CorridorMap() {
                 <motion.path
                   d={d}
                   fill="none"
-                  stroke="#16b364"
+                  stroke="#008751"
                   strokeWidth="1.4"
                   strokeLinecap="round"
                   initial={reduced ? { pathLength: 1, opacity: 0.35 } : { pathLength: 0, opacity: 0 }}
@@ -134,7 +134,7 @@ export function CorridorMap() {
             cx={hub.x}
             cy={hub.y}
             fill="none"
-            stroke="#16b364"
+            stroke="#008751"
             strokeWidth="1.2"
             initial={{ r: 8, opacity: 0.5 }}
             animate={{ r: [8, 20], opacity: [0.5, 0] }}
@@ -142,7 +142,7 @@ export function CorridorMap() {
 
           }
           <circle cx={hub.x} cy={hub.y} r="9" fill="rgba(22,179,100,0.18)" />
-          <circle cx={hub.x} cy={hub.y} r="4" fill="#16b364" />
+          <circle cx={hub.x} cy={hub.y} r="4" fill="#008751" />
           <text
             x={hub.x}
             y={hub.y + 24}

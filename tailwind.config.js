@@ -28,8 +28,12 @@ export default {
         gate: {
           // Fixed brand green: intentionally does NOT flip with theme, so
           // primary buttons/badges stay the same vivid color in both modes.
-          DEFAULT: '#16b364',
-          deep: '#0c7c44',
+          // Nigerian flag green, matched to the NSEG logo.
+          DEFAULT: '#008751',
+          deep: '#006b40',
+          // Lighter tint of the same green for small text on always-dark surfaces
+          // (flag green alone falls just under AA there).
+          tint: '#4cc38a',
           // Used as inline accent text (unlike DEFAULT/deep), so it flips to
           // a darker green in light mode for AA contrast against a light page.
           soft: 'rgb(var(--color-gate-soft) / <alpha-value>)',

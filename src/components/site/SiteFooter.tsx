@@ -4,6 +4,8 @@ export function SiteFooter() {
   return (
     <footer className="mx-auto max-w-shell px-4 pb-12">
       <div className="flex flex-col items-start justify-between gap-4 border-t border-hairline/8 pt-6 sm:flex-row sm:items-center">
+        <img src="/brand/nseg-logo-white.svg" alt="NSEG — Nigeria Service Export Gateway" className="brand-on-dark h-10 w-auto" />
+        <img src="/brand/nseg-logo-color.svg" alt="NSEG — Nigeria Service Export Gateway" className="brand-on-light h-10 w-auto" />
         <p className="text-[12px] text-chalk-dim">
           Nigeria Service Export Gateway · Federal Ministry of Industry, Trade and Investment
         </p>

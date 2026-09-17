@@ -61,13 +61,8 @@ export function WorkspaceShell({
             to={homeHref}
             className="flex items-center gap-2 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900">
 
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gate" aria-hidden="true">
-              <span className="h-2.5 w-2.5 rounded-sm bg-black" />
-            </span>
-            <span className="leading-tight">
-              <span className="block text-[13px] font-semibold text-gray-900">NSEG</span>
-              <span className="block text-[11.5px] text-gray-600">{audience}</span>
-            </span>
+            <img src="/brand/nseg-logo-color.svg" alt="NSEG — Nigeria Service Export Gateway" className="h-9 w-auto" />
+            <span className="hidden border-l border-gray-200 pl-3 text-[12.5px] font-medium text-gray-700 sm:block">{audience}</span>
           </Link>
 
           <div className="ml-auto flex items-center gap-2">

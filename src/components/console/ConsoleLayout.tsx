@@ -75,9 +75,10 @@ export function ConsoleLayout({ breadcrumb, onExport, children }: ConsoleLayoutP
       <aside className="flex w-[72px] shrink-0 flex-col items-center gap-1 border-r border-gray-100 bg-white py-5">
         <Link
           to="/console"
-          className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl bg-gate">
+          title="NSEG Console"
+          className="mb-4 flex h-11 w-11 items-center justify-center">
 
-          <span className="h-2.5 w-2.5 rounded-sm bg-black" />
+          <img src="/brand/nseg-mark-color.svg" alt="NSEG — Nigeria Service Export Gateway — Officer Console" className="h-10 w-auto" />
         </Link>
 
         <nav className="flex flex-1 flex-col items-center gap-1 overflow-y-auto" aria-label="Console sections">
