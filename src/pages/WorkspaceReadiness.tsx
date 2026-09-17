@@ -9,6 +9,7 @@ import { settlementCheckItems, useExporterSession } from '../lib/exporterSession
 import { deriveExporterTier } from '../lib/exporterTier';
 import { computeReadinessScore, readinessParameterWeights, readinessTierFor } from '../lib/readinessScore';
 import { useAuditLog } from '../lib/auditLog';
+import { useRegulatoryRegister } from '../lib/regulatoryRegister';
 
 /** Which vault document backs each evidence item. Delivery history comes from verified
  * outcomes, not an upload, so it has no document kind. */
@@ -31,6 +32,10 @@ const evidenceStateMeta: Record<EvidenceState, { label: string; className: strin
 export function WorkspaceReadiness() {
   const { actor, workspace, updateWorkspace } = useExporterSession();
   const { logEvent } = useAuditLog();
+  const { assertions } = useRegulatoryRegister();
+  const assertion =
+  assertions.find((item) => item.actorId === actor.id && item.status !== 'withdrawn') ??
+  assertions.find((item) => item.actorId === actor.id);
   const location = useLocation();
 
   useEffect(() => {
@@ -131,6 +136,71 @@ export function WorkspaceReadiness() {
           </span>
         </button>
       </section>
+
+      {assertion &&
+      <section aria-labelledby="assertion" className="mt-6 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <h2 id="assertion" className="text-[15px] font-semibold text-gray-900">
+                Your readiness assertion
+              </h2>
+              <p className="mt-0.5 text-[12.5px] text-gray-600">
+                Issued {assertion.issuedOn} by {assertion.issuedBy} · expires {assertion.expiresOn}
+              </p>
+            </div>
+            <span
+            className={`rounded-full px-2.5 py-1 text-[12px] font-medium ${
+            assertion.status === 'valid' ?
+            'bg-emerald-50 text-emerald-800' :
+            assertion.status === 'revalidation-required' ?
+            'bg-amber-50 text-amber-900' :
+            'bg-gray-100 text-gray-700'}`
+            }>
+
+              {assertion.status === 'valid' ? 'Valid' : assertion.status === 'revalidation-required' ? 'Being revalidated' : 'Withdrawn'}
+            </span>
+          </div>
+
+          {assertion.status === 'revalidation-required' && assertion.flaggedBy &&
+        <p className="mt-3 rounded-xl bg-amber-50 p-3 text-[13px] leading-relaxed text-amber-900">
+              A requirement it relies on changed: "{assertion.flaggedBy.requirementTitle}". Your assertion stays on record while
+              a desk officer checks it against the new version. You don't need to do anything unless they contact you.
+            </p>
+        }
+          {assertion.status === 'withdrawn' &&
+        <p className="mt-3 rounded-xl bg-gray-100 p-3 text-[13px] leading-relaxed text-gray-800">
+              {assertion.history[assertion.history.length - 1]?.event}. Your desk officer will explain what's needed for a new one.
+            </p>
+        }
+
+          <p className="mt-3 text-[13px] text-gray-800">
+            <span className="font-medium">For:</span> {assertion.purpose} · {assertion.scope}
+          </p>
+          <div className="mt-3 grid gap-4 sm:grid-cols-2">
+            <div>
+              <h3 className="text-[13px] font-medium text-gray-800">What it confirms</h3>
+              <ul className="mt-1.5 space-y-1.5">
+                {assertion.basis.map((item) =>
+              <li key={item.label} className="text-[13px]">
+                    <p className="text-gray-900">{item.label}</p>
+                    <p className="text-[12px] text-gray-600">
+                      {item.authority} · {item.verifiedOn}
+                    </p>
+                  </li>
+              )}
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-[13px] font-medium text-gray-800">What it doesn't cover</h3>
+              <ul className="mt-1.5 list-disc space-y-1 pl-5 text-[13px] text-gray-700">
+                {assertion.notCovered.map((item) =>
+              <li key={item}>{item}</li>
+              )}
+              </ul>
+            </div>
+          </div>
+        </section>
+      }
 
       <section aria-labelledby="evidence" className="mt-6 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
         <h2 id="evidence" className="text-[15px] font-semibold text-gray-900">

@@ -79,7 +79,8 @@ function isComplete(answers: WizardAnswers): answers is PathwayAnswers {
 
 export function WorkspaceRequirements() {
   const { actor, workspace, updateWorkspace } = useExporterSession();
-  const { requirements } = useRegulatoryRegister();
+  const { requirements, impacts } = useRegulatoryRegister();
+  const changes = impacts.filter((impact) => impact.pathwayActorIds.includes(actor.id));
   const answers = workspace.wizard;
   const [step, setStep] = useState(() => isComplete(answers) ? steps.length : 0);
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -110,6 +111,23 @@ export function WorkspaceRequirements() {
     <WorkspaceLayout
       title="Requirements"
       intro="Answer four questions about how you export. You get the requirements that apply to you, in the order to tackle them.">
+
+      {changes.length > 0 &&
+      <section aria-labelledby="recent-changes" className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 p-5">
+          <h2 id="recent-changes" className="text-[15px] font-semibold text-amber-950">
+            {changes.length === 1 ? 'A requirement that affects you changed' : `${changes.length} requirements that affect you changed`}
+          </h2>
+          <ul className="mt-2 space-y-2">
+            {changes.map((impact) =>
+          <li key={impact.id} className="text-[13.5px] leading-relaxed text-amber-950">
+                <span className="font-medium">{impact.title}</span> — updated by {impact.authority} on {impact.publishedOn}
+                {impact.changedFields.length > 0 && `. Changed: ${impact.changedFields.join(', ')}`}.
+              </li>
+          )}
+          </ul>
+          <p className="mt-2 text-[12.5px] text-amber-900">Your pathway already uses the new version.</p>
+        </section>
+      }
 
       {!showPathway &&
       <section aria-labelledby="wizard-step" className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">

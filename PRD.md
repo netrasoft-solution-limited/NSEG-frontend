@@ -188,8 +188,8 @@ static data — never the production non-functional detail (Argon2id, AES-256-GC
 | REG-02 | Institutional authoring and validation | 🟡 | [ConsoleCompliance.tsx](src/pages/ConsoleCompliance.tsx), [AuthoringPipeline.tsx](src/components/console/AuthoringPipeline.tsx), [regulatoryRegister.tsx](src/lib/regulatoryRegister.tsx) — Draft → Awaiting sign-off → Published (or Returned with a required note); per-agency queues; statutory and FX content needs two sign-offs; publishing a revision creates a new version and keeps the prior one as superseded; review calendar. Editing clears prior sign-offs. Content Drafter and Competent Authority Focal are simulated roles. Only a focal can confirm content unchanged — desk officers can only flag it. No disclaimer management or configurable approval tiers per agency |
 | REG-03 | Wizard and pathway engine | 🟡 | [WorkspaceRequirements.tsx](src/pages/WorkspaceRequirements.tsx), [requirementsPathway.ts](src/lib/requirementsPathway.ts) — four-question wizard (track, sector, mode, market) producing a pathway ordered statutory → fiscal → professional → buyer standard → FX. Only `current` requirements are shown; applicable under-review items are counted, not shown. Marks requirements already met by verified evidence. No save/resume across sessions or change alerts |
 | REG-04 | Exporter readiness workspace | 🟡 | [WorkspaceReadiness.tsx](src/pages/WorkspaceReadiness.tsx), [exporterSession.tsx](src/lib/exporterSession.tsx) — private by default with an explicit, revocable "share snapshot" switch; evidence status from the vault; bank & FX settlement checklist; private diagnostic draft that previews the tier it would support and is submitted for officer review. Sharing and submitting are audit-logged. The console doesn't yet show shared snapshots |
-| REG-05 | Change alert and invalidation | 🟡 | [ComplianceRegister.tsx](src/components/console/ComplianceRegister.tsx) computes an "Affects" count against live opportunities. No review tasks, notifications, or flagging of dependent assertions for revalidation |
-| REG-06 | Readiness assertions | 🟡 | [ReadinessQueue.tsx](src/components/console/ReadinessQueue.tsx) issues/withholds an assertion, but the assertion doesn't state what was verified, by which authority, when, scope limits, expiry or what isn't covered |
+| REG-05 | Change alert and invalidation | 🟡 | Publishing a version runs impact analysis in [regulatoryRegister.tsx](src/lib/regulatoryRegister.tsx): changed fields, affected exporter pathways (by sector and exporter type), live opportunities, and assertions citing the superseded version, which are flagged for revalidation, not voided. Raises review tasks ([ChangeImpactPanel.tsx](src/components/console/ChangeImpactPanel.tsx)) and notifies affected exporters on their Requirements page. Pathway impact ignores mode and market (exporters don't declare them); opportunity impact is by sector only |
+| REG-06 | Readiness assertions | ✅ | [readinessAssertions.ts](src/lib/readinessAssertions.ts), [AssertionRegister.tsx](src/components/console/AssertionRegister.tsx) — purpose, scope, issuer, date, 12-month expiry; each basis item names the authority, date and requirement version; explicit "not covered" list, including evidence gaps; revalidate or withdraw (a withdrawal needs a reason) with full history. Exporters see their assertion in [WorkspaceReadiness.tsx](src/pages/WorkspaceReadiness.tsx) |
 
 ### 5.5 Observatory
 | ID | Requirement | Status | Where in repo / gap |
@@ -251,7 +251,7 @@ returning an explicit typed failure instead of partial data.
 |---|---|---|
 | Opportunity Criteria Package | Demand | 🟡 criteria in `opportunities.ts`, unversioned |
 | Regulatory Requirement Link | Regulatory | ⬜ |
-| Readiness Assertion | Regulatory | 🟡 issue/withhold only (REG-06) |
+| Readiness Assertion | Regulatory | ✅ full record with basis, scope, exclusions and revalidation (REG-06) |
 | Potential Fit Evaluation | Supply | 🟡 `shortlists.ts` factor breakdown, no exclusions |
 | Capability Package | Supply | ⬜ |
 | Consent Request / Grant | Foundation | ✅ `consentGrants.ts` |
@@ -289,9 +289,8 @@ the change log (§11).
    management and per-agency approval configuration.
 
 **Priority 2 — Regulatory Trust capability set (G2/G3)**
-3. **Change alerts and assertion revalidation (REG-05, REG-06).** Publishing a new requirement version
-   raises review tasks and flags dependent readiness assertions for revalidation; assertions state what
-   was verified, by whom, when, scope and expiry.
+3. ~~**Change alerts and assertion revalidation (REG-05, REG-06).**~~ Done — see §11. Remaining: impact
+   by mode and market, and buyer-side visibility of an exporter's assertion under consent.
 4. ~~**Wizard and pathway (REG-03).**~~ First version done in the exporter workspace (§11). Next: show
    and edit the new REG-01 fields in the console register, and surface shared readiness snapshots to officers.
 
@@ -459,3 +458,10 @@ default" is what to assume until the programme decides.
   and FX content needs two different officers. Publishing a revision creates `reg-xx-v2` and keeps v1 as
   superseded. Returns require a note, and edits clear earlier sign-offs. Closes the §4 regulatory content
   row.
+- **2026-09-17** — **Change alerts and readiness assertions (REG-05/06).** Assertions are now full records:
+  purpose, scope, issuer, expiry, a basis that cites authority, date and requirement version, and what
+  isn't covered. Publishing a requirement version works out its impact (exporter pathways, live
+  opportunities, dependent assertions), flags citing assertions for revalidation instead of voiding them,
+  raises review tasks, and tells affected exporters on their Requirements page. Officers revalidate or
+  withdraw (a withdrawal needs a reason); either closes the task. Exporters see their assertion's status
+  and exclusions in their Readiness workspace.

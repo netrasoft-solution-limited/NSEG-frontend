@@ -6,6 +6,10 @@ import {
   type RegulatoryRequirement } from
 '../data/regulations';
 import type { OfficerRole } from './officerProfile';
+import { actors } from '../data/actors';
+import { opportunities } from '../data/opportunities';
+import { readinessSubmissions } from '../data/readinessSubmissions';
+import { buildAssertion, buildAssertionBasis, type ReadinessAssertion } from './readinessAssertions';
 
 /** The authored content of a requirement — everything except publishing metadata. */
 export type RequirementContent = Omit<
@@ -37,12 +41,76 @@ export interface RequirementDraft {
 
 const today = () => new Date().toISOString().slice(0, 10);
 
+const diffLabels: Partial<Record<keyof RequirementContent, string>> = {
+  title: 'title',
+  summary: 'summary',
+  officialChannel: 'official channel',
+  evidenceExpected: 'evidence expected',
+  sourceCitation: 'source citation',
+  effectiveOn: 'effective date',
+  nextReviewOn: 'review date',
+  appliesTo: 'applicability',
+  category: 'category',
+  sectorCode: 'sector'
+};
+
+/** Plain-language names of the fields a revision changed. */
+export function diffContent(content: RequirementContent, previous?: RegulatoryRequirement): string[] {
+  if (!previous) return [];
+  return (Object.keys(diffLabels) as (keyof RequirementContent)[]).
+  filter((key) => JSON.stringify(content[key]) !== JSON.stringify(previous[key])).
+  map((key) => diffLabels[key]!);
+}
+
+/** REG-05: what one publication touched. Computed once, at the moment of publishing. */
+export interface ChangeImpact {
+  id: string;
+  requirementId: string;
+  supersededId?: string;
+  title: string;
+  authority: string;
+  publishedOn: string;
+  changedFields: string[];
+  /** Exporters whose pathway includes this requirement (by sector and exporter type). */
+  pathwayActorIds: string[];
+  opportunityIds: string[];
+  flaggedAssertionIds: string[];
+}
+
+export type ReviewTaskKind = 'revalidate-assertion' | 'review-opportunities';
+
+export interface ReviewTask {
+  id: string;
+  impactId: string;
+  kind: ReviewTaskKind;
+  /** Assertion id for revalidation tasks. */
+  targetId?: string;
+  label: string;
+  status: 'open' | 'done';
+  closedBy?: string;
+  closedOn?: string;
+  resolution?: string;
+}
+
 function contentOf(requirement: RegulatoryRequirement): RequirementContent {
   const { id, status, lastReviewedOn, reviewDue, version, signedOffBy, signedOffOn, ...content } = requirement;
   return content;
 }
 
 const byId = (id: string) => seededRequirements.find((item) => item.id === id)!;
+
+/** The two submissions already issued in readinessSubmissions.ts, as full assertions. */
+const seededAssertions: ReadinessAssertion[] = readinessSubmissions.
+filter((submission) => submission.assertionStatus === 'issued').
+map((submission) =>
+buildAssertion(
+  actors.find((actor) => actor.id === submission.actorId)!,
+  seededRequirements,
+  'Ada Chukwu',
+  submission.submittedOn,
+  submission.evidenceGaps
+)
+);
 
 const seededDrafts: RequirementDraft[] = [
 {
@@ -119,6 +187,13 @@ interface RegulatoryRegisterValue {
   returnDraft: (id: string, name: string, note: string) => void;
   flagForReview: (id: string) => void;
   confirmCurrent: (id: string, name: string) => void;
+  assertions: ReadinessAssertion[];
+  issueAssertion: (actorId: string, officer: string, evidenceGaps: string[]) => void;
+  revalidateAssertion: (id: string, officer: string) => void;
+  withdrawAssertion: (id: string, officer: string, note: string) => void;
+  impacts: ChangeImpact[];
+  tasks: ReviewTask[];
+  closeTask: (id: string, officer: string, resolution: string) => void;
 }
 
 const RegulatoryRegisterContext = createContext<RegulatoryRegisterValue | null>(null);
@@ -127,6 +202,9 @@ export function RegulatoryRegisterProvider({ children }: {children: React.ReactN
   const [drafts, setDrafts] = useState<RequirementDraft[]>(seededDrafts);
   const [published, setPublished] = useState<RegulatoryRequirement[]>([]);
   const [overrides, setOverrides] = useState<Record<string, RegisterOverride>>({});
+  const [assertions, setAssertions] = useState<ReadinessAssertion[]>(seededAssertions);
+  const [impacts, setImpacts] = useState<ChangeImpact[]>([]);
+  const [tasks, setTasks] = useState<ReviewTask[]>([]);
 
   const requirements = useMemo(
     () => [...published, ...seededRequirements].map((item) => ({ ...item, ...overrides[item.id] })),
@@ -188,6 +266,77 @@ export function RegulatoryRegisterProvider({ children }: {children: React.ReactN
         };
         setPublished((current) => [record, ...current]);
         if (previous) override(previous.id, { status: 'superseded', reviewDue: false });
+
+        // REG-05 impact analysis. Assertions are flagged, never voided: they stay on record,
+        // marked for an officer to revalidate against the new version or withdraw.
+        const impactId = `impact-${publishedId}`;
+        const { tracks } = draft.content.appliesTo;
+        const pathwayActorIds = actors.
+        filter((actor) => !draft.content.sectorCode || actor.sectorCode === draft.content.sectorCode).
+        filter((actor) => !tracks || tracks.includes(actor.track)).
+        map((actor) => actor.id);
+        const opportunityIds = opportunities.
+        filter((opportunity) => !draft.content.sectorCode || opportunity.sectorCode === draft.content.sectorCode).
+        map((opportunity) => opportunity.id);
+        const flagged = previous ?
+        assertions.filter(
+          (assertion) =>
+          assertion.status === 'valid' && assertion.basis.some((item) => item.requirementId === previous.id)
+        ) :
+        [];
+
+        setImpacts((current) => [
+        {
+          id: impactId,
+          requirementId: publishedId,
+          supersededId: previous?.id,
+          title: draft.content.title,
+          authority: draft.content.authority,
+          publishedOn: today(),
+          changedFields: diffContent(draft.content, previous),
+          pathwayActorIds,
+          opportunityIds,
+          flaggedAssertionIds: flagged.map((item) => item.id)
+        },
+        ...current]
+        );
+        setAssertions((current) =>
+        current.map((assertion) =>
+        flagged.some((item) => item.id === assertion.id) ?
+        {
+          ...assertion,
+          status: 'revalidation-required',
+          flaggedBy: { impactId, requirementTitle: draft.content.title, fromId: previous!.id, toId: publishedId },
+          history: [
+          ...assertion.history,
+          { on: today(), by: 'Change engine', event: `Flagged for revalidation: ${previous!.id} replaced by ${publishedId}` }]
+
+        } :
+        assertion
+        )
+        );
+        setTasks((current) => [
+        ...flagged.map((assertion): ReviewTask => ({
+          id: `task-${impactId}-${assertion.id}`,
+          impactId,
+          kind: 'revalidate-assertion',
+          targetId: assertion.id,
+          label: `Revalidate the readiness assertion for ${actors.find((actor) => actor.id === assertion.actorId)?.name ?? assertion.actorId}`,
+          status: 'open'
+        })),
+        ...(opportunityIds.length > 0 ?
+        [
+        {
+          id: `task-${impactId}-opportunities`,
+          impactId,
+          kind: 'review-opportunities' as const,
+          label: `Check the criteria on ${opportunityIds.length} live ${opportunityIds.length === 1 ? 'opportunity' : 'opportunities'} still match`,
+          status: 'open' as const
+        }] :
+
+        []),
+        ...current]
+        );
         setDrafts((current) =>
         current.map((item) => item.id === id ? { ...item, signOffs, stage: 'published', publishedAs: publishedId } : item)
         );
@@ -201,9 +350,66 @@ export function RegulatoryRegisterProvider({ children }: {children: React.ReactN
       ),
       flagForReview: (id) => override(id, { status: 'under-review', reviewDue: true }),
       confirmCurrent: (id, name) =>
-      override(id, { status: 'current', reviewDue: false, lastReviewedOn: today(), signedOffBy: [name], signedOffOn: today() })
+      override(id, { status: 'current', reviewDue: false, lastReviewedOn: today(), signedOffBy: [name], signedOffOn: today() }),
+      assertions,
+      issueAssertion: (actorId, officer, evidenceGaps) => {
+        const actor = actors.find((item) => item.id === actorId);
+        if (!actor) return;
+        const assertion = buildAssertion(actor, requirements, officer, today(), evidenceGaps);
+        setAssertions((current) => [assertion, ...current.filter((item) => item.id !== assertion.id)]);
+      },
+      revalidateAssertion: (id, officer) => {
+        setAssertions((current) =>
+        current.map((assertion) => {
+          if (assertion.id !== id) return assertion;
+          const actor = actors.find((item) => item.id === assertion.actorId)!;
+          return {
+            ...assertion,
+            status: 'valid',
+            flaggedBy: undefined,
+            basis: buildAssertionBasis(actor, requirements, today()),
+            history: [...assertion.history, { on: today(), by: officer, event: 'Revalidated against current requirement versions' }]
+          };
+        })
+        );
+        setTasks((current) =>
+        current.map((task) =>
+        task.targetId === id && task.status === 'open' ?
+        { ...task, status: 'done', closedBy: officer, closedOn: today(), resolution: 'Revalidated' } :
+        task
+        )
+        );
+      },
+      withdrawAssertion: (id, officer, note) => {
+        setAssertions((current) =>
+        current.map((assertion) =>
+        assertion.id === id ?
+        {
+          ...assertion,
+          status: 'withdrawn',
+          history: [...assertion.history, { on: today(), by: officer, event: `Withdrawn: ${note}` }]
+        } :
+        assertion
+        )
+        );
+        setTasks((current) =>
+        current.map((task) =>
+        task.targetId === id && task.status === 'open' ?
+        { ...task, status: 'done', closedBy: officer, closedOn: today(), resolution: `Withdrawn: ${note}` } :
+        task
+        )
+        );
+      },
+      impacts,
+      tasks,
+      closeTask: (id, officer, resolution) =>
+      setTasks((current) =>
+      current.map((task) =>
+      task.id === id ? { ...task, status: 'done', closedBy: officer, closedOn: today(), resolution } : task
+      )
+      )
     };
-  }, [requirements, drafts]);
+  }, [requirements, drafts, assertions, impacts, tasks]);
 
   return <RegulatoryRegisterContext.Provider value={value}>{children}</RegulatoryRegisterContext.Provider>;
 }

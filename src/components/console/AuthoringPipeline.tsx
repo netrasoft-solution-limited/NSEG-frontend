@@ -9,9 +9,9 @@ import {
 import { sectorLabel } from '../../lib/marketplaceLookups';
 import {
   canDraft,
+  diffContent,
   signOffBlocker,
   type DraftStage,
-  type RequirementContent,
   type RequirementDraft } from
 '../../lib/regulatoryRegister';
 import type { OfficerRole } from '../../lib/officerProfile';
@@ -24,24 +24,8 @@ const stageMeta: Record<DraftStage, { label: string; className: string }> = {
   published: { label: 'Published', className: 'bg-emerald-50 text-emerald-700' }
 };
 
-const fieldLabels: Partial<Record<keyof RequirementContent, string>> = {
-  title: 'title',
-  summary: 'summary',
-  officialChannel: 'official channel',
-  evidenceExpected: 'evidence expected',
-  sourceCitation: 'source citation',
-  effectiveOn: 'effective date',
-  nextReviewOn: 'review date',
-  appliesTo: 'applicability',
-  category: 'category',
-  sectorCode: 'sector'
-};
-
 function changedFields(draft: RequirementDraft, previous?: RegulatoryRequirement): string[] {
-  if (!previous) return [];
-  return (Object.keys(fieldLabels) as (keyof RequirementContent)[]).
-  filter((key) => JSON.stringify(draft.content[key]) !== JSON.stringify(previous[key])).
-  map((key) => fieldLabels[key]!);
+  return diffContent(draft.content, previous);
 }
 
 interface AuthoringPipelineProps {

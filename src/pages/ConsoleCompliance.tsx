@@ -4,6 +4,7 @@ import { ConsoleLayout } from '../components/console/ConsoleLayout';
 import { StatCard } from '../components/console/StatCard';
 import { ComplianceRegister, type ComplianceFilterState } from '../components/console/ComplianceRegister';
 import { AuthoringPipeline } from '../components/console/AuthoringPipeline';
+import { ChangeImpactPanel } from '../components/console/ChangeImpactPanel';
 import { RequirementDraftEditor, blankContent } from '../components/console/RequirementDraftEditor';
 import { signOffAgency } from '../data/regulations';
 import { downloadCsv } from '../lib/exportCsv';
@@ -178,6 +179,20 @@ export function ConsoleCompliance() {
         </div>
       }
 
+      {register.impacts.length > 0 &&
+      <div className="mt-6">
+          <ChangeImpactPanel
+          impacts={register.impacts}
+          tasks={register.tasks}
+          canMutate={mutable}
+          onCloseTask={(task) => {
+            register.closeTask(task.id, profile.name, 'Criteria checked');
+            logEvent(`Closed review task: ${task.label}`, 'compliance', profile.name);
+          }} />
+
+        </div>
+      }
+
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <AuthoringPipeline
           drafts={drafts}
@@ -209,7 +224,7 @@ export function ConsoleCompliance() {
             );
             setNotice(
               publishedId ?
-              `Published as ${publishedId}.${draft.supersedesId ? ` ${draft.supersedesId} is kept as superseded.` : ''} Exporters see it in the wizard now.` :
+              `Published as ${publishedId}.${draft.supersedesId ? ` ${draft.supersedesId} is kept as superseded.` : ''} Exporters see it in the wizard now — see Change impact for what it touched.` :
               `Your sign-off is recorded. A second ${signOffAgency(draft.content.authority)} officer must sign before it publishes.`
             );
           }}
