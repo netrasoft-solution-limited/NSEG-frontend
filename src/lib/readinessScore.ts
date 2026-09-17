@@ -29,8 +29,10 @@ export interface ReadinessTier {
   label: string;
 }
 
+/** SUP-05 score bands. Labels state the band, not a verdict on the exporter — the tier
+ * name comes from lib/exporterTier.ts once evidence is verified too. */
 export function readinessTierFor(score: number): ReadinessTier {
-  if (score >= 80) return { level: 3, label: 'Export Ready' };
-  if (score >= 50) return { level: 2, label: 'Export Emerging' };
-  return { level: 1, label: 'Export Capacity Building' };
+  if (score >= 80) return { level: 3, label: 'Band 80+' };
+  if (score >= 50) return { level: 2, label: 'Band 50–79' };
+  return { level: 1, label: 'Band below 50' };
 }

@@ -10,6 +10,7 @@ import { downloadCsv } from '../lib/exportCsv';
 import { useOfficerProfile } from '../lib/officerProfile';
 import { useAuditLog } from '../lib/auditLog';
 import { canMutate } from '../lib/permissions';
+import { computeReadinessScore } from '../lib/readinessScore';
 
 const emptyFilters: ActorFilterState = { search: '', status: 'all', tier: 'all' };
 
@@ -41,7 +42,8 @@ export function ConsoleExporters() {
         lastActive: actor.lastActiveDaysAgo === 0 ? 'Today' : `${actor.lastActiveDaysAgo} days ago`,
         matches: actor.matchCount,
         tier: actor.tier,
-        profileCompletion: actor.profileCompletion,
+        track: actor.track,
+        diagnosticScore: computeReadinessScore(actor.diagnostic),
         suspended: actor.suspended ? 'yes' : 'no'
       }))
     );
@@ -76,7 +78,7 @@ export function ConsoleExporters() {
 
         <StatCard
           icon={UserCheckIcon}
-          label="Verified exporters"
+          label="Identity verified or above"
           value={verifiedCount.toLocaleString()}
           delta="+8.7%"
           positive

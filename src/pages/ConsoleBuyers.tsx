@@ -21,7 +21,7 @@ export function ConsoleBuyers() {
   const [verificationDecisions, setVerificationDecisions] = useState<Record<string, VerificationDecision>>({});
 
   const filtered = filterBuyers(buyers, filters);
-  const establishedOrAbove = buyers.filter((buyer) => buyer.tier !== 'standard').length;
+  const registryVerifiedOrAbove = buyers.filter((buyer) => buyer.tier !== 'registered').length;
   const rfpsPosted = buyers.reduce((total, buyer) => total + buyer.opportunitiesPosted, 0);
   const pendingVerificationCount = buyers.filter(
     (buyer) => buyer.verificationQueue !== 'none' && !verificationDecisions[buyer.id]
@@ -72,8 +72,8 @@ export function ConsoleBuyers() {
 
         <StatCard
           icon={BadgeCheckIcon}
-          label="Established or above"
-          value={establishedOrAbove.toString()}
+          label="Registry verified or above"
+          value={registryVerifiedOrAbove.toString()}
           delta="Trust tier"
           positive
           accent="sky" />

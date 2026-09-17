@@ -21,6 +21,10 @@ import { ConsoleDelegations } from './pages/ConsoleDelegations';
 import { ConsoleTaxonomies } from './pages/ConsoleTaxonomies';
 import { ConsoleAudit } from './pages/ConsoleAudit';
 import { ConsoleSettings } from './pages/ConsoleSettings';
+import { WorkspaceStanding } from './pages/WorkspaceStanding';
+import { WorkspaceRequirements } from './pages/WorkspaceRequirements';
+import { WorkspaceReadiness } from './pages/WorkspaceReadiness';
+import { ExporterSessionProvider } from './lib/exporterSession';
 import { OfficerProfileProvider } from './lib/officerProfile';
 import { AuditLogProvider } from './lib/auditLog';
 
@@ -55,6 +59,18 @@ function Console() {
 
 }
 
+function Workspace() {
+  return (
+    <ExporterSessionProvider>
+      <Routes>
+        <Route index element={<WorkspaceStanding />} />
+        <Route path="requirements" element={<WorkspaceRequirements />} />
+        <Route path="readiness" element={<WorkspaceReadiness />} />
+      </Routes>
+    </ExporterSessionProvider>);
+
+}
+
 export function App({ heroVariant = 'stacked', liveDemos = true }: AppProps) {
   return (
     <OfficerProfileProvider>
@@ -63,6 +79,7 @@ export function App({ heroVariant = 'stacked', liveDemos = true }: AppProps) {
           <Route path="/" element={<Landing heroVariant={heroVariant} liveDemos={liveDemos} />} />
           <Route path="/marketplace" element={<Marketplace />} />
           <Route path="/console/*" element={<Console />} />
+          <Route path="/workspace/*" element={<Workspace />} />
         </Routes>
       </AuditLogProvider>
     </OfficerProfileProvider>);

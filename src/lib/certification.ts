@@ -4,7 +4,7 @@ import type { DocumentKind, VaultDocument } from '../data/vaultDocuments';
  * subset of the Evidence Vault, not a separate store — BRD §4.2 verifies and badges these
  * specifically, distinct from corporate registration documents (CAC/TIN/incorporation)
  * that establish the entity rather than its professional competence. */
-const certificationKinds: DocumentKind[] = ['sector-license', 'iso-certificate'];
+const certificationKinds: DocumentKind[] = ['sector-license', 'iso-certificate', 'professional-credential'];
 
 export function isCertificationDocument(document: VaultDocument): boolean {
   return certificationKinds.includes(document.kind);

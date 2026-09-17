@@ -51,9 +51,9 @@ export function ReadinessDemo() {
           </div>
         </div>
         <div>
-          <p className="text-[11px] uppercase tracking-[0.14em] text-gate-soft">Level 3</p>
-          <p className="font-display text-base font-semibold text-chalk">Export Ready</p>
-          <p className="mt-0.5 text-[11px] text-chalk-dim">Max match multiplier · full incentive eligibility</p>
+          <p className="text-[11px] uppercase tracking-[0.14em] text-gate-soft">Band 80+</p>
+          <p className="font-display text-base font-semibold text-chalk">Meets the Delivery Verified score</p>
+          <p className="mt-0.5 text-[11px] text-chalk-dim">Tier also needs a verified cross-border delivery</p>
         </div>
       </div>
 

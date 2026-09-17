@@ -4,7 +4,9 @@ export type DocumentKind =
 'sector-license' |
 'bank-reference' |
 'iso-certificate' |
-'incorporation-certificate';
+'incorporation-certificate' |
+'nin-slip' |
+'professional-credential';
 
 export type MalwareScanStatus = 'clean' | 'scanning' | 'flagged';
 export type DocumentVerificationStatus = 'verified' | 'pending' | 'rejected';
@@ -31,7 +33,9 @@ export const documentKindLabels: Record<DocumentKind, string> = {
   'sector-license': 'Sector Regulatory License',
   'bank-reference': 'Bank Reference Letter',
   'iso-certificate': 'ISO 27001 Certificate',
-  'incorporation-certificate': 'Certificate of Incorporation'
+  'incorporation-certificate': 'Certificate of Incorporation',
+  'nin-slip': 'National Identification Number Slip',
+  'professional-credential': 'Professional Credential'
 };
 
 export const vaultDocuments: VaultDocument[] = [
@@ -127,4 +131,35 @@ export const vaultDocuments: VaultDocument[] = [
   uploadedOn: '2026-09-13',
   malwareScan: 'clean',
   verification: 'pending'
+},
+{
+  id: 'doc-14a',
+  actorId: 'act-14',
+  kind: 'nin-slip',
+  fileName: 'tunde-bakare-nin-verification.pdf',
+  sha256: '7b9d1f3a5c7e9b1d3f5a7c9e1b3d5f7a9c1e3b5d7f9a1c3e5b7d9f1a3c5e7b9d',
+  uploadedOn: '2026-09-13',
+  malwareScan: 'clean',
+  verification: 'verified'
+},
+{
+  id: 'doc-14b',
+  actorId: 'act-14',
+  kind: 'professional-credential',
+  fileName: 'tunde-bakare-cloud-data-engineer-cert.pdf',
+  sha256: '9d1f3a5c7e9b1d3f5a7c9e1b3d5f7a9c1e3b5d7f9a1c3e5b7d9f1a3c5e7b9d1f',
+  uploadedOn: '2026-09-14',
+  malwareScan: 'clean',
+  verification: 'pending'
+},
+{
+  id: 'doc-15',
+  actorId: 'act-13',
+  kind: 'professional-credential',
+  fileName: 'chiamaka-obi-ux-research-certification.pdf',
+  sha256: '2c4e6a8b0d2f4a6c8e0b2d4f6a8c0e2b4d6f8a0c2e4b6d8f0a2c4e6b8d0f2a4c',
+  uploadedOn: '2026-08-19',
+  malwareScan: 'clean',
+  verification: 'verified',
+  expiresInDays: 210
 }];

@@ -106,8 +106,9 @@ they protect the platform's legal position:
 2. **No direct legal contracting.** The platform records contract metadata and document hashes;
    execution happens outside it.
 3. **No opaque quality rating.** Every badge and tier states what was verified, by whom and when.
-   Names implying government endorsement of quality are replaced (D-06). **The prototype currently
-   violates this** — see §5 SUP-06 and §8.
+   Names implying government endorsement of quality are replaced (D-06). The prototype now complies:
+   exporter tiers are Registered / Identity Verified / Delivery Verified and buyer tiers are Registered /
+   Registry Verified / Payment Verified (§5 SUP-06). Tier names don't yet say *by whom and when*.
 
 Also out of scope (PRD v1.0 §2.2): historical agency data migration, modifying agencies' own systems,
 the Gateway holding or moving funds, creating statutory obligations, and hardware/connectivity.
@@ -156,7 +157,7 @@ static data — never the production non-functional detail (Argon2id, AES-256-GC
 ### 5.2 Demand
 | ID | Requirement | Status | Where in repo / gap |
 |---|---|---|---|
-| DEM-01 | Buyer onboarding and just-in-time verification | ✅ | [ConsoleBuyers.tsx](src/pages/ConsoleBuyers.tsx), [BuyerTable.tsx](src/components/console/BuyerTable.tsx), [buyers.ts](src/data/buyers.ts), [buyerTiers.ts](src/data/buyerTiers.ts). Buyer tier names need the D-06 check ("states what was verified") |
+| DEM-01 | Buyer onboarding and just-in-time verification | ✅ | [ConsoleBuyers.tsx](src/pages/ConsoleBuyers.tsx), [BuyerTable.tsx](src/components/console/BuyerTable.tsx), [buyers.ts](src/data/buyers.ts), [buyerTiers.ts](src/data/buyerTiers.ts). Buyer tiers renamed to what was verified: Registered / Registry Verified / Payment Verified |
 | DEM-02 | Opportunity and RFP lifecycle | 🟡 | [opportunities.ts](src/data/opportunities.ts) uses `qualified / matched / consented` only. Missing the audited state machine Draft → Published → Matching Active → Shortlisting → Awarded → Fulfilled → Closed, required fields (budget range, target completion) and deadline expiry |
 | DEM-03 | Signal intake | 🟡 | [SignalQueue.tsx](src/components/console/SignalQueue.tsx), [signals.ts](src/data/signals.ts) record a route, but the seeded routes don't map to PRD v1.0's four (public form, assisted officer capture, external API, secure batch upload) |
 | DEM-04 | Qualification | 🟡 | Qualify/reject is audit-logged to a named officer. No rationale, checklist, dedup against open signals or risk-tier escalation |
@@ -171,22 +172,22 @@ static data — never the production non-functional detail (Argon2id, AES-256-GC
 ### 5.3 Supply
 | ID | Requirement | Status | Where in repo / gap |
 |---|---|---|---|
-| SUP-01 | Onboarding and capability profiling | 🟡 | [ConsoleExporters.tsx](src/pages/ConsoleExporters.tsx), [ActorTable.tsx](src/components/console/ActorTable.tsx), [actors.ts](src/data/actors.ts). No capability portfolio bound to UN CPC / ISIC; no individual (non-CAC) track (D-06) |
+| SUP-01 | Onboarding and capability profiling | 🟡 | [ConsoleExporters.tsx](src/pages/ConsoleExporters.tsx), [ActorTable.tsx](src/components/console/ActorTable.tsx), [actors.ts](src/data/actors.ts). Individual track added (D-06): `track: 'firm' \| 'individual'`, `NT-I26-…` identifiers, three individual professionals in the seed data. No capability portfolio bound to UN CPC / ISIC (one primary `sectorCode` only) |
 | SUP-02 | Capacity and freshness | ⬜ | No quantified capacity or stale-declaration exclusion |
 | SUP-03 | Supply pools | ⬜ | — |
 | SUP-04 | Regulatory credentialing | ✅ | [ConsoleCertifications.tsx](src/pages/ConsoleCertifications.tsx), [CertificationRegistry.tsx](src/components/console/CertificationRegistry.tsx), [certification.ts](src/lib/certification.ts) — issue/reject, 30-day renewal warning |
 | SUP-05 | Readiness diagnostics and tiering | ✅ | [ConsoleReadiness.tsx](src/pages/ConsoleReadiness.tsx), [ReadinessQueue.tsx](src/components/console/ReadinessQueue.tsx), [readinessScore.ts](src/lib/readinessScore.ts) — weights (25/20/20/20/15) and bands (under 50 / 50–79 / 80+) already match PRD v1.0. No recalculation-on-change or downgrade notice |
-| SUP-06 | Entitlements | 🟡 | [ConsoleTrustBadging.tsx](src/pages/ConsoleTrustBadging.tsx), [trustBadging.ts](src/lib/trustBadging.ts), [TierReferenceCard.tsx](src/components/console/TierReferenceCard.tsx) — read-only; nothing gated. **Conflicts with D-06:** [trustTiers.ts](src/data/trustTiers.ts) runs a second ladder on profile completion %, alongside the readiness score, and uses quality-rating names ("Top-Rated Export Partner") |
+| SUP-06 | Entitlements | 🟡 | One ladder in [trustTiers.ts](src/data/trustTiers.ts), derived by [exporterTier.ts](src/lib/exporterTier.ts): highest tier whose diagnostic floor *and* evidence (firm CAC + TIN, individual NIN + professional credential, plus verified delivery history for the top tier) are met, with an exact next action. Profile completion % removed. Shown to officers in [ConsoleTrustBadging.tsx](src/pages/ConsoleTrustBadging.tsx) and to exporters in [WorkspaceStanding.tsx](src/pages/WorkspaceStanding.tsx). Gaps: only opportunity visibility is gated (marketplace); bid ceilings aren't enforced; no downgrade on credential expiry |
 | SUP-07 | Intervention mapping | ⬜ | — |
 | SUP-08 | Incentives and trade facilitation | ✅ | [ConsoleIncentives.tsx](src/pages/ConsoleIncentives.tsx), [IncentiveQueue.tsx](src/components/console/IncentiveQueue.tsx), [incentives.ts](src/data/incentives.ts) — pre-qualification then administrator sign-off. D-10 (any-channel evidence, single base currency) not modelled |
 
 ### 5.4 Regulatory Trust (delivered within Supply) — G2 critical
 | ID | Requirement | Status | Where in repo / gap |
 |---|---|---|---|
-| REG-01 | Requirements register | 🟡 | [ConsoleCompliance.tsx](src/pages/ConsoleCompliance.tsx), [ComplianceRegister.tsx](src/components/console/ComplianceRegister.tsx), [regulations.ts](src/data/regulations.ts) — the five categories match. Record lacks plain-language summary, official channel, applicability criteria, evidence expectations, source citation, effective date and review date |
+| REG-01 | Requirements register | 🟡 | [ConsoleCompliance.tsx](src/pages/ConsoleCompliance.tsx), [ComplianceRegister.tsx](src/components/console/ComplianceRegister.tsx), [regulations.ts](src/data/regulations.ts) — the five categories match. Records now carry plain-language summary, official channel, applicability (track / mode / market, plus sector), evidence expected, source citation, effective and next-review dates. The console register doesn't display or edit the new fields yet; seed content is prototype text, not validated |
 | REG-02 | Institutional authoring and validation | ⬜ | Statuses are `current / under-review / superseded`. No Draft, no per-agency queue, no competent-authority sign-off; the officer can mark content reviewed unilaterally |
-| REG-03 | Wizard and pathway engine | ⬜ | Exporter-facing questionnaire (archetype, service type, mode, destination market) producing an ordered pathway |
-| REG-04 | Exporter readiness workspace | ⬜ | Exporter-facing and private by default; no exporter-side surface exists in this repo yet |
+| REG-03 | Wizard and pathway engine | 🟡 | [WorkspaceRequirements.tsx](src/pages/WorkspaceRequirements.tsx), [requirementsPathway.ts](src/lib/requirementsPathway.ts) — four-question wizard (track, sector, mode, market) producing a pathway ordered statutory → fiscal → professional → buyer standard → FX. Only `current` requirements are shown; applicable under-review items are counted, not shown. Marks requirements already met by verified evidence. No save/resume across sessions or change alerts |
+| REG-04 | Exporter readiness workspace | 🟡 | [WorkspaceReadiness.tsx](src/pages/WorkspaceReadiness.tsx), [exporterSession.tsx](src/lib/exporterSession.tsx) — private by default with an explicit, revocable "share snapshot" switch; evidence status from the vault; bank & FX settlement checklist; private diagnostic draft that previews the tier it would support and is submitted for officer review. Sharing and submitting are audit-logged. The console doesn't yet show shared snapshots |
 | REG-05 | Change alert and invalidation | 🟡 | [ComplianceRegister.tsx](src/components/console/ComplianceRegister.tsx) computes an "Affects" count against live opportunities. No review tasks, notifications, or flagging of dependent assertions for revalidation |
 | REG-06 | Readiness assertions | 🟡 | [ReadinessQueue.tsx](src/components/console/ReadinessQueue.tsx) issues/withholds an assertion, but the assertion doesn't state what was verified, by which authority, when, scope limits, expiry or what isn't covered |
 
@@ -282,11 +283,8 @@ Ordered by gate criticality in PRD v1.0 and by what unblocks later work. Earlier
 the change log (§11).
 
 **Priority 1 — correct what now conflicts with the baseline**
-1. **Single tier ladder and honest tier names (D-06, SUP-05/06, §3.2).** Drive exporter tiers from the
-   readiness diagnostic (`readinessScore.ts` already uses the right bands) instead of profile completion
-   %, and rename tiers to state what was verified. Add the individual track (NIN + professional credential
-   + verified delivery history in place of CAC + TIN). Touches `trustTiers.ts`, `buyerTiers.ts`,
-   `trustBadging.ts`, `ConsoleTrustBadging`, `ActorTable`, and the public `TrustLadder` / Marketplace.
+1. ~~**Single tier ladder and honest tier names (D-06, SUP-05/06, §3.2).**~~ Done — see §11. Remaining:
+   enforce bid ceilings, downgrade on credential expiry, and say by whom/when on each badge.
 2. **Regulatory authoring with sign-off (REG-01, REG-02).** Add Draft status and the missing record
    fields; content stays Draft until a competent-authority focal signs off; supersede, never delete.
    Closes the §4 "regulatory content change" row. This is G2-critical.
@@ -295,7 +293,8 @@ the change log (§11).
 3. **Change alerts and assertion revalidation (REG-05, REG-06).** Publishing a new requirement version
    raises review tasks and flags dependent readiness assertions for revalidation; assertions state what
    was verified, by whom, when, scope and expiry.
-4. **Wizard and pathway (REG-03).** Needs a decision on where exporter-facing surfaces live (see §9, P-3).
+4. ~~**Wizard and pathway (REG-03).**~~ First version done in the exporter workspace (§11). Next: show
+   and edit the new REG-01 fields in the console register, and surface shared readiness snapshots to officers.
 
 **Priority 3 — G3 Foundation and Demand gaps**
 5. **Settlement instruction service (FND-11).** A shared instruction ledger (hold, fund, release, refund,
@@ -348,9 +347,10 @@ The four decisions recorded earlier the same day are replaced:
   typed instructions and statuses with a partner acknowledgement, never as money movement or a tribunal.
 - **P-2 — Static data is permanent.** No live agency feeds. Every Observatory figure must carry an
   OBS-10 basis label once that work lands.
-- **P-3 — Exporter-facing surfaces are open.** REG-03 (wizard) and REG-04 (readiness workspace) are
-  exporter-facing and private; this repo has only the officer console and public pages. Decide whether to
-  add an exporter workspace or to demonstrate those flows from the officer side.
+- **P-3 — Resolved: a separate exporter workspace at `/workspace`.** Mobile-first and built toward WCAG 2.1
+  AA (§7.5): skip link, labelled landmarks and controls, 44px targets, focus moved to each wizard step,
+  body text at gray-600 or darker. A "viewing as" switch stands in for sign-in, so any seeded exporter can
+  be inspected. Not linked from the public site, matching the console.
 
 ---
 
@@ -366,7 +366,7 @@ default" is what to assume until the programme decides.
 | D-03 | Demand volume and regional inclusion targets | Secretariat / G1 | Show as unset, don't invent targets |
 | D-04 | Public identifier format | ADSPA / G1 | Option A (`NT-I26-8942A`) with entity-type character per actor type; current `NT-B26-94821` is close |
 | D-05 | Cross-tenant dedup exposure | ADSPA / G2 | Dedup within actor scope; global index steward-only |
-| D-06 | Single tier ladder, individual track, badge naming | Secretariat / TWG / G3 | Diagnostic-driven ladder with individual track (§8 item 1) |
+| D-06 | Single tier ladder, individual track, badge naming | Secretariat / TWG / G3 | Built: diagnostic + evidence ladder, individual track, names state what was verified. Thresholds are data in `trustTiers.ts` |
 | D-07 | Disclosure package TTL per purpose | ADSPA / G3 | 7 days for shortlist review, 15 minutes for one-time admin views |
 | D-08 | Canonical event envelope | ADSPA / G1 | N/A (no event bus); use `eventId`, `eventType`, `eventTimestamp`, `actor`, `data` naming if simulated |
 | D-09 | Readiness multiplier in match scoring | Demand TWG / G3 | Fold into verification-depth factor |
@@ -427,3 +427,12 @@ default" is what to assume until the programme decides.
   Flagged that the current tier ladders violate PRD v1.0's "no opaque quality rating" boundary and
   D-06's single-ladder default. New build order (§8) leads with the tier ladder fix and regulatory
   authoring sign-off.
+- **2026-09-17** — **Single tier ladder and exporter workspace.** Replaced the profile-completion ladder
+  with one ladder driven by the readiness diagnostic plus verified evidence (D-06): Registered → Identity
+  Verified (50+, CAC + TIN or NIN + professional credential) → Delivery Verified (80+, plus verified
+  delivery history). Tiers are derived in `exporterTier.ts`, never stored. Added the individual track
+  and three individual exporters. Renamed buyer tiers to Registered / Registry Verified / Payment Verified
+  and readiness band labels to "Band 80+" etc. Old tier codes kept as deprecated in the taxonomy registry
+  (v2.0). Readiness submissions now read scores from each exporter's diagnostic so the console and
+  workspace can't disagree. Added REG-01 record fields and the `/workspace` exporter workspace (My
+  standing, Requirements wizard, private Readiness), resolving P-3.

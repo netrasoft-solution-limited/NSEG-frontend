@@ -3,17 +3,20 @@ import { ArrowRightIcon, UnlockIcon } from 'lucide-react';
 
 interface TierReferenceCardProps {
   badge: string;
+  /** What has to be verified to hold this tier. */
+  requirement?: string;
   unlocked: string[];
   nextStep: string;
   accentClass: string;
 }
 
-export function TierReferenceCard({ badge, unlocked, nextStep, accentClass }: TierReferenceCardProps) {
+export function TierReferenceCard({ badge, requirement, unlocked, nextStep, accentClass }: TierReferenceCardProps) {
   return (
     <div className="rounded-xl border border-gray-100 px-4 py-3">
       <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11.5px] font-medium ${accentClass}`}>
         {badge}
       </span>
+      {requirement && <p className="mt-1.5 text-[11.5px] text-gray-500">{requirement}</p>}
       <ul className="mt-2 space-y-1">
         {unlocked.map((item) =>
         <li key={item} className="flex items-center gap-1.5 text-[12px] text-gray-600">

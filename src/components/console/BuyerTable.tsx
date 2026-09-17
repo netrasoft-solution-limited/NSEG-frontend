@@ -15,9 +15,9 @@ interface BuyerTableProps {
 function TierPill({ buyer }: {buyer: Buyer;}) {
   const tier = buyerTiers.find((item) => item.id === buyer.tier);
   const styles =
-  buyer.tier === 'verified-enterprise' ?
+  buyer.tier === 'payment-verified' ?
   'bg-amber-50 text-amber-700' :
-  buyer.tier === 'established' ?
+  buyer.tier === 'registry-verified' ?
   'bg-emerald-50 text-emerald-700' :
   'bg-gray-100 text-gray-600';
   return (

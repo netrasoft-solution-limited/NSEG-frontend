@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { ChevronDownIcon, MoreVerticalIcon, SearchIcon } from 'lucide-react';
 import type { Actor } from '../../data/actors';
-import { trustTiers } from '../../data/trustTiers';
+import { trackLabels, trustTiers } from '../../data/trustTiers';
+import { computeReadinessScore } from '../../lib/readinessScore';
 import { formatLastActive, type ActorFilterState } from '../../lib/actorFilters';
 import { initialsOf } from '../../lib/initials';
 
@@ -31,9 +32,9 @@ function StatusPill({ actor }: {actor: Actor;}) {
   }
   const tier = trustTiers.find((item) => item.id === actor.tier);
   const styles =
-  actor.tier === 'top-rated' ?
+  actor.tier === 'delivery-verified' ?
   'bg-amber-50 text-amber-700' :
-  actor.tier === 'verified' ?
+  actor.tier === 'identity-verified' ?
   'bg-emerald-50 text-emerald-700' :
   'bg-gray-100 text-gray-600';
   return (
@@ -119,7 +120,7 @@ export function ActorTable({ actors, total, filters, onChange, onSuspendToggle, 
               <th className="py-2.5 pr-3 font-medium">Registered</th>
               <th className="py-2.5 pr-3 font-medium">Last active</th>
               <th className="py-2.5 pr-3 font-medium">Matches</th>
-              <th className="py-2.5 pr-3 font-medium">Completion</th>
+              <th className="py-2.5 pr-3 font-medium">Diagnostic</th>
               <th className="py-2.5 pr-3 font-medium">Status</th>
               <th className="py-2.5 pl-3 text-right font-medium">Actions</th>
             </tr>
@@ -134,7 +135,12 @@ export function ActorTable({ actors, total, filters, onChange, onSuspendToggle, 
                     </span>
                     <div className="min-w-0">
                       <p className="truncate font-medium text-gray-900">{actor.name}</p>
-                      <p className="truncate font-mono text-[10.5px] text-gray-400">{actor.natepId}</p>
+                      <p className="truncate font-mono text-[10.5px] text-gray-400">
+                        {actor.natepId}
+                        {actor.track === 'individual' &&
+                        <span className="ml-1.5 font-sans text-gray-500">· {trackLabels.individual}</span>
+                        }
+                      </p>
                     </div>
                   </div>
                 </td>
@@ -144,9 +150,9 @@ export function ActorTable({ actors, total, filters, onChange, onSuspendToggle, 
                 <td className="py-3 pr-3 text-gray-500">{actor.matchCount}</td>
                 <td className="py-3 pr-3">
                   <div className="flex items-center gap-2">
-                    <span className="w-8 shrink-0 font-mono text-[11px] text-gray-500">{actor.profileCompletion}%</span>
+                    <span className="w-8 shrink-0 font-mono text-[11px] text-gray-500">{computeReadinessScore(actor.diagnostic)}</span>
                     <span className="h-1.5 w-16 overflow-hidden rounded-full bg-gray-100">
-                      <span className="block h-full rounded-full bg-gray-900" style={{ width: `${actor.profileCompletion}%` }} />
+                      <span className="block h-full rounded-full bg-gray-900" style={{ width: `${computeReadinessScore(actor.diagnostic)}%` }} />
                     </span>
                   </div>
                 </td>

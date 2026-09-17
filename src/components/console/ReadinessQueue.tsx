@@ -63,7 +63,7 @@ export function ReadinessQueue({ submissions, actorsById, decisions, onDecide, c
                     <p className="font-medium text-gray-900">{actor?.name ?? 'Unknown exporter'}</p>
                     <span className="font-mono text-[10.5px] text-gray-400">{actor?.natepId}</span>
                     <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10.5px] font-medium ${tierStyles[tier.level]}`}>
-                      Level {tier.level} · {tier.label}
+                      {tier.label}
                     </span>
                   </div>
                   <p className="text-[12.5px] text-gray-400">Submitted {submission.submittedOn}</p>

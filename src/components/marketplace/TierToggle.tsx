@@ -1,18 +1,12 @@
 import React from 'react';
-import { ShieldCheckIcon, TrophyIcon, UserIcon } from 'lucide-react';
+import { PackageCheckIcon, ShieldCheckIcon, UserIcon } from 'lucide-react';
 import type { IconComponent } from '../../types/icons';
 import { trustTiers, type TrustTier } from '../../data/trustTiers';
 
 const tierIcons: Record<TrustTier['id'], IconComponent> = {
   registered: UserIcon,
-  verified: ShieldCheckIcon,
-  'top-rated': TrophyIcon
-};
-
-const tierLabels: Record<TrustTier['id'], string> = {
-  registered: 'Registered',
-  verified: 'Verified',
-  'top-rated': 'Top-Rated'
+  'identity-verified': ShieldCheckIcon,
+  'delivery-verified': PackageCheckIcon
 };
 
 const accentStyles = {
@@ -48,7 +42,7 @@ export function TierToggle({ value, onChange }: TierToggleProps) {
             }>
 
             <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-            {tierLabels[tier.id]}
+            {tier.badge}
           </button>);
 
       })}

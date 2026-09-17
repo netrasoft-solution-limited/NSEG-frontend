@@ -22,7 +22,7 @@ export const buyers: Buyer[] = [
   email: 'sourcing@nordwindlogistics.eu',
   region: 'Western Europe',
   registeredOn: 'Jul 3, 2026',
-  tier: 'verified-enterprise',
+  tier: 'payment-verified',
   opportunitiesPosted: 6,
   verificationQueue: 'none'
 },
@@ -33,7 +33,7 @@ export const buyers: Buyer[] = [
   email: 'procurement@meridianholdings.co.za',
   region: 'Southern Africa',
   registeredOn: 'Jun 21, 2026',
-  tier: 'established',
+  tier: 'registry-verified',
   opportunitiesPosted: 3,
   verificationQueue: 'none'
 },
@@ -44,7 +44,7 @@ export const buyers: Buyer[] = [
   email: 'contracts@ashbrookmunicipal.gov',
   region: 'North America',
   registeredOn: 'Aug 25, 2026',
-  tier: 'established',
+  tier: 'registry-verified',
   opportunitiesPosted: 1,
   verificationQueue: 'none'
 },
@@ -55,7 +55,7 @@ export const buyers: Buyer[] = [
   email: 'vendors@halcyonbpo.com',
   region: 'Western Europe',
   registeredOn: 'Sep 8, 2026',
-  tier: 'standard',
+  tier: 'registered',
   opportunitiesPosted: 1,
   verificationQueue: 'pending',
   verificationNote: 'No match in GLEIF or UK Companies House — AI document fallback awaiting officer confirmation.'
@@ -67,7 +67,7 @@ export const buyers: Buyer[] = [
   email: 'ops@gulflinefreight.ae',
   region: 'Gulf States',
   registeredOn: 'Aug 12, 2026',
-  tier: 'established',
+  tier: 'registry-verified',
   opportunitiesPosted: 2,
   verificationQueue: 'none'
 },
@@ -78,7 +78,7 @@ export const buyers: Buyer[] = [
   email: 'partnerships@cascadiatelehealth.com',
   region: 'Western Europe',
   registeredOn: 'Aug 30, 2026',
-  tier: 'established',
+  tier: 'registry-verified',
   opportunitiesPosted: 1,
   verificationQueue: 'none'
 },
@@ -89,7 +89,7 @@ export const buyers: Buyer[] = [
   email: 'compliance@sahelemployer.co.ke',
   region: 'East Africa',
   registeredOn: 'Jul 30, 2026',
-  tier: 'established',
+  tier: 'registry-verified',
   opportunitiesPosted: 1,
   verificationQueue: 'none'
 },
@@ -100,7 +100,7 @@ export const buyers: Buyer[] = [
   email: 'itprocurement@ferroviagroup.com',
   region: 'North America',
   registeredOn: 'Aug 3, 2026',
-  tier: 'verified-enterprise',
+  tier: 'payment-verified',
   opportunitiesPosted: 1,
   verificationQueue: 'none'
 },
@@ -111,7 +111,7 @@ export const buyers: Buyer[] = [
   email: 'marketing@kestrelbrands.co.za',
   region: 'Southern Africa',
   registeredOn: 'Sep 12, 2026',
-  tier: 'standard',
+  tier: 'registered',
   opportunitiesPosted: 1,
   verificationQueue: 'flagged',
   verificationNote: 'Uploaded incorporation certificate failed AI tamper analysis — needs an officer decision.'
@@ -123,7 +123,7 @@ export const buyers: Buyer[] = [
   email: 'engineering@dunmoredevelopers.ae',
   region: 'Gulf States',
   registeredOn: 'Jul 18, 2026',
-  tier: 'established',
+  tier: 'registry-verified',
   opportunitiesPosted: 1,
   verificationQueue: 'none'
 },
@@ -134,7 +134,7 @@ export const buyers: Buyer[] = [
   email: 'vendorrisk@fintrustremit.com',
   region: 'North America',
   registeredOn: 'Sep 14, 2026',
-  tier: 'standard',
+  tier: 'registered',
   opportunitiesPosted: 1,
   verificationQueue: 'pending',
   verificationNote: 'TIN validation pending — no match found in connected open registries yet.'
@@ -146,7 +146,7 @@ export const buyers: Buyer[] = [
   email: 'treasury@meridiantradinghouse.eu',
   region: 'Western Europe',
   registeredOn: 'Jul 22, 2026',
-  tier: 'verified-enterprise',
+  tier: 'payment-verified',
   opportunitiesPosted: 1,
   verificationQueue: 'none'
 }];

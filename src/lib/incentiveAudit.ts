@@ -31,7 +31,7 @@ export function auditIncentiveApplication(
 application: IncentiveApplication,
 actor: Actor | undefined)
 : IncentiveAuditResult {
-  const activeStanding = Boolean(actor) && (actor!.tier === 'verified' || actor!.tier === 'top-rated') && !actor!.suspended;
+  const activeStanding = Boolean(actor) && actor!.tier !== 'registered' && !actor!.suspended;
   const sufficientTradeVolume = application.verifiedExportVolume >= ESCROW_VOLUME_FLOOR_USD;
   const noComplianceFlags = !actor || actor.verificationQueue === 'none';
 

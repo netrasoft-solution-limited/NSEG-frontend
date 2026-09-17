@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { CheckIcon, ShieldCheckIcon, TrophyIcon, UserIcon, ArrowUpRightIcon } from "lucide-react";
+import { CheckIcon, ShieldCheckIcon, PackageCheckIcon, UserIcon, ArrowUpRightIcon } from "lucide-react";
 import type { IconComponent } from "../../types/icons";
 import { trustTiers } from "../../data/trustTiers";
 import { SectionEyebrow } from "../site/SectionEyebrow";
 import { EASE, Reveal } from "../motion/Reveal";
-const tierIcons: IconComponent[] = [UserIcon, ShieldCheckIcon, TrophyIcon];
+const tierIcons: IconComponent[] = [UserIcon, ShieldCheckIcon, PackageCheckIcon];
 const accentStyles = {
   dim: {
     dot: 'bg-hairline/30',
@@ -55,7 +55,7 @@ export function TrustLadder() {
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-[14px] font-semibold text-chalk">{item.badge}</span>
-                      <span className="block truncate text-[11.5px] text-chalk-dim">{item.range}</span>
+                      <span className="block text-[11.5px] text-chalk-dim">{item.verifies}</span>
                     </span>
                     <span className={`h-2 w-2 shrink-0 rounded-full ${isActive ? itemAccent.dot : 'bg-hairline/12'}`} />
                   </button>
@@ -85,7 +85,7 @@ export function TrustLadder() {
                     <ActiveIcon className="h-5 w-5" aria-hidden="true" />
                   </span>
                   <div>
-                    <p className={`text-[11px] uppercase tracking-[0.16em] ${accent.text}`}>Currently unlocked</p>
+                    <p className={`text-[11px] uppercase tracking-[0.16em] ${accent.text}`}>What this tier unlocks</p>
                     <h3 className="mt-0.5 font-display text-[22px] font-semibold tracking-[-0.015em] text-chalk">
                       {tier.badge}
                     </h3>
