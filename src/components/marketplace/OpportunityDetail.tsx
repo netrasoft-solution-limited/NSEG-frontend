@@ -1,11 +1,11 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { ArrowUpRightIcon, LockIcon, XIcon } from 'lucide-react';
 import type { CriteriaKind, Opportunity } from '../../data/opportunities';
 import type { TrustTier } from '../../data/trustTiers';
 import { canView } from '../../lib/accessControl';
 import { modeLabel, sectorLabel, stageLabel } from '../../lib/marketplaceLookups';
 import { sectorVisual } from '../../lib/sectorVisuals';
-import { useHashLink } from '../../hooks/useHashLink';
 
 interface OpportunityDetailProps {
   opportunity: Opportunity;
@@ -28,7 +28,6 @@ function formatValue(value: NonNullable<Opportunity['indicativeValue']>) {
 
 export function OpportunityDetail({ opportunity, viewerTier, onClose }: OpportunityDetailProps) {
   const unlocked = canView(viewerTier, opportunity.accessTier);
-  const resolveHash = useHashLink();
   const mandatory = opportunity.criteria.filter((item) => item.kind === 'mandatory');
   const lockedGroups = gatedKinds.
   map((kind) => ({ kind, items: opportunity.criteria.filter((item) => item.kind === kind) })).
@@ -121,14 +120,13 @@ export function OpportunityDetail({ opportunity, viewerTier, onClose }: Opportun
             <p className="mt-1.5 text-[12px] leading-relaxed text-chalk-muted">
               Preferred, negotiable and informational details unlock once your NATEP profile reaches the required trust tier.
             </p>
-            <a
-            href="/#trust"
-            onClick={resolveHash('#trust')}
+            <Link
+            to="/workspace"
             className="mt-3 inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-gold hover:text-gold/80">
 
-              See how to verify
+              See what you need to verify
               <ArrowUpRightIcon className="h-3.5 w-3.5" aria-hidden="true" />
-            </a>
+            </Link>
           </div>
         }
       </div>

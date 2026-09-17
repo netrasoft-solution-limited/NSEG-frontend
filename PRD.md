@@ -157,17 +157,17 @@ static data — never the production non-functional detail (Argon2id, AES-256-GC
 ### 5.2 Demand
 | ID | Requirement | Status | Where in repo / gap |
 |---|---|---|---|
-| DEM-01 | Buyer onboarding and just-in-time verification | ✅ | [ConsoleBuyers.tsx](src/pages/ConsoleBuyers.tsx), [BuyerTable.tsx](src/components/console/BuyerTable.tsx), [buyers.ts](src/data/buyers.ts), [buyerTiers.ts](src/data/buyerTiers.ts). Buyer tiers renamed to what was verified: Registered / Registry Verified / Payment Verified |
-| DEM-02 | Opportunity and RFP lifecycle | 🟡 | [opportunities.ts](src/data/opportunities.ts) uses `qualified / matched / consented` only. Missing the audited state machine Draft → Published → Matching Active → Shortlisting → Awarded → Fulfilled → Closed, required fields (budget range, target completion) and deadline expiry |
+| DEM-01 | Buyer onboarding and just-in-time verification | ✅ | [ConsoleBuyers.tsx](src/pages/ConsoleBuyers.tsx), [BuyerTable.tsx](src/components/console/BuyerTable.tsx), [buyers.ts](src/data/buyers.ts), [buyerTiers.ts](src/data/buyerTiers.ts). Buyer tiers renamed to what was verified: Registered / Registry Verified / Payment Verified. Buyer-facing side in [BuyerOverview.tsx](src/pages/BuyerOverview.tsx) with [buyerWorkspace.ts](src/lib/buyerWorkspace.ts): buyers draft freely and are asked to verify only when they submit a request for qualification |
+| DEM-02 | Opportunity and RFP lifecycle | 🟡 | [opportunities.ts](src/data/opportunities.ts) uses `qualified / matched / consented` only. Buyers create requests with budget range and target completion in [BuyerRequests.tsx](src/pages/BuyerRequests.tsx) and see a derived status (Draft → Officer review → Published → Shortlist → Introductions → In delivery). Still missing: the audited state machine in data (Awarded / Fulfilled / Closed), officer-side queue for buyer-submitted requests, and deadline expiry |
 | DEM-03 | Signal intake | 🟡 | [SignalQueue.tsx](src/components/console/SignalQueue.tsx), [signals.ts](src/data/signals.ts) record a route, but the seeded routes don't map to PRD v1.0's four (public form, assisted officer capture, external API, secure batch upload) |
 | DEM-04 | Qualification | 🟡 | Qualify/reject is audit-logged to a named officer. No rationale, checklist, dedup against open signals or risk-tier escalation |
-| DEM-05 | Opportunity Criteria Package | 🟡 | Criteria typed mandatory/preferred/negotiable/informational in [opportunities.ts](src/data/opportunities.ts). No versioning or impact analysis |
+| DEM-05 | Opportunity Criteria Package | 🟡 | Criteria typed mandatory/preferred/negotiable/informational in [opportunities.ts](src/data/opportunities.ts); buyers author typed criteria (at least one mandatory) in the request form. No versioning or impact analysis |
 | DEM-06 | Explainable matchmaking | 🟡 | [ShortlistReview.tsx](src/components/console/ShortlistReview.tsx), [shortlists.ts](src/data/shortlists.ts) — factor weights already match PRD v1.0 (30/30/20/20). Missing plain-language exclusion reasons, bias checks, and reason-required manual adjustment. D-09 multiplier not modelled |
 | DEM-07 | Entitlement-gated bidding | ⬜ | Public marketplace gates detail *visibility* by tier ([accessControl.ts](src/lib/accessControl.ts)); nothing gates *response rights* or explains how to unlock |
-| DEM-08 | Human shortlisting | ✅ | [ShortlistReview.tsx](src/components/console/ShortlistReview.tsx) — nothing transmits without officer approval |
-| DEM-09 | Consented disclosure and engagement | 🟡 | [ConsoleEngagements.tsx](src/pages/ConsoleEngagements.tsx), [EngagementTracker.tsx](src/components/console/EngagementTracker.tsx), [engagementStage.ts](src/lib/engagementStage.ts). No proposal lifecycle |
+| DEM-08 | Human shortlisting | ✅ | [ShortlistReview.tsx](src/components/console/ShortlistReview.tsx) — nothing transmits without officer approval. Buyers see approved shortlists with the factor breakdown in [BuyerShortlists.tsx](src/pages/BuyerShortlists.tsx) and record their own choice (audit-logged); the platform never selects |
+| DEM-09 | Consented disclosure and engagement | 🟡 | [ConsoleEngagements.tsx](src/pages/ConsoleEngagements.tsx), [EngagementTracker.tsx](src/components/console/EngagementTracker.tsx), [engagementStage.ts](src/lib/engagementStage.ts). Buyer side: shortlisted exporters stay anonymous until an active consent grant exists; buyers can request an introduction; revoked or expired consent removes profile access in [BuyerEngagements.tsx](src/pages/BuyerEngagements.tsx). Introduction requests don't yet reach the exporter's workspace. No proposal lifecycle |
 | DEM-10 | Escrow instruction and milestones | ⬜ | Engagement stages stop at `commenced`. No milestone schedule, funding instruction, funding-confirmation gate or release instruction |
-| DEM-11 | Conversion and outcome verification | ✅ | [ConsoleOutcomes.tsx](src/pages/ConsoleOutcomes.tsx), [OutcomeLedger.tsx](src/components/console/OutcomeLedger.tsx), [outcomes.ts](src/data/outcomes.ts), [outcomeVerification.ts](src/lib/outcomeVerification.ts) — Provisional until independently verified, same-engagement duplicates flagged. Partner attribution lineage not modelled |
+| DEM-11 | Conversion and outcome verification | ✅ | [ConsoleOutcomes.tsx](src/pages/ConsoleOutcomes.tsx), [OutcomeLedger.tsx](src/components/console/OutcomeLedger.tsx), [outcomes.ts](src/data/outcomes.ts), [outcomeVerification.ts](src/lib/outcomeVerification.ts) — Provisional until independently verified, same-engagement duplicates flagged. Buyers confirm delivery value from their workspace (provisional, audit-logged), but session confirmations don't yet appear in the console ledger. Partner attribution lineage not modelled |
 
 ### 5.3 Supply
 | ID | Requirement | Status | Where in repo / gap |
@@ -347,10 +347,12 @@ The four decisions recorded earlier the same day are replaced:
   typed instructions and statuses with a partner acknowledgement, never as money movement or a tribunal.
 - **P-2 — Static data is permanent.** No live agency feeds. Every Observatory figure must carry an
   OBS-10 basis label once that work lands.
-- **P-3 — Resolved: a separate exporter workspace at `/workspace`.** Mobile-first and built toward WCAG 2.1
+- **P-3 — Resolved: separate workspaces for exporters (`/workspace`) and buyers (`/buyer`).** Both share
+  one shell ([WorkspaceShell.tsx](src/components/workspace/WorkspaceShell.tsx)) and are linked from the
+  public site's "Sign in" menu, footer and marketplace. The officer console stays unlinked. Mobile-first and built toward WCAG 2.1
   AA (§7.5): skip link, labelled landmarks and controls, 44px targets, focus moved to each wizard step,
   body text at gray-600 or darker. A "viewing as" switch stands in for sign-in, so any seeded exporter can
-  be inspected. Not linked from the public site, matching the console.
+  be inspected.
 
 ---
 
@@ -436,3 +438,11 @@ default" is what to assume until the programme decides.
   (v2.0). Readiness submissions now read scores from each exporter's diagnostic so the console and
   workspace can't disagree. Added REG-01 record fields and the `/workspace` exporter workspace (My
   standing, Requirements wizard, private Readiness), resolving P-3.
+- **2026-09-17** — **Buyer workspace and public sign-in links.** Added `/buyer` (Overview, Requests,
+  Shortlists, Engagements) on a shared `WorkspaceShell`: buyer tier and next step with just-in-time
+  verification (DEM-01), request authoring with budget, target date and typed criteria, gated on Registry
+  Verified at submission (DEM-02/05), officer-approved shortlists with explainable factors and
+  consent-gated identity plus a buyer-recorded choice (DEM-08/09), and delivery confirmation that stays
+  provisional (DEM-11). Opportunities now carry `buyerId`. The public site links both workspaces from a
+  "Sign in" menu, the footer and the marketplace ("Post a request"; locked details point to the exporter
+  workspace).

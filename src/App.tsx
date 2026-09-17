@@ -25,6 +25,11 @@ import { WorkspaceStanding } from './pages/WorkspaceStanding';
 import { WorkspaceRequirements } from './pages/WorkspaceRequirements';
 import { WorkspaceReadiness } from './pages/WorkspaceReadiness';
 import { ExporterSessionProvider } from './lib/exporterSession';
+import { BuyerOverview } from './pages/BuyerOverview';
+import { BuyerRequests } from './pages/BuyerRequests';
+import { BuyerShortlists } from './pages/BuyerShortlists';
+import { BuyerEngagements } from './pages/BuyerEngagements';
+import { BuyerSessionProvider } from './lib/buyerSession';
 import { OfficerProfileProvider } from './lib/officerProfile';
 import { AuditLogProvider } from './lib/auditLog';
 
@@ -71,6 +76,19 @@ function Workspace() {
 
 }
 
+function BuyerWorkspace() {
+  return (
+    <BuyerSessionProvider>
+      <Routes>
+        <Route index element={<BuyerOverview />} />
+        <Route path="requests" element={<BuyerRequests />} />
+        <Route path="shortlists" element={<BuyerShortlists />} />
+        <Route path="engagements" element={<BuyerEngagements />} />
+      </Routes>
+    </BuyerSessionProvider>);
+
+}
+
 export function App({ heroVariant = 'stacked', liveDemos = true }: AppProps) {
   return (
     <OfficerProfileProvider>
@@ -80,6 +98,7 @@ export function App({ heroVariant = 'stacked', liveDemos = true }: AppProps) {
           <Route path="/marketplace" element={<Marketplace />} />
           <Route path="/console/*" element={<Console />} />
           <Route path="/workspace/*" element={<Workspace />} />
+          <Route path="/buyer/*" element={<BuyerWorkspace />} />
         </Routes>
       </AuditLogProvider>
     </OfficerProfileProvider>);

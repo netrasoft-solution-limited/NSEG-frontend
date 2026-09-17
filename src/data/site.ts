@@ -70,6 +70,8 @@ export const footerColumns: { heading: string;links: FooterLink[] }[] = [
   heading: 'Portals',
   links: [
   { label: 'Demand & Market Access', href: '/marketplace' },
+  { label: 'Exporter workspace', href: '/workspace' },
+  { label: 'Buyer workspace', href: '/buyer' },
   { label: 'Regulatory Trust', href: '/#trust' },
   { label: 'Supply Ecosystem', href: '/#portals' },
   { label: 'National Observatory', href: '/#observatory' }]
