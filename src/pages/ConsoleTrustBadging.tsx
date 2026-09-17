@@ -61,8 +61,8 @@ export function ConsoleTrustBadging() {
   return (
     <ConsoleLayout breadcrumb="Trust & badging" onExport={handleExport}>
       <div>
-        <h1 className="font-display text-[26px] font-semibold tracking-[-0.01em] text-gray-900">Trust & badging</h1>
-        <p className="mt-1 text-[13.5px] text-gray-500">
+        <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-gray-900 sm:text-[34px]">Trust & badging</h1>
+        <p className="mt-1.5 text-[14.5px] text-gray-600">
           One ladder per side. Every tier is named for what was verified — never a rating of work quality —
           and every actor sees the one thing standing between them and the next tier.
         </p>
@@ -104,7 +104,7 @@ export function ConsoleTrustBadging() {
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
           <h2 className="text-[16px] font-semibold text-gray-900">Exporter tiers</h2>
           <p className="text-[12.5px] text-gray-400">
             Highest rung where the diagnostic score and the verified evidence are both met.
@@ -123,7 +123,7 @@ export function ConsoleTrustBadging() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
           <h2 className="text-[16px] font-semibold text-gray-900">Buyer tiers</h2>
           <p className="text-[12.5px] text-gray-400">Progresses through officer verification, not a self-reported score.</p>
           <div className="mt-3 space-y-2">
@@ -141,7 +141,7 @@ export function ConsoleTrustBadging() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
+      <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
         <h2 className="text-[16px] font-semibold text-gray-900">Exporters closest to their next tier</h2>
         <p className="text-[12.5px] text-gray-400">
           Missing evidence counts for more than score points — a high score never lifts a tier on its own.
@@ -161,7 +161,7 @@ export function ConsoleTrustBadging() {
             (next.evidence[actor.track].length - standing.missingEvidence.length + Math.min(1, standing.score / next.minDiagnostic)) /
             requirementCount;
             return (
-              <li key={actor.id} className="rounded-xl border border-gray-100 px-4 py-3">
+              <li key={actor.id} className="rounded-xl border border-gray-200 px-4 py-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="font-medium text-gray-900">{actor.name}</p>

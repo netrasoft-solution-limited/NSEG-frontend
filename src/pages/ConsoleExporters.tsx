@@ -56,8 +56,8 @@ export function ConsoleExporters() {
     <ConsoleLayout breadcrumb="Exporters" onExport={handleExport}>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-display text-[26px] font-semibold tracking-[-0.01em] text-gray-900">Exporters</h1>
-          <p className="mt-1 text-[13.5px] text-gray-500">Manage registered exporters, activity and verification status.</p>
+          <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-gray-900 sm:text-[34px]">Exporters</h1>
+          <p className="mt-1.5 text-[14.5px] text-gray-600">Manage registered exporters, activity and verification status.</p>
         </div>
         <button
           type="button"
@@ -74,7 +74,7 @@ export function ConsoleExporters() {
           icon={UsersIcon}
           label="Total exporters"
           value={actors.length.toLocaleString()}
-          delta="+12.4%"
+          delta="Registry"
           positive
           accent="gate" />
 
@@ -82,7 +82,7 @@ export function ConsoleExporters() {
           icon={UserCheckIcon}
           label="Identity verified or above"
           value={verifiedCount.toLocaleString()}
-          delta="+8.7%"
+          delta="Evidence confirmed"
           positive
           accent="sky" />
 
@@ -90,7 +90,7 @@ export function ConsoleExporters() {
           icon={UserPlusIcon}
           label="New this week"
           value={newCount.toLocaleString()}
-          delta="+8.7%"
+          delta="Last 7 days"
           positive
           accent="gold" />
 
@@ -106,7 +106,7 @@ export function ConsoleExporters() {
           icon={BanIcon}
           label="Suspended"
           value={suspendedCount.toLocaleString()}
-          delta="-4.4%"
+          delta="Bidding paused"
           positive={false}
           accent="rose" />
 

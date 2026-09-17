@@ -80,8 +80,8 @@ export function ConsoleCompliance() {
     <ConsoleLayout breadcrumb="Compliance" onExport={handleExport}>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-[26px] font-semibold tracking-[-0.01em] text-gray-900">Compliance</h1>
-          <p className="mt-1 text-[13.5px] text-gray-500">
+          <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-gray-900 sm:text-[34px]">Compliance</h1>
+          <p className="mt-1.5 text-[14.5px] text-gray-600">
             The regulatory requirements register. Drafters write, competent authorities sign off, and only signed-off
             content reaches the exporter wizard.
           </p>
@@ -235,7 +235,7 @@ export function ConsoleCompliance() {
           }} />
 
 
-        <div className="rounded-2xl border border-gray-100 bg-white p-5">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5">
           <h2 className="flex items-center gap-2 text-[16px] font-semibold text-gray-900">
             <CalendarClockIcon className="h-4 w-4 text-gray-400" aria-hidden="true" />
             Review calendar

@@ -35,8 +35,8 @@ export function ConsoleTaxonomies() {
   return (
     <ConsoleLayout breadcrumb="Taxonomies" onExport={handleExport}>
       <div>
-        <h1 className="font-display text-[26px] font-semibold tracking-[-0.01em] text-gray-900">Taxonomies</h1>
-        <p className="mt-1 text-[13.5px] text-gray-500">
+        <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-gray-900 sm:text-[34px]">Taxonomies</h1>
+        <p className="mt-1.5 text-[14.5px] text-gray-600">
           The shared master data every portal draws its dropdowns from — one source of truth, versioned,
           never silently deleted.
         </p>

@@ -51,8 +51,8 @@ export function ConsoleAudit() {
   return (
     <ConsoleLayout breadcrumb="Audit log">
       <div>
-        <h1 className="font-display text-[26px] font-semibold tracking-[-0.01em] text-gray-900">Audit log</h1>
-        <p className="mt-1 text-[13.5px] text-gray-500">
+        <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-gray-900 sm:text-[34px]">Audit log</h1>
+        <p className="mt-1.5 text-[14.5px] text-gray-600">
           Every officer decision across the Console, newest first.
         </p>
       </div>
@@ -86,7 +86,7 @@ export function ConsoleAudit() {
         })}
       </div>
 
-      <div className="mt-5 rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
+      <div className="mt-5 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
         <ul className="space-y-3">
           {filtered.map((entry) => {
             const Icon = categoryMeta[entry.category].icon;

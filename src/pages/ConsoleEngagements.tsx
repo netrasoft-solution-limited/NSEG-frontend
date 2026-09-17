@@ -68,8 +68,8 @@ export function ConsoleEngagements() {
   return (
     <ConsoleLayout breadcrumb="Engagements" onExport={handleExport}>
       <div>
-        <h1 className="font-display text-[26px] font-semibold tracking-[-0.01em] text-gray-900">Engagements</h1>
-        <p className="mt-1 text-[13.5px] text-gray-500">
+        <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-gray-900 sm:text-[34px]">Engagements</h1>
+        <p className="mt-1.5 text-[14.5px] text-gray-600">
           Track consented referrals from disclosure through to contract — a referral's access dies the moment its
           consent grant does.
         </p>

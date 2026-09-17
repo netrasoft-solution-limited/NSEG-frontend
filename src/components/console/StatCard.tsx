@@ -27,7 +27,7 @@ interface StatCardProps {
 export function StatCard({ icon: Icon, label, value, delta, positive, accent }: StatCardProps) {
   return (
     <div
-      className={`rounded-2xl border border-gray-100 bg-gradient-to-br p-5 ${gradients[accent]}`}>
+      className={`rounded-2xl border border-gray-200 bg-gradient-to-br p-5 ${gradients[accent]}`}>
 
       <div className="flex items-start justify-between">
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-gray-700 shadow-sm">

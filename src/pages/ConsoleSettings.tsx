@@ -74,14 +74,14 @@ export function ConsoleSettings() {
   return (
     <ConsoleLayout breadcrumb="Settings">
       <div>
-        <h1 className="font-display text-[26px] font-semibold tracking-[-0.01em] text-gray-900">Settings</h1>
-        <p className="mt-1 text-[13.5px] text-gray-500">
+        <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-gray-900 sm:text-[34px]">Settings</h1>
+        <p className="mt-1.5 text-[14.5px] text-gray-600">
           Your own profile and notification preferences — not organization or role administration.
         </p>
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
           <h2 className="text-[16px] font-semibold text-gray-900">Profile</h2>
           <p className="text-[12.5px] text-gray-400">Visible in the Console header across every section.</p>
 
@@ -121,7 +121,7 @@ export function ConsoleSettings() {
 
             <div>
               <label className="block text-[12.5px] font-medium text-gray-600">Job title</label>
-              <p className="mt-1.5 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2.5 text-[13.5px] text-gray-500">
+              <p className="mt-1.5 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-[13.5px] text-gray-500">
                 {profile.title} · not editable here
               </p>
             </div>
@@ -187,7 +187,7 @@ export function ConsoleSettings() {
           </form>
         </div>
 
-        <div className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
           <h2 className="text-[16px] font-semibold text-gray-900">Notification preferences</h2>
           <p className="text-[12.5px] text-gray-400">Choose what you're pinged about — no email delivery is wired up yet.</p>
 
@@ -209,7 +209,7 @@ export function ConsoleSettings() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
+      <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
         <h2 className="text-[16px] font-semibold text-gray-900">Your recent activity</h2>
         <ul className="mt-4 space-y-3">
           {entries.slice(0, 8).map((entry) =>
