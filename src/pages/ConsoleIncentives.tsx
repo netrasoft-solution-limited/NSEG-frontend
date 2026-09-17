@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BadgeCheckIcon, ClockIcon, SparklesIcon, WalletIcon } from 'lucide-react';
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
+import { engagementTabs } from '../components/console/consoleTabs';
 import { StatCard } from '../components/console/StatCard';
 import { IncentiveQueue } from '../components/console/IncentiveQueue';
 import { incentiveApplications, incentiveTypeLabels, type IncentiveReviewStatus } from '../data/incentives';
@@ -45,7 +46,7 @@ export function ConsoleIncentives() {
   };
 
   return (
-    <ConsoleLayout breadcrumb="Incentives" onExport={handleExport}>
+    <ConsoleLayout breadcrumb="Engagements · Incentives" onExport={handleExport} tabs={engagementTabs}>
       <div>
         <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-gray-900 sm:text-[34px]">Incentives</h1>
         <p className="mt-1.5 text-[14.5px] text-gray-600">

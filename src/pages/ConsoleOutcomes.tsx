@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertTriangleIcon, BanknoteIcon, CheckCircleIcon, HourglassIcon } from 'lucide-react';
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
+import { engagementTabs } from '../components/console/consoleTabs';
 import { StatCard } from '../components/console/StatCard';
 import { OutcomeLedger } from '../components/console/OutcomeLedger';
 import { engagements } from '../data/engagements';
@@ -81,7 +82,7 @@ export function ConsoleOutcomes() {
   };
 
   return (
-    <ConsoleLayout breadcrumb="Outcomes" onExport={handleExport}>
+    <ConsoleLayout breadcrumb="Engagements · Outcomes" onExport={handleExport} tabs={engagementTabs}>
       <div>
         <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-gray-900 sm:text-[34px]">Outcomes</h1>
         <p className="mt-1.5 text-[14.5px] text-gray-600">

@@ -1,6 +1,7 @@
 import React from 'react';
 import { CheckCircleIcon, ClockIcon, ShieldIcon, ShieldOffIcon } from 'lucide-react';
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
+import { engagementTabs } from '../components/console/consoleTabs';
 import { StatCard } from '../components/console/StatCard';
 import { ConsentRegister } from '../components/console/ConsentRegister';
 import { actors } from '../data/actors';
@@ -39,7 +40,7 @@ export function ConsoleConsent() {
   };
 
   return (
-    <ConsoleLayout breadcrumb="Consent" onExport={handleExport}>
+    <ConsoleLayout breadcrumb="Engagements · Consent" onExport={handleExport} tabs={engagementTabs}>
       <div>
         <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-gray-900 sm:text-[34px]">Consent</h1>
         <p className="mt-1.5 text-[14.5px] text-gray-600">

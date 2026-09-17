@@ -94,14 +94,18 @@ function Console() {
       <Route path="opportunities" element={<ConsoleOpportunities />} />
       <Route path="market-intelligence" element={<ConsoleMarketIntelligence />} />
       <Route path="engagements" element={<ConsoleEngagements />} />
-      <Route path="outcomes" element={<ConsoleOutcomes />} />
+      <Route path="engagements/consent" element={<ConsoleConsent />} />
+      <Route path="engagements/outcomes" element={<ConsoleOutcomes />} />
+      <Route path="engagements/incentives" element={<ConsoleIncentives />} />
       <Route path="readiness" element={<ConsoleReadiness />} />
       <Route path="certifications" element={<ConsoleCertifications />} />
       <Route path="compliance" element={<ConsoleCompliance />} />
       <Route path="observatory" element={<ConsoleObservatory />} />
-      <Route path="incentives" element={<ConsoleIncentives />} />
+      {/* Earlier addresses, kept so saved links still land in the right place. */}
+      <Route path="incentives" element={<Navigate to="/console/engagements/incentives" replace />} />
+      <Route path="outcomes" element={<Navigate to="/console/engagements/outcomes" replace />} />
+      <Route path="consent" element={<Navigate to="/console/engagements/consent" replace />} />
       <Route path="vault" element={<ConsoleVault />} />
-      <Route path="consent" element={<ConsoleConsent />} />
       <Route path="delegations" element={<ConsoleDelegations />} />
       <Route path="taxonomies" element={<ConsoleTaxonomies />} />
       <Route path="audit" element={<ConsoleAudit />} />

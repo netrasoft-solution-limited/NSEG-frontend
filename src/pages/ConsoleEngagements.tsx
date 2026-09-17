@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertTriangleIcon, FileCheckIcon, HandshakeIcon, HourglassIcon } from 'lucide-react';
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
+import { engagementTabs } from '../components/console/consoleTabs';
 import { StatCard } from '../components/console/StatCard';
 import { EngagementTracker } from '../components/console/EngagementTracker';
 import { opportunities } from '../data/opportunities';
@@ -61,7 +62,7 @@ export function ConsoleEngagements() {
   };
 
   return (
-    <ConsoleLayout breadcrumb="Engagements" onExport={handleExport}>
+    <ConsoleLayout breadcrumb="Engagements" onExport={handleExport} tabs={engagementTabs}>
       <div>
         <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-gray-900 sm:text-[34px]">Engagements</h1>
         <p className="mt-1.5 text-[14.5px] text-gray-600">

@@ -9,7 +9,6 @@ import {
   ActivityIcon,
   ArrowLeftIcon,
   AwardIcon,
-  BanknoteIcon,
   BriefcaseIcon,
   BuildingIcon,
   CalendarIcon,
@@ -28,10 +27,8 @@ import {
   MenuIcon,
   SettingsIcon,
   ShieldCheckIcon,
-  ShieldIcon,
   UsersIcon,
   UsersRoundIcon,
-  WalletIcon,
   XIcon } from
 'lucide-react';
 import type { IconComponent } from '../../types/icons';
@@ -50,9 +47,19 @@ interface SidebarItem {
   count?: number;
 }
 
+/** Sub-sections of one console section, shown as tabs under the section name. */
+export interface ConsoleTab {
+  to: string;
+  label: string;
+  end?: boolean;
+  /** Items waiting in that tab, shown beside its label. */
+  count?: number;
+}
+
 interface ConsoleLayoutProps {
   breadcrumb: string;
   onExport?: () => void;
+  tabs?: ConsoleTab[];
   children: React.ReactNode;
 }
 
@@ -313,7 +320,7 @@ function OfficerPanel() {
 
 /** Shared frame for the officer console: a pinned sidebar of grouped sections, a compact header
  * carrying the section name and the officer's account, and the page on a light canvas. */
-export function ConsoleLayout({ breadcrumb, onExport, children }: ConsoleLayoutProps) {
+export function ConsoleLayout({ breadcrumb, onExport, tabs, children }: ConsoleLayoutProps) {
   const { profile } = useOfficerProfile();
   const { pathname } = useLocation();
   const exchange = useGatewayExchange();
@@ -328,8 +335,7 @@ export function ConsoleLayout({ breadcrumb, onExport, children }: ConsoleLayoutP
   const items: SidebarItem[] = [
   { icon: LayoutGridIcon, label: 'Dashboard', href: '/console', end: true, group: 'Case management' },
   { icon: BriefcaseIcon, label: 'Opportunities', href: '/console/opportunities', count: pendingSignals, group: 'Case management' },
-  { icon: HandshakeIcon, label: 'Engagements', href: '/console/engagements', group: 'Case management' },
-  { icon: BanknoteIcon, label: 'Outcomes', href: '/console/outcomes', count: provisionalOutcomes, group: 'Case management' },
+  { icon: HandshakeIcon, label: 'Engagements', href: '/console/engagements', count: provisionalOutcomes, group: 'Case management' },
   { icon: UsersIcon, label: 'Exporters', href: '/console/exporters', group: 'Registries' },
   { icon: BuildingIcon, label: 'Buyers', href: '/console/buyers', group: 'Registries' },
   { icon: CrownIcon, label: 'Trust & badging', href: '/console/trust-badging', group: 'Registries' },
@@ -338,10 +344,8 @@ export function ConsoleLayout({ breadcrumb, onExport, children }: ConsoleLayoutP
   { icon: ShieldCheckIcon, label: 'Compliance', href: '/console/compliance', group: 'Policy and reference' },
   { icon: LayersIcon, label: 'Taxonomies', href: '/console/taxonomies', group: 'Policy and reference' },
   { icon: GlobeIcon, label: 'Market intelligence', href: '/console/market-intelligence', group: 'Policy and reference' },
-  { icon: WalletIcon, label: 'Incentives', href: '/console/incentives', group: 'Policy and reference' },
   { icon: ActivityIcon, label: 'Observatory', href: '/console/observatory', group: 'Policy and reference' },
   { icon: FileTextIcon, label: 'Vault', href: '/console/vault', group: 'Records' },
-  { icon: ShieldIcon, label: 'Consent', href: '/console/consent', group: 'Records' },
   { icon: UsersRoundIcon, label: 'Delegations', href: '/console/delegations', group: 'Records' },
   { icon: HistoryIcon, label: 'Audit log', href: '/console/audit', group: 'Records' },
   { icon: SettingsIcon, label: 'Settings', href: '/console/settings', group: 'Account' }];
@@ -447,7 +451,8 @@ export function ConsoleLayout({ breadcrumb, onExport, children }: ConsoleLayoutP
 
       <div className="xl:pl-[272px]">
         <header className="z-30 border-b border-gray-200/80 bg-white/85 backdrop-blur-xl xl:sticky xl:top-0">
-          <div className="mx-auto flex min-h-[64px] max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5 sm:px-8">
+          <div className="mx-auto max-w-6xl px-4 sm:px-8">
+          <div className="flex min-h-[64px] flex-wrap items-center gap-x-4 gap-y-2 py-2.5">
             <p className="min-w-0 flex-1 truncate text-[14px] font-semibold text-gray-700">{breadcrumb}</p>
 
             <div className="flex shrink-0 items-center gap-2">
@@ -472,6 +477,34 @@ export function ConsoleLayout({ breadcrumb, onExport, children }: ConsoleLayoutP
               </button>
               <OfficerPanel />
             </div>
+          </div>
+
+          {tabs &&
+          <nav aria-label="Section pages" className="-mb-px overflow-x-auto">
+              <ul className="flex min-w-max gap-1">
+                {tabs.map((tab) =>
+              <li key={tab.to}>
+                    <NavLink
+                  to={tab.to}
+                  end={tab.end}
+                  className={({ isActive }) =>
+                  `inline-flex min-h-[42px] items-center gap-2 border-b-2 px-3 text-[13.5px] font-semibold transition-colors duration-150 ${
+                  isActive ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-600 hover:text-gray-900'}`
+                  }>
+
+                      {tab.label}
+                      {Boolean(tab.count) &&
+                  <span className="rounded-full bg-gray-900 px-1.5 py-0.5 text-[11px] font-semibold leading-none text-white">
+                          {tab.count}
+                          <span className="sr-only"> waiting</span>
+                        </span>
+                  }
+                    </NavLink>
+                  </li>
+              )}
+              </ul>
+            </nav>
+          }
           </div>
         </header>
 
