@@ -7,13 +7,15 @@ import { useBuyerSession } from '../lib/buyerSession';
 import { buyerOpportunities, buyerShortlist, engagedCandidateId, requestStatusFor } from '../lib/buyerWorkspace';
 import { sectorLabel } from '../lib/marketplaceLookups';
 import { useAuditLog } from '../lib/auditLog';
+import { useGatewayExchange } from '../lib/gatewayExchange';
 
 export function BuyerShortlists() {
   const { buyer, state, update } = useBuyerSession();
   const { logEvent } = useAuditLog();
+  const { introductions, requestIntroduction } = useGatewayExchange();
 
   const withShortlists = buyerOpportunities(buyer).
-  map((opportunity) => ({ opportunity, candidates: buyerShortlist(opportunity) })).
+  map((opportunity) => ({ opportunity, candidates: buyerShortlist(opportunity, introductions) })).
   filter((item) => item.candidates);
   const awaiting = buyerOpportunities(buyer).filter(
     (opportunity) => requestStatusFor(opportunity) === 'shortlisting' && !buyerShortlist(opportunity)
@@ -54,9 +56,9 @@ export function BuyerShortlists() {
               </p>
 
               <ol className="mt-4 space-y-3">
-                {candidates!.map(({ candidate, actor, disclosed }, index) => {
+                {candidates!.map(({ candidate, actor, disclosed, introduction }, index) => {
                   const tier = actor ? trustTiers.find((item) => item.id === actor.tier) : undefined;
-                  const requested = state.introductionRequests.includes(candidate.id);
+                  const response = introduction?.response;
                   const selected = selectedId === candidate.id;
                   const displayName = disclosed ? candidate.name : `Exporter ${String.fromCharCode(65 + index)}`;
                   return (
@@ -127,16 +129,29 @@ export function BuyerShortlists() {
                               Proceed with this exporter
                             </button> :
 
-                        requested ?
+                        response === 'pending' ?
                         <span className="inline-flex min-h-[44px] items-center gap-1.5 text-[13px] text-gray-700">
                             <HourglassIcon className="h-4 w-4" aria-hidden="true" />
                             Introduction requested — the exporter decides whether to share their profile
+                          </span> :
+                        response === 'declined' || response === 'withdrawn' ?
+                        <span className="inline-flex min-h-[44px] items-center gap-1.5 text-[13px] text-gray-700">
+                            <EyeOffIcon className="h-4 w-4" aria-hidden="true" />
+                            {response === 'declined' ?
+                          'The exporter chose not to share their profile' :
+                          'The exporter withdrew consent to share their profile'}
                           </span> :
 
                         <button
                           type="button"
                           onClick={() => {
-                            update({ introductionRequests: [...state.introductionRequests, candidate.id] });
+                            if (!actor) return;
+                            requestIntroduction({
+                              id: candidate.id,
+                              opportunityId: opportunity.id,
+                              buyerId: buyer.id,
+                              actorId: actor.id
+                            });
                             logEvent(
                               `${buyer.name} requested an introduction to a shortlisted exporter for "${opportunity.title}"`,
                               'consent',

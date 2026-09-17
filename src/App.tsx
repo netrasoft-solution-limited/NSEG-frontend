@@ -24,6 +24,7 @@ import { ConsoleSettings } from './pages/ConsoleSettings';
 import { WorkspaceStanding } from './pages/WorkspaceStanding';
 import { WorkspaceRequirements } from './pages/WorkspaceRequirements';
 import { WorkspaceReadiness } from './pages/WorkspaceReadiness';
+import { WorkspaceIntroductions } from './pages/WorkspaceIntroductions';
 import { ExporterSessionProvider } from './lib/exporterSession';
 import { BuyerOverview } from './pages/BuyerOverview';
 import { BuyerRequests } from './pages/BuyerRequests';
@@ -32,6 +33,7 @@ import { BuyerEngagements } from './pages/BuyerEngagements';
 import { BuyerSessionProvider } from './lib/buyerSession';
 import { OfficerProfileProvider } from './lib/officerProfile';
 import { AuditLogProvider } from './lib/auditLog';
+import { GatewayExchangeProvider } from './lib/gatewayExchange';
 
 interface AppProps {
   heroVariant?: 'stacked' | 'split';
@@ -71,6 +73,7 @@ function Workspace() {
         <Route index element={<WorkspaceStanding />} />
         <Route path="requirements" element={<WorkspaceRequirements />} />
         <Route path="readiness" element={<WorkspaceReadiness />} />
+        <Route path="introductions" element={<WorkspaceIntroductions />} />
       </Routes>
     </ExporterSessionProvider>);
 
@@ -93,6 +96,7 @@ export function App({ heroVariant = 'stacked', liveDemos = true }: AppProps) {
   return (
     <OfficerProfileProvider>
       <AuditLogProvider>
+        <GatewayExchangeProvider>
         <Routes>
           <Route path="/" element={<Landing heroVariant={heroVariant} liveDemos={liveDemos} />} />
           <Route path="/marketplace" element={<Marketplace />} />
@@ -100,6 +104,7 @@ export function App({ heroVariant = 'stacked', liveDemos = true }: AppProps) {
           <Route path="/workspace/*" element={<Workspace />} />
           <Route path="/buyer/*" element={<BuyerWorkspace />} />
         </Routes>
+        </GatewayExchangeProvider>
       </AuditLogProvider>
     </OfficerProfileProvider>);
 

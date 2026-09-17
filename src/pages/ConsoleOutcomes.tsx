@@ -3,7 +3,7 @@ import { AlertTriangleIcon, BanknoteIcon, CheckCircleIcon, HourglassIcon } from 
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
 import { StatCard } from '../components/console/StatCard';
 import { OutcomeLedger } from '../components/console/OutcomeLedger';
-import { outcomeReports, type OutcomeVerificationStatus } from '../data/outcomes';
+import { outcomeReports as seededOutcomeReports, type OutcomeVerificationStatus } from '../data/outcomes';
 import { engagements } from '../data/engagements';
 import { opportunities } from '../data/opportunities';
 import { consentGrants } from '../data/consentGrants';
@@ -13,6 +13,7 @@ import { downloadCsv } from '../lib/exportCsv';
 import { useOfficerProfile } from '../lib/officerProfile';
 import { useAuditLog } from '../lib/auditLog';
 import { canMutate } from '../lib/permissions';
+import { useGatewayExchange } from '../lib/gatewayExchange';
 
 const engagementsById = new Map(engagements.map((engagement) => [engagement.id, engagement]));
 const opportunitiesById = new Map(opportunities.map((opportunity) => [opportunity.id, opportunity]));
@@ -25,6 +26,24 @@ export function ConsoleOutcomes() {
   const { profile } = useOfficerProfile();
   const { logEvent } = useAuditLog();
   const [decisions, setDecisions] = useState<Record<string, OutcomeVerificationStatus>>({});
+  const { deliveryConfirmations } = useGatewayExchange();
+
+  // Buyer confirmations sent from the buyer workspace join the ledger as provisional
+  // buyer self-reports, so the same single-count checks apply to them.
+  const outcomeReports = [
+  ...deliveryConfirmations.map((confirmation) => ({
+    id: `out-buyer-${confirmation.engagementId}`,
+    engagementId: confirmation.engagementId,
+    reportedBy: 'buyer' as const,
+    amount: confirmation.amount,
+    currency: 'USD',
+    reportedOn: new Date().toISOString().slice(0, 10),
+    evidenceSummary: confirmation.note ?
+    `Buyer workspace confirmation: ${confirmation.note}` :
+    'Buyer confirmed delivery from the buyer workspace.',
+    verification: 'provisional' as const
+  })),
+  ...seededOutcomeReports];
 
   const statusOf = (id: string, fallback: OutcomeVerificationStatus) => decisions[id] ?? fallback;
 

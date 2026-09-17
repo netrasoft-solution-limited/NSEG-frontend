@@ -9,6 +9,8 @@ export interface WorkspaceNavItem {
   label: string;
   icon: IconComponent;
   end?: boolean;
+  /** Items waiting for the user, shown as a badge. */
+  count?: number;
 }
 
 interface SwitcherGroup {
@@ -100,7 +102,7 @@ export function WorkspaceShell({
 
         <nav aria-label="Workspace sections" className="mx-auto mt-2 max-w-4xl overflow-x-auto px-4">
           <ul className="flex gap-1">
-            {navItems.map(({ to, label, icon: Icon, end }) =>
+            {navItems.map(({ to, label, icon: Icon, end, count }) =>
             <li key={to}>
                 <NavLink
                 to={to}
@@ -112,6 +114,12 @@ export function WorkspaceShell({
 
                   <Icon className="h-4 w-4" aria-hidden="true" />
                   {label}
+                  {Boolean(count) &&
+                  <span className="rounded-full bg-gray-900 px-1.5 py-0.5 text-[11px] font-semibold leading-none text-white">
+                      {count}
+                      <span className="sr-only"> waiting</span>
+                    </span>
+                  }
                 </NavLink>
               </li>
             )}

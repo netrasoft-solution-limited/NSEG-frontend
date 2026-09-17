@@ -15,6 +15,7 @@ import {
 '../lib/buyerWorkspace';
 import { modeLabel, sectorLabel } from '../lib/marketplaceLookups';
 import { useAuditLog } from '../lib/auditLog';
+import { useGatewayExchange, type RequestDecision } from '../lib/gatewayExchange';
 
 const criteriaKinds: { id: CriteriaKind; label: string; help: string }[] = [
 { id: 'mandatory', label: 'Mandatory', help: 'Exporters who don’t meet it are excluded' },
@@ -86,7 +87,20 @@ function FieldError({ id, message }: {id: string;message?: string;}) {
 
 }
 
-function StatusTrack({ status }: {status: RequestStatus;}) {
+const decisionStatus: Record<Exclude<RequestDecision, 'rejected'>, RequestStatus> = {
+  pending: 'awaiting-qualification',
+  qualified: 'published'
+};
+
+function StatusTrack({ status }: {status: RequestStatus | 'not-qualified';}) {
+  if (status === 'not-qualified') {
+    return (
+      <p className="rounded-xl bg-rose-50 p-3 text-[12.5px] leading-relaxed text-rose-900">
+        <span className="font-semibold">Not qualified.</span> A desk officer couldn't qualify this request as written
+        and will contact you about what to change.
+      </p>);
+
+  }
   const index = requestStatusSteps.findIndex((step) => step.id === status);
   return (
     <div>
@@ -109,6 +123,7 @@ function StatusTrack({ status }: {status: RequestStatus;}) {
 export function BuyerRequests() {
   const { buyer, state, update } = useBuyerSession();
   const { logEvent } = useAuditLog();
+  const exchange = useGatewayExchange();
   const [formOpen, setFormOpen] = useState(false);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [errors, setErrors] = useState<Errors>({});
@@ -119,6 +134,14 @@ export function BuyerRequests() {
 
   const standing = buyerStanding(buyer);
   const seeded = buyerOpportunities(buyer);
+  const submitted = exchange.requests.filter((request) => request.buyerId === buyer.id);
+
+  const sendForQualification = (request: BuyerDraftRequest) => {
+    exchange.submitRequest({ ...request, buyerId: buyer.id });
+    logEvent(`${buyer.name} submitted "${request.title}" for qualification`, 'opportunities', buyer.name);
+    setNoticeIsWarning(false);
+    setNotice(`"${request.title}" was sent to a desk officer for qualification.`);
+  };
   const set = (patch: Partial<FormState>) => setForm((current) => ({ ...current, ...patch }));
 
   const closeForm = () => {
@@ -148,15 +171,15 @@ export function BuyerRequests() {
       budgetMax: Number(form.budgetMax),
       targetCompletion: form.targetCompletion,
       summary: form.summary.trim(),
-      criteria: form.criteria.filter((criterion) => criterion.label.trim()),
-      status: submit ? 'awaiting-qualification' : 'draft'
+      criteria: form.criteria.filter((criterion) => criterion.label.trim())
     };
-    update({ requests: [request, ...state.requests] });
     if (submit) {
-      logEvent(`${buyer.name} submitted "${request.title}" for qualification`, 'opportunities', buyer.name);
+      sendForQualification(request);
+    } else {
+      update({ drafts: [request, ...state.drafts] });
+      setNoticeIsWarning(false);
+      setNotice(`"${request.title}" was saved as a draft.`);
     }
-    setNoticeIsWarning(false);
-    setNotice(submit ? `"${request.title}" was sent to a desk officer for qualification.` : `"${request.title}" was saved as a draft.`);
     closeForm();
   };
 
@@ -166,12 +189,8 @@ export function BuyerRequests() {
       setNotice(`Verify your company registration before submitting "${request.title}". ${standing.nextAction}`);
       return;
     }
-    update({
-      requests: state.requests.map((item) => item.id === request.id ? { ...item, status: 'awaiting-qualification' } : item)
-    });
-    logEvent(`${buyer.name} submitted "${request.title}" for qualification`, 'opportunities', buyer.name);
-    setNoticeIsWarning(false);
-    setNotice(`"${request.title}" was sent to a desk officer for qualification.`);
+    update({ drafts: state.drafts.filter((item) => item.id !== request.id) });
+    sendForQualification(request);
   };
 
   const errorList = Object.values(errors).filter(Boolean);
@@ -484,7 +503,11 @@ export function BuyerRequests() {
           Your requests
         </h2>
         <ul className="mt-3 space-y-3">
-          {state.requests.map((request) =>
+          {[...state.drafts.map((request) => ({ request, status: 'draft' as const })),
+          ...submitted.map((request) => ({
+            request,
+            status: request.decision === 'rejected' ? 'not-qualified' as const : decisionStatus[request.decision]
+          }))].map(({ request, status }) =>
           <li key={request.id} className="rounded-2xl border border-gray-200 bg-white p-5">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
@@ -494,10 +517,10 @@ export function BuyerRequests() {
                     {request.budgetMin.toLocaleString()}–{request.budgetMax.toLocaleString()} · by {request.targetCompletion}
                   </p>
                 </div>
-                {request.status === 'draft' &&
+                {status === 'draft' &&
               <button
                 type="button"
-                onClick={() => submitDraft(request)}
+                onClick={() => submitDraft(request as BuyerDraftRequest)}
                 className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-gray-300 px-4 text-[13px] font-medium text-gray-800 hover:border-gray-500">
 
                     <SendIcon className="h-3.5 w-3.5" aria-hidden="true" />
@@ -506,7 +529,7 @@ export function BuyerRequests() {
               }
               </div>
               <div className="mt-3">
-                <StatusTrack status={request.status} />
+                <StatusTrack status={status} />
               </div>
             </li>
           )}
@@ -525,7 +548,7 @@ export function BuyerRequests() {
             </li>
           )}
         </ul>
-        {state.requests.length === 0 && seeded.length === 0 &&
+        {state.drafts.length === 0 && submitted.length === 0 && seeded.length === 0 &&
         <p className="mt-2 text-[13.5px] text-gray-600">No requests yet.</p>
         }
       </section>

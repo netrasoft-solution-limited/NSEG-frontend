@@ -5,6 +5,7 @@ import { BuyerLayout } from '../components/workspace/BuyerLayout';
 import { BuyerTierBadge } from '../components/workspace/TierBadge';
 import { buyerTiers } from '../data/buyerTiers';
 import { useBuyerSession } from '../lib/buyerSession';
+import { useGatewayExchange } from '../lib/gatewayExchange';
 import {
   buyerEngagements,
   buyerOpportunities,
@@ -23,6 +24,7 @@ const tierChecks: Record<string, string[]> = {
 
 export function BuyerOverview() {
   const { buyer, state } = useBuyerSession();
+  const exchange = useGatewayExchange();
   const standing = buyerStanding(buyer);
   const tierIndex = buyerTiers.indexOf(standing.tier);
 
@@ -34,9 +36,12 @@ export function BuyerOverview() {
   const engagements = buyerEngagements(buyer);
   const inDelivery = requests.filter((opportunity) => requestStatusFor(opportunity) === 'in-delivery');
   const unconfirmed = engagements.filter(
-    (engagement) => engagement.stage === 'commenced' && !state.deliveryConfirmations[engagement.id]
+    (engagement) =>
+    engagement.stage === 'commenced' &&
+    !exchange.deliveryConfirmations.some((item) => item.engagementId === engagement.id)
   );
-  const drafts = state.requests.filter((request) => request.status === 'draft');
+  const drafts = state.drafts;
+  const submitted = exchange.requests.filter((request) => request.buyerId === buyer.id);
 
   const attention: { text: string; to: string; action: string }[] = [
   ...(shortlistsToReview > 0 ?
@@ -51,7 +56,7 @@ export function BuyerOverview() {
 
 
   const stats = [
-  { label: 'Requests', value: requests.length + state.requests.length },
+  { label: 'Requests', value: requests.length + drafts.length + submitted.length },
   { label: 'Shortlists ready', value: shortlistsReady },
   { label: 'In delivery', value: inDelivery.length }];
 

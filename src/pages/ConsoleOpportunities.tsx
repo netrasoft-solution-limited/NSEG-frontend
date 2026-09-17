@@ -4,7 +4,7 @@ import { ConsoleLayout } from '../components/console/ConsoleLayout';
 import { StatCard } from '../components/console/StatCard';
 import { SignalQueue, type SignalDecision } from '../components/console/SignalQueue';
 import { ShortlistReview, type ShortlistDecision } from '../components/console/ShortlistReview';
-import { signals } from '../data/signals';
+import { signals as seededSignals } from '../data/signals';
 import { opportunities } from '../data/opportunities';
 import { shortlists } from '../data/shortlists';
 import { supportingMetrics } from '../data/observatory';
@@ -12,6 +12,9 @@ import { downloadCsv } from '../lib/exportCsv';
 import { useOfficerProfile } from '../lib/officerProfile';
 import { useAuditLog } from '../lib/auditLog';
 import { canMutate } from '../lib/permissions';
+import { useGatewayExchange } from '../lib/gatewayExchange';
+import { buyers } from '../data/buyers';
+import type { Signal } from '../data/signals';
 
 const medianQualificationTime =
 supportingMetrics.find((metric) => metric.label === 'Median officer qualification time')?.value ?? '—';
@@ -27,7 +30,28 @@ export function ConsoleOpportunities() {
   const { profile } = useOfficerProfile();
   const { logEvent } = useAuditLog();
   const mutable = canMutate(profile.role);
-  const [signalDecisions, setSignalDecisions] = useState<Record<string, SignalDecision>>({});
+  const [localSignalDecisions, setSignalDecisions] = useState<Record<string, SignalDecision>>({});
+  const exchange = useGatewayExchange();
+
+  // DEM-03: requests buyers send from their workspace arrive as signals on that route, and the
+  // officer's decision goes back to the buyer through the exchange.
+  const workspaceSignals: Signal[] = exchange.requests.map((request) => {
+    const buyer = buyers.find((item) => item.id === request.buyerId);
+    return {
+      id: request.id,
+      route: 'Buyer workspace request',
+      origin: buyer ? `${buyer.name} · ${buyer.region}` : 'Unknown buyer',
+      sectorCode: request.sectorCode,
+      receivedOn: 'just now',
+      riskTier: buyer?.verificationQueue === 'flagged' ? 'Flagged' : buyer?.tier === 'payment-verified' ? 'New' : 'Review',
+      summary: `"${request.title}" — ${request.summary} USD ${request.budgetMin.toLocaleString()}–${request.budgetMax.toLocaleString()}, target ${request.targetCompletion}.`
+    };
+  });
+  const signals = [...workspaceSignals, ...seededSignals];
+  const signalDecisions: Record<string, SignalDecision> = {
+    ...localSignalDecisions,
+    ...Object.fromEntries(exchange.requests.map((request) => [request.id, request.decision]))
+  };
   const [shortlistDecisions, setShortlistDecisions] = useState<Record<string, ShortlistDecision>>({});
 
   const pendingSignals = signals.filter((signal) => (signalDecisions[signal.id] ?? 'pending') === 'pending').length;
@@ -101,7 +125,11 @@ export function ConsoleOpportunities() {
           decisions={signalDecisions}
           canMutate={mutable}
           onDecide={(id, decision) => {
-            setSignalDecisions((current) => ({ ...current, [id]: decision }));
+            if (exchange.requests.some((request) => request.id === id)) {
+              exchange.decideRequest(id, decision);
+            } else {
+              setSignalDecisions((current) => ({ ...current, [id]: decision }));
+            }
             const signal = signals.find((item) => item.id === id);
             logEvent(
               `${decision === 'qualified' ? 'Qualified' : 'Rejected'} a signal from ${signal?.origin ?? 'an unknown origin'}`,

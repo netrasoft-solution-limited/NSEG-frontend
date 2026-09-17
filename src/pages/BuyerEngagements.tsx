@@ -9,6 +9,7 @@ import { engagementStageLabels, type EngagementStage } from '../lib/engagementSt
 import { useBuyerSession } from '../lib/buyerSession';
 import { buyerEngagements } from '../lib/buyerWorkspace';
 import { useAuditLog } from '../lib/auditLog';
+import { useGatewayExchange } from '../lib/gatewayExchange';
 
 const stageOrder: EngagementStage[] = [
 'package-ready',
@@ -20,13 +21,14 @@ const stageOrder: EngagementStage[] = [
 
 
 function ConfirmDelivery({ engagementId, title }: {engagementId: string;title: string;}) {
-  const { buyer, state, update } = useBuyerSession();
+  const { buyer } = useBuyerSession();
   const { logEvent } = useAuditLog();
+  const { deliveryConfirmations, confirmDelivery } = useGatewayExchange();
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
 
-  const confirmed = state.deliveryConfirmations[engagementId];
+  const confirmed = deliveryConfirmations.find((item) => item.engagementId === engagementId);
   const seededReport = outcomeReports.find((report) => report.engagementId === engagementId && report.reportedBy === 'buyer');
 
   if (confirmed || seededReport) {
@@ -49,9 +51,7 @@ function ConfirmDelivery({ engagementId, title }: {engagementId: string;title: s
           setError('Enter the value delivered in US dollars.');
           return;
         }
-        update({
-          deliveryConfirmations: { ...state.deliveryConfirmations, [engagementId]: { amount: Number(amount), note } }
-        });
+        confirmDelivery({ engagementId, amount: Number(amount), note });
         logEvent(
           `${buyer.name} confirmed delivery of "${title}" (USD ${Number(amount).toLocaleString()}, provisional)`,
           'outcomes',
