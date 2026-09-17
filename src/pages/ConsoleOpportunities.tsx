@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { CheckCheckIcon, ClockIcon, InboxIcon, ScaleIcon } from 'lucide-react';
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
 import { StatCard } from '../components/console/StatCard';
-import { SignalQueue, type SignalDecision } from '../components/console/SignalQueue';
-import { ShortlistReview, type ShortlistDecision } from '../components/console/ShortlistReview';
+import { SignalQueue, type DecisionRecord, type SignalDecision } from '../components/console/SignalQueue';
+import { ShortlistReview, type ShortlistDecision, type ShortlistRecord } from '../components/console/ShortlistReview';
 import { signals as seededSignals } from '../data/signals';
 import { opportunities } from '../data/opportunities';
 import { shortlists } from '../data/shortlists';
@@ -31,6 +31,7 @@ export function ConsoleOpportunities() {
   const { logEvent } = useAuditLog();
   const mutable = canMutate(profile.role);
   const [localSignalDecisions, setSignalDecisions] = useState<Record<string, SignalDecision>>({});
+  const [signalRecords, setSignalRecords] = useState<Record<string, DecisionRecord>>({});
   const exchange = useGatewayExchange();
 
   // DEM-03: requests buyers send from their workspace arrive as signals on that route, and the
@@ -53,6 +54,7 @@ export function ConsoleOpportunities() {
     ...Object.fromEntries(exchange.requests.map((request) => [request.id, request.decision]))
   };
   const [shortlistDecisions, setShortlistDecisions] = useState<Record<string, ShortlistDecision>>({});
+  const [shortlistRecords, setShortlistRecords] = useState<Record<string, ShortlistRecord>>({});
 
   const pendingSignals = signals.filter((signal) => (signalDecisions[signal.id] ?? 'pending') === 'pending').length;
   const qualifiedToday = Object.values(signalDecisions).filter((decision) => decision === 'qualified').length;
@@ -123,16 +125,19 @@ export function ConsoleOpportunities() {
         <SignalQueue
           signals={signals}
           decisions={signalDecisions}
+          records={signalRecords}
           canMutate={mutable}
-          onDecide={(id, decision) => {
+          onDecide={(id, decision, record) => {
             if (exchange.requests.some((request) => request.id === id)) {
               exchange.decideRequest(id, decision);
             } else {
               setSignalDecisions((current) => ({ ...current, [id]: decision }));
             }
+            setSignalRecords((current) => ({ ...current, [id]: record }));
             const signal = signals.find((item) => item.id === id);
+            const confidence = record.confidence ? ` (${record.confidence.toLowerCase()} confidence)` : '';
             logEvent(
-              `${decision === 'qualified' ? 'Qualified' : 'Rejected'} a signal from ${signal?.origin ?? 'an unknown origin'}`,
+              `${decision === 'qualified' ? 'Qualified' : 'Rejected'} a signal from ${signal?.origin ?? 'an unknown origin'}${confidence} — "${record.reason}"`,
               'opportunities',
               profile.name
             );
@@ -142,14 +147,16 @@ export function ConsoleOpportunities() {
         <ShortlistReview
           items={shortlistItems}
           decisions={shortlistDecisions}
+          records={shortlistRecords}
           canMutate={mutable}
-          onDecide={(id, decision) => {
+          onDecide={(id, decision, record) => {
             setShortlistDecisions((current) => ({ ...current, [id]: decision }));
+            setShortlistRecords((current) => ({ ...current, [id]: record }));
             const opportunity = opportunities.find((item) => item.id === id);
             logEvent(
               decision === 'approved' ?
-              `Approved the shortlist for "${opportunity?.title ?? id}"` :
-              `Requested adjustment on the shortlist for "${opportunity?.title ?? id}"`,
+              `Approved the shortlist for "${opportunity?.title ?? id}" — "${record.reason}"` :
+              `Requested adjustment on the shortlist for "${opportunity?.title ?? id}" — "${record.reason}"`,
               'opportunities',
               profile.name
             );
