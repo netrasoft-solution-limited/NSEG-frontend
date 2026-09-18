@@ -56,7 +56,13 @@ export function SiteFooter() {
               </li>
             )}
           </ul>
-          <p className="text-[12.5px] text-chalk-dim">© 2026 Federal Ministry of Industry, Trade and Investment</p>
+          <div className="flex flex-col gap-1.5 lg:items-end">
+            <p className="text-[12.5px] text-chalk-dim">© 2026 Federal Ministry of Industry, Trade and Investment</p>
+            {/* Delivery partners, credited at the client's request. */}
+            <p className="text-[12.5px] font-medium tracking-[0.02em] text-chalk-muted">
+              NASENI <span aria-hidden="true">×</span><span className="sr-only">and</span> Primeguage
+            </p>
+          </div>
         </div>
       </div>
     </footer>);
