@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRightIcon, BriefcaseIcon, CheckIcon, GlobeIcon, LandmarkIcon, LogInIcon } from 'lucide-react';
 import type { IconComponent } from '../../types/icons';
@@ -37,7 +36,7 @@ export function AudienceDoors() {
           const Icon = doorIcons[door.id];
           const isHash = door.cta.to.startsWith('/#');
           const ctaClass =
-          'mt-6 inline-flex min-h-[44px] items-center gap-1.5 self-start rounded-xl border border-hairline/15 px-4 text-[14px] font-semibold text-chalk transition-colors duration-150 ease-out hover:border-gate/60 group-hover:border-gate/40';
+          'door-cta mt-6 inline-flex min-h-[44px] items-center gap-1.5 self-start rounded-xl border border-hairline/15 px-4 text-[14px] font-semibold text-chalk';
           return (
             <Reveal as="li" key={door.id} delay={index * 0.05}>
               <div className="group flex h-full flex-col rounded-3xl border border-hairline/10 bg-ink-800/70 p-6 transition-colors duration-150 ease-out hover:border-hairline/20 sm:p-7">
@@ -57,12 +56,12 @@ export function AudienceDoors() {
                 {isHash ?
                 <a href={door.cta.to} onClick={resolveHash(door.cta.to.slice(1))} className={ctaClass}>
                     {door.cta.label}
-                    <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
+                    <ArrowRightIcon className="door-cta-arrow h-4 w-4" aria-hidden="true" />
                   </a> :
 
                 <Link to={door.cta.to} className={ctaClass}>
                     {door.cta.label}
-                    <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
+                    <ArrowRightIcon className="door-cta-arrow h-4 w-4" aria-hidden="true" />
                   </Link>
                 }
               </div>

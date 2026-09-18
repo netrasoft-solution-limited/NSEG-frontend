@@ -49,25 +49,34 @@ export const audienceDoors: AudienceDoor[] = [
 }];
 
 
+/** Named rather than imported here, so the data file stays free of component imports. */
+export type TrustRuleIcon = 'owner' | 'evidence' | 'consent' | 'person';
+
 export interface TrustRule {
+  /** Says what the rule is about — a signed owner, a graded claim, a key, a person. */
+  icon: TrustRuleIcon;
   title: string;
   body: string;
 }
 
 export const trustRules: TrustRule[] = [
 {
+  icon: 'owner',
   title: 'Every requirement has an owner',
   body: 'Nothing is published without a named institution, a source link, a version, a validation status and a review date. If it lacks any of these, it is not on the register.'
 },
 {
+  icon: 'evidence',
   title: 'Claims carry their evidence class',
   body: 'Self-declared, submitted, source-verified and independently verified are shown as different things. Nothing is presented as confirmed until it has been.'
 },
 {
+  icon: 'consent',
   title: 'Nothing is shared without consent',
   body: 'You choose the recipient, the fields, the documents and the expiry date. Withdraw at any time and access stops immediately, while the record of what happened is kept.'
 },
 {
+  icon: 'person',
   title: 'A person makes every decision',
   body: 'Shortlisting, referral and outcome acceptance are made by a named officer with a recorded reason. No score decides anything about you, and any decision can be challenged.'
 }];

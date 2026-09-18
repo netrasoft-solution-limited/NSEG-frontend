@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRightIcon,
@@ -101,9 +100,16 @@ export function ProcessSection() {
           <div className="flex flex-wrap gap-3">
             <Link
               to="/buyer"
-              className="inline-flex min-h-[48px] items-center gap-2 rounded-xl bg-gate px-5 text-[14.5px] font-semibold text-white transition-colors duration-150 ease-out hover:bg-gate-deep">
+              className="inline-flex min-h-[48px] items-center gap-2 rounded-xl bg-gate px-5 text-[14.5px] font-semibold text-white transition-all duration-150 ease-out hover:bg-gate-deep hover:shadow-[0_10px_24px_-12px_rgba(13,125,89,0.9)]">
 
               Start as a buyer
+              <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
+            </Link>
+            <Link
+              to="/marketplace"
+              className="inline-flex min-h-[48px] items-center gap-2 rounded-xl border border-hairline/20 px-5 text-[14.5px] font-semibold text-chalk transition-all duration-150 ease-out hover:border-gate/60 hover:bg-gate/10">
+
+              Browse the marketplace
               <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
             </Link>
           </div>

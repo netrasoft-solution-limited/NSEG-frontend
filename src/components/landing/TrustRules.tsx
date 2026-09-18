@@ -1,8 +1,21 @@
-import React from 'react';
-import { ShieldCheckIcon } from 'lucide-react';
-import { trustRules } from '../../data/landing';
+import { BadgeCheckIcon, KeyRoundIcon, ShieldCheckIcon, StampIcon, UserCheckIcon } from 'lucide-react';
+import { trustRules, type TrustRuleIcon } from '../../data/landing';
 import { SectionEyebrow } from '../site/SectionEyebrow';
 import { Reveal } from '../motion/Reveal';
+
+/**
+ * The icon for each rule.
+ *
+ * Chosen to carry the rule's meaning rather than to decorate it: a stamp for a named owner, a
+ * badge for a graded claim, a key the subject holds, a person for a person's decision. They
+ * replaced "Rule 1…Rule 4", which numbered the rules without saying anything about them.
+ */
+const ruleIcons: Record<TrustRuleIcon, typeof ShieldCheckIcon> = {
+  owner: StampIcon,
+  evidence: BadgeCheckIcon,
+  consent: KeyRoundIcon,
+  person: UserCheckIcon
+};
 
 /** "Why it can be trusted": the four published rules. */
 export function TrustRules() {
@@ -21,17 +34,22 @@ export function TrustRules() {
           </div>
         </Reveal>
 
-        <ol className="mt-10 grid gap-4 sm:grid-cols-2">
-          {trustRules.map((rule, index) =>
-          <Reveal as="li" key={rule.title} delay={index * 0.04}>
-              <div className="h-full rounded-3xl border border-hairline/10 bg-ink/60 p-6 sm:p-7">
-                <span className="font-mono text-[12px] text-gate-soft">Rule {index + 1}</span>
-                <h3 className="mt-2 font-display text-[20px] font-semibold tracking-[-0.01em] text-chalk">{rule.title}</h3>
-                <p className="mt-2 text-[14.5px] leading-relaxed text-chalk-muted">{rule.body}</p>
-              </div>
-            </Reveal>
-          )}
-        </ol>
+        <ul className="mt-10 grid gap-4 sm:grid-cols-2">
+          {trustRules.map((rule, index) => {
+            const Icon = ruleIcons[rule.icon];
+            return (
+              <Reveal as="li" key={rule.title} delay={index * 0.04}>
+                <div className="h-full rounded-3xl border border-hairline/10 bg-ink/60 p-6 sm:p-7">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gate/10 text-gate-soft ring-1 ring-gate/20">
+                    <Icon className="h-[22px] w-[22px]" aria-hidden="true" />
+                  </span>
+                  <h3 className="mt-4 font-display text-[20px] font-semibold tracking-[-0.01em] text-chalk">{rule.title}</h3>
+                  <p className="mt-2 text-[14.5px] leading-relaxed text-chalk-muted">{rule.body}</p>
+                </div>
+              </Reveal>);
+
+          })}
+        </ul>
 
       </div>
     </section>);

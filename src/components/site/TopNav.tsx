@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NigeriaFlag } from '../common/NigeriaFlag';
 import { BrandLogo } from '../common/BrandLogo';
 import { ArrowRightIcon, LifeBuoyIcon, MenuIcon, XIcon } from 'lucide-react';
@@ -74,8 +74,13 @@ export function TopNav() {
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-xl border border-white/10 bg-[#0A100D]/85 px-3 py-1.5 text-[12px] text-white/75 backdrop-blur-xl">
           <span className="inline-flex items-center gap-1.5">
             <NigeriaFlag className="h-3" />
-            <span className="sm:hidden">Official FMITI platform</span>
-            <span className="hidden sm:inline">An official platform of the Federal Ministry of Industry, Trade and Investment</span>
+            <span className="sm:hidden">
+              Official <span className="font-semibold text-white">FMITI</span> platform
+            </span>
+            <span className="hidden sm:inline">
+              An official platform of the{' '}
+              <span className="font-semibold text-white">Federal Ministry of Industry, Trade and Investment</span>
+            </span>
           </span>
           <span className="flex items-center gap-3">
             <a

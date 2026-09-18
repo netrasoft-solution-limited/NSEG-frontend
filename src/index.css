@@ -134,6 +134,18 @@ body {
   --auth-soft: #e9f4ef;
   --auth-ring: rgb(11 110 79 / 0.16);
 }
+/* The console. Cooler and deeper than either public workspace, so an officer can tell at a glance
+   that they are looking at the internal surface and not a page anyone can reach. */
+.auth-theme--officer {
+  --auth-accent: #1e4d6b;
+  --auth-accent-text: #163a52;
+  --auth-btn-from: #245a7d;
+  --auth-btn-to: #12354c;
+  --auth-btn-ink: #ffffff;
+  --auth-glow: #7fb3d5;
+  --auth-soft: #e8f0f6;
+  --auth-ring: rgb(30 77 107 / 0.18);
+}
 .auth-theme--buyer {
   --auth-accent: #9a6b1c;
   --auth-accent-text: #6b4a12;
@@ -219,6 +231,9 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+.auth-theme--officer .auth-gradient-text {
+  background-image: linear-gradient(100deg, #cfe4f2 0%, #7fb3d5 45%, #4d8fb8 100%);
 }
 .auth-theme--buyer .auth-gradient-text {
   background-image: linear-gradient(95deg, #f8dc9c 0%, #e0b25c 50%, #7fd1ad 100%);
@@ -589,6 +604,12 @@ body {
     radial-gradient(120% 60% at 20% 110%, rgb(5 42 30 / 0.9), transparent 60%),
     linear-gradient(170deg, #03110c 0%, #020605 45%, #03140e 100%);
 }
+.auth-theme--officer .auth-galaxy {
+  background:
+    radial-gradient(120% 90% at 18% 8%, #1a3b52 0%, transparent 55%),
+    radial-gradient(100% 80% at 82% 92%, #10283a 0%, transparent 60%),
+    linear-gradient(160deg, #0a1a26 0%, #061219 100%);
+}
 .auth-theme--buyer .auth-galaxy {
   background-image:
     radial-gradient(120% 60% at 20% 110%, rgb(43 34 19 / 0.9), transparent 60%),
@@ -754,4 +775,47 @@ body {
     radial-gradient(90% 120% at 100% 20%, rgb(201 146 47 / 0.22), transparent 62%),
     linear-gradient(140deg, #073d2c 0%, #0a100d 60%, #052a1e 100%);
   box-shadow: 0 30px 60px -32px rgb(5 42 30 / 0.7);
+}
+
+
+/* The three doors' call to action.
+   Hovering the card lifts the button; hovering the button itself fills it, so the one you are
+   pointing at is unmistakable. Kept here rather than in a long class list because it is four
+   states of one component. */
+.door-cta {
+  transition: background-color 180ms ease-out, border-color 180ms ease-out, color 180ms ease-out,
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 180ms ease-out;
+}
+.door-cta-arrow {
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.group:hover .door-cta {
+  border-color: rgb(24 137 97 / 0.55);
+  background-color: rgb(24 137 97 / 0.12);
+}
+.door-cta:hover {
+  border-color: transparent;
+  background-color: #0d7d59;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px -12px rgb(13 125 89 / 0.85);
+}
+.door-cta:hover .door-cta-arrow {
+  transform: translateX(3px);
+}
+.door-cta:focus-visible {
+  outline: 2px solid #4fb68f;
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .door-cta,
+  .door-cta-arrow {
+    transition: background-color 180ms ease-out, border-color 180ms ease-out, color 180ms ease-out;
+  }
+  .door-cta:hover {
+    transform: none;
+  }
+  .door-cta:hover .door-cta-arrow {
+    transform: none;
+  }
 }
