@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
+import { settingsTabs } from '../components/console/consoleTabs';
 import { useOfficerProfile, type OfficerRole } from '../lib/officerProfile';
 import { initialsOf } from '../lib/initials';
 import { useAuditLog } from '../lib/auditLog';
@@ -72,7 +73,7 @@ export function ConsoleSettings() {
   };
 
   return (
-    <ConsoleLayout breadcrumb="Settings">
+    <ConsoleLayout breadcrumb="Settings" tabs={settingsTabs}>
       <div>
         <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-gray-900 sm:text-[34px]">Settings</h1>
         <p className="mt-1.5 text-[14.5px] text-gray-600">

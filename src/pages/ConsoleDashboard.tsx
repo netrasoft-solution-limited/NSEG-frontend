@@ -75,21 +75,21 @@ export function ConsoleDashboard() {
     count: provisionalOutcomes,
     title: `Verify ${provisionalOutcomes} reported outcome${provisionalOutcomes === 1 ? '' : 's'}`,
     detail: 'Self-reported value stays out of the Observatory until it is verified.',
-    to: '/console/outcomes',
+    to: '/console/engagements/outcomes',
     icon: BadgeCheckIcon
   },
   {
     count: readinessPending,
     title: `Review ${readinessPending} readiness submission${readinessPending === 1 ? '' : 's'}`,
     detail: 'Issue or decline the assertion an exporter is waiting on.',
-    to: '/console/readiness',
+    to: '/console/registry/readiness',
     icon: CompassIcon
   },
   {
     count: reviewDue,
     title: `${reviewDue} requirement${reviewDue === 1 ? '' : 's'} past review`,
     detail: 'An out-of-date rule blocks the cases pinned to it.',
-    to: '/console/compliance',
+    to: '/console/requirements',
     icon: ScaleIcon
   }].
   filter((queue) => queue.count > 0);
@@ -128,7 +128,7 @@ export function ConsoleDashboard() {
           </p>
         </div>
         <Link
-          to="/console/audit"
+          to="/console/observatory/audit"
           className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-4 text-[13.5px] font-semibold text-gray-700 ring-1 ring-inset ring-gray-200 hover:text-gray-900 hover:ring-gray-400">
 
           <HistoryIcon className="h-4 w-4" aria-hidden="true" />
@@ -292,7 +292,7 @@ export function ConsoleDashboard() {
           <h2 id="activity" className="text-[16px] font-semibold text-gray-900">
             Recent decisions
           </h2>
-          <Link to="/console/audit" className="text-[13px] font-semibold text-gray-900 underline-offset-4 hover:underline">
+          <Link to="/console/observatory/audit" className="text-[13px] font-semibold text-gray-900 underline-offset-4 hover:underline">
             View the full log
           </Link>
         </div>

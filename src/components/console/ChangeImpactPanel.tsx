@@ -72,7 +72,7 @@ export function ChangeImpactPanel({ impacts, tasks, canMutate, onCloseTask }: Ch
                         </span> :
                   task.kind === 'revalidate-assertion' ?
                   <Link
-                    to="/console/readiness"
+                    to="/console/registry/readiness"
                     className="inline-flex items-center gap-1 text-[12px] font-medium text-gray-700 hover:text-gray-900">
 
                           Open in Readiness

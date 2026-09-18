@@ -60,6 +60,7 @@ const ConsoleDelegations = lazyPage(() => import('./pages/ConsoleDelegations'), 
 const ConsoleTaxonomies = lazyPage(() => import('./pages/ConsoleTaxonomies'), 'ConsoleTaxonomies');
 const ConsoleAudit = lazyPage(() => import('./pages/ConsoleAudit'), 'ConsoleAudit');
 const ConsoleSettings = lazyPage(() => import('./pages/ConsoleSettings'), 'ConsoleSettings');
+const ConsoleCoverage = lazyPage(() => import('./pages/ConsoleCoverage'), 'ConsoleCoverage');
 const WorkspaceStanding = lazyPage(() => import('./pages/WorkspaceStanding'), 'WorkspaceStanding');
 const WorkspaceRequirements = lazyPage(() => import('./pages/WorkspaceRequirements'), 'WorkspaceRequirements');
 const WorkspaceReadiness = lazyPage(() => import('./pages/WorkspaceReadiness'), 'WorkspaceReadiness');
@@ -92,7 +93,7 @@ function RedirectExporterRecord() {
 }
 
 function Console() {
-  usePreload([ConsoleDashboard, ConsoleExporters, ConsoleOpportunities, ConsoleEngagements, ConsoleOutcomes, ConsoleReadiness, ConsoleCompliance, ConsoleObservatory, ConsoleBuyers, ConsoleConsent, ConsoleAudit, ConsoleSettings]);
+  usePreload([ConsoleDashboard, ConsoleOpportunities, ConsoleEngagements, ConsoleExporters, ConsoleExporterDetail, ConsoleCompliance, ConsoleObservatory, ConsoleSettings]);
   return (
     <Routes>
       <Route index element={<ConsoleDashboard />} />
@@ -132,6 +133,7 @@ function Console() {
       <Route path="outcomes" element={<Navigate to="/console/engagements/outcomes" replace />} />
       <Route path="consent" element={<Navigate to="/console/engagements/consent" replace />} />
       <Route path="settings" element={<ConsoleSettings />} />
+      <Route path="settings/coverage" element={<ConsoleCoverage />} />
     </Routes>);
 
 }

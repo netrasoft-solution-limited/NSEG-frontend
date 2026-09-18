@@ -17,6 +17,12 @@ export const registryTabs: ConsoleTab[] = [
 { to: '/console/registry/delegations', label: 'Delegated access' }];
 
 
+/** The officer's own account, and what the console covers against the specification. */
+export const settingsTabs: ConsoleTab[] = [
+{ to: '/console/settings', label: 'Profile & notifications', end: true },
+{ to: '/console/settings/coverage', label: 'Module coverage' }];
+
+
 /** Demand as it arrives, and the market conditions an officer qualifies it against. */
 export const opportunityTabs: ConsoleTab[] = [
 { to: '/console/opportunities', label: 'Signals & shortlists', end: true },
