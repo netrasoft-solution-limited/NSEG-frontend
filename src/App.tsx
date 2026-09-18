@@ -9,6 +9,7 @@ import { GatewayExchangeProvider } from './lib/gatewayExchange';
 import { RegulatoryRegisterProvider } from './lib/regulatoryRegister';
 import { AccountsProvider, useAccounts } from './lib/accounts';
 import { RegistryDecisionsProvider } from './lib/registryDecisions';
+import { CaseDecisionsProvider } from './lib/caseDecisions';
 import { DocumentVerificationProvider } from './lib/documentVerification';
 import { EngagementLedgerProvider } from './lib/engagementLedger';
 
@@ -43,7 +44,9 @@ const Marketplace = lazyPage(() => import('./pages/Marketplace'), 'Marketplace')
 const ConsoleDashboard = lazyPage(() => import('./pages/ConsoleDashboard'), 'ConsoleDashboard');
 const ConsoleExporters = lazyPage(() => import('./pages/ConsoleExporters'), 'ConsoleExporters');
 const ConsoleExporterDetail = lazyPage(() => import('./pages/ConsoleExporterDetail'), 'ConsoleExporterDetail');
-const ConsoleOpportunities = lazyPage(() => import('./pages/ConsoleOpportunities'), 'ConsoleOpportunities');
+const ConsoleQualificationQueue = lazyPage(() => import('./pages/ConsoleQualificationQueue'), 'ConsoleQualificationQueue');
+const ConsoleOpportunityRecords = lazyPage(() => import('./pages/ConsoleOpportunityRecords'), 'ConsoleOpportunityRecords');
+const ConsoleShortlists = lazyPage(() => import('./pages/ConsoleShortlists'), 'ConsoleShortlists');
 const ConsoleMarketIntelligence = lazyPage(() => import('./pages/ConsoleMarketIntelligence'), 'ConsoleMarketIntelligence');
 const ConsoleTrustBadging = lazyPage(() => import('./pages/ConsoleTrustBadging'), 'ConsoleTrustBadging');
 const ConsoleEngagements = lazyPage(() => import('./pages/ConsoleEngagements'), 'ConsoleEngagements');
@@ -93,7 +96,7 @@ function RedirectExporterRecord() {
 }
 
 function Console() {
-  usePreload([ConsoleDashboard, ConsoleOpportunities, ConsoleEngagements, ConsoleExporters, ConsoleExporterDetail, ConsoleCompliance, ConsoleObservatory, ConsoleSettings]);
+  usePreload([ConsoleDashboard, ConsoleQualificationQueue, ConsoleShortlists, ConsoleEngagements, ConsoleExporters, ConsoleExporterDetail, ConsoleCompliance, ConsoleObservatory, ConsoleSettings]);
   return (
     <Routes>
       <Route index element={<ConsoleDashboard />} />
@@ -110,7 +113,9 @@ function Console() {
       <Route path="requirements/tiers" element={<ConsoleTrustBadging />} />
       <Route path="opportunities/intelligence" element={<ConsoleMarketIntelligence />} />
       <Route path="observatory/audit" element={<ConsoleAudit />} />
-      <Route path="opportunities" element={<ConsoleOpportunities />} />
+      <Route path="opportunities" element={<ConsoleQualificationQueue />} />
+      <Route path="opportunities/records" element={<ConsoleOpportunityRecords />} />
+      <Route path="opportunities/shortlists" element={<ConsoleShortlists />} />
       <Route path="market-intelligence" element={<Navigate to="/console/opportunities/intelligence" replace />} />
       <Route path="compliance" element={<Navigate to="/console/requirements" replace />} />
       <Route path="taxonomies" element={<Navigate to="/console/requirements/reference" replace />} />
@@ -216,6 +221,7 @@ export function App({ heroVariant = 'stacked', liveDemos = true }: AppProps) {
       <AuditLogProvider>
         <DocumentVerificationProvider>
         <RegistryDecisionsProvider>
+        <CaseDecisionsProvider>
         <EngagementLedgerProvider>
         <GatewayExchangeProvider>
         <RegulatoryRegisterProvider>
@@ -242,6 +248,7 @@ export function App({ heroVariant = 'stacked', liveDemos = true }: AppProps) {
         </RegulatoryRegisterProvider>
         </GatewayExchangeProvider>
         </EngagementLedgerProvider>
+        </CaseDecisionsProvider>
         </RegistryDecisionsProvider>
         </DocumentVerificationProvider>
       </AuditLogProvider>

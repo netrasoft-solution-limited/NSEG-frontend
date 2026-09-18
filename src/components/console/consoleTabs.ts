@@ -25,7 +25,9 @@ export const settingsTabs: ConsoleTab[] = [
 
 /** Demand as it arrives, and the market conditions an officer qualifies it against. */
 export const opportunityTabs: ConsoleTab[] = [
-{ to: '/console/opportunities', label: 'Signals & shortlists', end: true },
+{ to: '/console/opportunities', label: 'Qualification queue', end: true },
+{ to: '/console/opportunities/records', label: 'Opportunities' },
+{ to: '/console/opportunities/shortlists', label: 'Shortlists' },
 { to: '/console/opportunities/intelligence', label: 'Market intelligence' }];
 
 

@@ -6,12 +6,11 @@ import { sectorLabel, modeLabel } from '../../lib/marketplaceLookups';
 import { AuditOnlyBadge } from './AuditOnlyBadge';
 import { ConsoleDialog, DialogNote, dialogFieldClass, dialogLabelClass } from './ConsoleDialog';
 
-export type ShortlistDecision = 'pending' | 'approved' | 'adjust';
+export type { ShortlistDecision } from '../../lib/caseDecisions';
+import type { DecisionRecord, ShortlistDecision } from '../../lib/caseDecisions';
 
 /** The rationale recorded with a shortlist decision. */
-export interface ShortlistRecord {
-  reason: string;
-}
+export type ShortlistRecord = DecisionRecord;
 
 const MIN_REASON = 12;
 

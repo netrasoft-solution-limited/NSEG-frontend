@@ -5,15 +5,10 @@ import { sectorLabel } from '../../lib/marketplaceLookups';
 import { AuditOnlyBadge } from './AuditOnlyBadge';
 import { ConsoleDialog, DialogNote, dialogFieldClass, dialogLabelClass } from './ConsoleDialog';
 
-export type SignalDecision = 'pending' | 'qualified' | 'rejected';
+export type { SignalDecision, DecisionRecord } from '../../lib/caseDecisions';
+import type { DecisionRecord, SignalDecision } from '../../lib/caseDecisions';
 
-export type Confidence = 'High' | 'Medium' | 'Low';
-
-/** What an officer recorded when they decided: the reason is the point of the record. */
-export interface DecisionRecord {
-  reason: string;
-  confidence?: Confidence;
-}
+type Confidence = NonNullable<DecisionRecord['confidence']>;
 
 /** Short enough to type, long enough to be a reason rather than a shrug. */
 const MIN_REASON = 12;
