@@ -60,9 +60,13 @@ export function SiteFooter() {
               Copyright © 2026 <span aria-hidden="true">|</span> All Rights Reserved{' '}
               <span aria-hidden="true">|</span> Federal Ministry of Industry, Trade and Investment
             </p>
-            {/* Delivery partners, credited at the client's request. */}
-            <p className="text-[12.5px] font-medium tracking-[0.02em] text-chalk-muted">
-              NASENI <span aria-hidden="true">×</span><span className="sr-only">and</span> Primeguage
+            {/* Delivery partners, credited at the client's request.
+                The multiplication sign is plain text rather than a hidden "and" for screen
+                readers: that trick leaked the word into anything that copied the line, which
+                came out as "NASENI ×and Primeguage". A reader saying "times" here is the lesser
+                problem, and it is how every partnership mark of this shape is set. */}
+            <p className="text-[12.5px] text-chalk-dim">
+              Powered by: <span className="font-medium text-chalk-muted">NASENI × Primeguage</span>
             </p>
           </div>
         </div>
