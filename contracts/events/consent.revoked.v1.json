@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nseg.gov.ng/contracts/events/consent.revoked.v1.json",
+  "title": "consent.revoked.v1",
+  "description": "A grant was withdrawn. Every package built from it stops resolving immediately (403), and any referral that depended on it is invalidated regardless of the stage it had reached.",
+  "allOf": [{ "$ref": "./envelope.schema.json" }],
+  "properties": {
+    "data": {
+      "type": "object",
+      "required": ["grantId", "subjectUaid", "recipientUaid"],
+      "additionalProperties": false,
+      "properties": {
+        "grantId": { "type": "string", "format": "uuid" },
+        "subjectUaid": { "type": "string" },
+        "recipientUaid": { "type": "string" },
+        "packageIds": { "type": "array", "items": { "type": "string" } },
+        "revokedBy": { "enum": ["subject", "officer", "expiry"] }
+      }
+    }
+  }
+}

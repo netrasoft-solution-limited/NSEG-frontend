@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nseg.gov.ng/contracts/events/demand.signal.qualified.v1.json",
+  "title": "demand.signal.qualified.v1",
+  "description": "A named officer qualified a demand signal, which created one opportunity with the rules in force pinned to it. The reason is held on the decision record and fetched by anyone entitled to see it; it is not carried here.",
+  "allOf": [{ "$ref": "./envelope.schema.json" }],
+  "properties": {
+    "data": {
+      "type": "object",
+      "required": ["signalId", "decisionId", "opportunityId", "criteriaVersion", "pinnedRequirements"],
+      "additionalProperties": false,
+      "properties": {
+        "signalId": { "type": "string", "pattern": "^SIG-" },
+        "decisionId": { "type": "string", "format": "uuid" },
+        "opportunityId": { "type": "string", "pattern": "^OPP-" },
+        "buyerUaid": { "type": "string" },
+        "sectorCode": { "type": "string" },
+        "confidence": { "enum": ["high", "medium", "low"] },
+        "criteriaVersion": { "type": "integer", "minimum": 1 },
+        "pinnedRequirements": {
+          "type": "array",
+          "minItems": 0,
+          "items": {
+            "type": "object",
+            "required": ["requirementId", "version"],
+            "additionalProperties": false,
+            "properties": {
+              "requirementId": { "type": "string" },
+              "version": { "type": "integer", "minimum": 1 }
+            }
+          }
+        }
+      }
+    }
+  }
+}

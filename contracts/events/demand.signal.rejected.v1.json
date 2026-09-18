@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nseg.gov.ng/contracts/events/demand.signal.rejected.v1.json",
+  "title": "demand.signal.rejected.v1",
+  "description": "An officer rejected a signal. Notification tells the buyer it was rejected and points at the decision; the reason itself is fetched, not broadcast.",
+  "allOf": [{ "$ref": "./envelope.schema.json" }],
+  "properties": {
+    "data": {
+      "type": "object",
+      "required": ["signalId", "decisionId"],
+      "additionalProperties": false,
+      "properties": {
+        "signalId": { "type": "string", "pattern": "^SIG-" },
+        "decisionId": { "type": "string", "format": "uuid" },
+        "buyerUaid": { "type": "string" }
+      }
+    }
+  }
+}

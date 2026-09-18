@@ -1,0 +1,336 @@
+openapi: 3.1.0
+info:
+  license:
+    name: Federal Ministry of Industry, Trade and Investment
+    identifier: LicenseRef-FMITI-Internal
+  title: Consent and disclosure
+  version: 1.0.0
+  description: >
+    Consent and disclosure are one service because a package is only valid while its grant is.
+    A request names the recipient, the purpose, the exact fields and an expiry; there are no
+    wildcards, and a request arriving with fields pre-selected is refused by the schema. A package
+    is built by copying consented fields into an empty object, so masking holds by construction
+    rather than by remembering to redact. Revoking a grant stops its packages resolving on the
+    next fetch, and the record of what was released is kept.
+
+servers:
+  - url: /api/v1/consent
+
+tags:
+  - name: requests
+    description: Asking a subject to release named fields for one purpose.
+  - name: grants
+    description: What a subject allowed, and withdrawing it.
+  - name: evaluation
+    description: The check every personal-data route runs before returning anything.
+  - name: packages
+    description: The disclosure itself.
+
+paths:
+  /requests:
+    post:
+      tags: [requests]
+      operationId: requestConsent
+      summary: Ask a subject for named fields
+      description: >
+        Raised by an officer after a shortlist is approved, or by any route needing personal data.
+        Fields must all be allowed by the purpose in the field catalogue; anything else is refused.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConsentRequestInput' }
+      responses:
+        '201':
+          description: Request raised and the subject notified. Nothing is disclosed yet.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ConsentRequest' }
+        '422':
+          description: A field is not in the catalogue, or not allowed for this purpose.
+          $ref: '#/components/responses/Problem'
+
+  /requests/{requestId}:
+    get:
+      tags: [requests]
+      operationId: getConsentRequest
+      summary: Read a consent request
+      description: Readable by the subject, the requester and an officer.
+      parameters: [{ $ref: '#/components/parameters/RequestId' }]
+      responses:
+        '200':
+          description: The request, in the plain language shown to the subject.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ConsentRequest' }
+        '403': { $ref: '#/components/responses/Problem' }
+
+  /requests/{requestId}/grant:
+    post:
+      tags: [grants]
+      operationId: grantConsent
+      summary: Release fields, field by field
+      description: >
+        Only the subject may call this. They may grant a subset: fields they leave out are withheld
+        and the package is built without them. Granting nothing is a decline.
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fields]
+              properties:
+                fields:
+                  type: array
+                  minItems: 1
+                  items: { type: string }
+                  description: A subset of the requested fields. Anything not requested is refused.
+      responses:
+        '201':
+          description: Grant recorded; a package is built for the recipient.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Grant' }
+        '403':
+          description: The caller is not the subject of this request.
+          $ref: '#/components/responses/Problem'
+        '409':
+          description: Already decided, or the request has expired.
+          $ref: '#/components/responses/Problem'
+
+  /requests/{requestId}/decline:
+    post:
+      tags: [grants]
+      operationId: declineConsent
+      summary: Decline a consent request
+      description: No disclosure is created and no referral is sent. The reason is optional and private to the subject.
+      parameters: [{ $ref: '#/components/parameters/RequestId' }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason: { type: string, maxLength: 500 }
+      responses:
+        '204': { description: Declined. }
+        '403': { $ref: '#/components/responses/Problem' }
+
+  /grants/{grantId}/revoke:
+    post:
+      tags: [grants]
+      operationId: revokeGrant
+      summary: Withdraw a grant
+      description: >
+        Takes effect immediately: the recipient's next fetch returns 403, and any referral that
+        depended on this grant is invalidated whatever stage it had reached. The history of what
+        was released, and when it was accessed, is kept.
+      parameters:
+        - $ref: '#/components/parameters/GrantId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason: { type: string, maxLength: 500 }
+      responses:
+        '204': { description: Revoked. }
+        '403':
+          description: Only the subject, or an officer acting on a compliance case, may revoke.
+          $ref: '#/components/responses/Problem'
+
+  /evaluate:
+    post:
+      tags: [evaluation]
+      operationId: evaluateConsent
+      summary: May this recipient see these fields, for this purpose?
+      description: >
+        Called by the gateway on every personal-data route. Always answers 200 with allow or deny —
+        the caller turns a deny into 403 — and always writes an evaluation log entry, so who asked
+        about whom is itself a record.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subjectUaid, recipientUaid, fields, purpose]
+              properties:
+                subjectUaid: { type: string }
+                recipientUaid: { type: string }
+                fields:
+                  type: array
+                  items: { type: string }
+                  minItems: 1
+                purpose: { type: string }
+      responses:
+        '200':
+          description: The decision, with the fields actually allowed.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [decision, allowedFields]
+                properties:
+                  decision: { enum: [allow, deny] }
+                  grantId: { type: string, format: uuid }
+                  allowedFields:
+                    type: array
+                    items: { type: string }
+                    description: May be narrower than requested. Deny returns an empty array.
+                  expiresAt: { type: string, format: date-time }
+                  reason:
+                    type: string
+                    description: Why it was denied — no grant, revoked, expired, purpose mismatch.
+        '403':
+          description: The caller may not ask about this subject.
+          $ref: '#/components/responses/Problem'
+
+  /packages/{packageId}:
+    get:
+      tags: [packages]
+      operationId: getDisclosurePackage
+      summary: Fetch a disclosure package
+      description: >
+        Returns only the fields the grant covers. Every access is logged with the recipient, address
+        and time. Revocation gives 403 and expiry gives 410, deliberately distinct: one says you may
+        no longer see this, the other says this copy has aged out.
+      parameters: [{ $ref: '#/components/parameters/PackageId' }]
+      responses:
+        '200':
+          description: The consented fields, and nothing else.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DisclosurePackage' }
+        '403':
+          description: The grant behind this package was revoked, or the caller is not its recipient.
+          $ref: '#/components/responses/Problem'
+        '410':
+          description: The package's time to live has passed.
+          $ref: '#/components/responses/Problem'
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        Access token from the Gateway's identity provider, introspected at the gateway on every
+        call. Carries the actor's UAID, roles and, when acting under a delegation, the entity
+        being acted for.
+
+  parameters:
+    RequestId: { name: requestId, in: path, required: true, schema: { type: string, format: uuid } }
+    GrantId: { name: grantId, in: path, required: true, schema: { type: string, format: uuid } }
+    PackageId: { name: packageId, in: path, required: true, schema: { type: string, format: uuid } }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, minLength: 16, maxLength: 128 }
+
+  responses:
+    Problem:
+      description: A typed problem document (RFC 9457).
+      content:
+        application/problem+json:
+          schema: { $ref: '../shared/problem.yaml#/components/schemas/Problem' }
+
+  schemas:
+    ConsentRequestInput:
+      type: object
+      required: [subjectUaid, recipientUaid, purpose, fields]
+      properties:
+        subjectUaid: { type: string }
+        recipientUaid: { type: string }
+        purpose:
+          type: string
+          description: A code from the field catalogue — shortlist-disclosure, administrative-review.
+        fields:
+          type: array
+          minItems: 1
+          items: { type: string }
+          description: Exact catalogue field names. No wildcards; every one must be allowed by the purpose.
+        expiresAt:
+          type: string
+          format: date-time
+          description: Defaults to the purpose's time to live.
+        context:
+          type: object
+          description: What this is for, so the subject sees why they are being asked.
+          properties:
+            opportunityId: { type: string }
+            shortlistEntryId: { type: string, format: uuid }
+
+    ConsentRequest:
+      type: object
+      required: [requestId, subjectUaid, recipientUaid, purpose, fields, state]
+      properties:
+        requestId: { type: string, format: uuid }
+        subjectUaid: { type: string }
+        recipientUaid: { type: string }
+        recipientName: { type: string, description: Shown to the subject; they are deciding about a named party. }
+        purpose: { type: string }
+        purposeLabel: { type: string }
+        fields:
+          type: array
+          items:
+            type: object
+            properties:
+              field: { type: string }
+              label: { type: string }
+              classification: { enum: [public, restricted, personal, sensitive] }
+              required:
+                type: boolean
+                description: Needed for the introduction to mean anything. The subject may still withhold it.
+        state: { enum: [pending, granted, declined, expired] }
+        requestedAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time }
+
+    Grant:
+      type: object
+      required: [grantId, requestId, fields, grantedAt, expiresAt]
+      properties:
+        grantId: { type: string, format: uuid }
+        requestId: { type: string, format: uuid }
+        subjectUaid: { type: string }
+        recipientUaid: { type: string }
+        purpose: { type: string }
+        fields: { type: array, items: { type: string } }
+        grantedAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time }
+        revokedAt: { type: string, format: date-time }
+        packageId: { type: string, format: uuid }
+
+    DisclosurePackage:
+      type: object
+      required: [packageId, grantId, fields, builtAt, expiresAt]
+      properties:
+        packageId: { type: string, format: uuid }
+        grantId: { type: string, format: uuid }
+        subjectUaid: { type: string }
+        builtAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time }
+        transferBasis:
+          type: string
+          description: >
+            Recorded when the recipient is outside Nigeria, because delivering the package is then a
+            cross-border transfer.
+        fields:
+          type: object
+          description: >
+            Only consented fields appear. A withheld field is absent, not null — the shape itself
+            says nothing about what was withheld.
+          additionalProperties: true

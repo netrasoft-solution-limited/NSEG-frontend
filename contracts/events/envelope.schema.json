@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nseg.gov.ng/contracts/events/envelope.schema.json",
+  "title": "Gateway event envelope",
+  "description": "The one envelope every service publishes (D-08). Frozen at G1: a change here is a change to every consumer. data carries identifiers, versions, states and amounts only — never personal, tax or registration attributes, which consumers fetch through the gateway under their own authorisation and consent.",
+  "type": "object",
+  "required": ["eventId", "eventType", "eventTimestamp", "producer", "actor", "data", "context"],
+  "additionalProperties": false,
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique per event. Consumers deduplicate on this, so a replay is safe."
+    },
+    "eventType": {
+      "type": "string",
+      "pattern": "^[a-z]+(\\.[a-z][a-z0-9-]*)+\\.v[0-9]+$",
+      "description": "domain.aggregate.action.vN — e.g. demand.opportunity.published.v1. A breaking change is a new .v2 published alongside .v1 until consumers migrate.",
+      "examples": ["demand.signal.qualified.v1", "consent.granted.v1"]
+    },
+    "eventTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC, when the state change committed — not when it was published."
+    },
+    "producer": {
+      "type": "string",
+      "pattern": "^natep\\.[a-z]+$",
+      "description": "The owning module, not the deployable it currently runs in.",
+      "examples": ["natep.demand", "natep.consent"]
+    },
+    "actor": {
+      "type": "object",
+      "required": ["uaid"],
+      "additionalProperties": false,
+      "description": "Who caused this. A scheduled job uses the service's own identity.",
+      "properties": {
+        "uaid": { "type": "string", "description": "Immutable internal actor key, or 'system'." },
+        "natepId": { "type": "string", "description": "Public identifier, for display." },
+        "actingFor": { "type": "string", "description": "Entity UAID when acting under a delegation." }
+      }
+    },
+    "data": {
+      "type": "object",
+      "description": "Identifiers, versions, states and amounts. The event lint rejects personal, tax and registration fields at any depth.",
+      "minProperties": 1
+    },
+    "context": {
+      "type": "object",
+      "required": ["correlationId"],
+      "additionalProperties": false,
+      "properties": {
+        "correlationId": { "type": "string", "description": "Carried unchanged across every hop of one user action." },
+        "causationId": { "type": "string", "description": "The eventId that caused this one." },
+        "traceparent": { "type": "string", "description": "W3C trace context, when present." }
+      }
+    },
+    "audit": {
+      "type": "object",
+      "description": "Present on events that record a state change the audit chain must carry (ADR-0003).",
+      "required": ["preStateHash", "postStateHash"],
+      "additionalProperties": false,
+      "properties": {
+        "preStateHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "postStateHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "action": { "type": "string", "examples": ["signal.qualified"] },
+        "targetType": { "type": "string" },
+        "targetId": { "type": "string" }
+      }
+    }
+  }
+}
