@@ -11,13 +11,9 @@ import {
   BriefcaseIcon,
   CalendarIcon,
   ChevronDownIcon,
-  CrownIcon,
   DownloadIcon,
   EyeIcon,
-  GlobeIcon,
   HandshakeIcon,
-  HistoryIcon,
-  LayersIcon,
   LayoutGridIcon,
   LogOutIcon,
   MenuIcon,
@@ -332,12 +328,9 @@ export function ConsoleLayout({ breadcrumb, onExport, tabs, children }: ConsoleL
   { icon: BriefcaseIcon, label: 'Opportunities', href: '/console/opportunities', count: pendingSignals, group: 'Case management' },
   { icon: HandshakeIcon, label: 'Engagements', href: '/console/engagements', count: provisionalOutcomes, group: 'Case management' },
   { icon: UsersIcon, label: 'Registry', href: '/console/registry', group: 'Registries' },
-  { icon: CrownIcon, label: 'Trust & badging', href: '/console/trust-badging', group: 'Registries' },
-  { icon: ShieldCheckIcon, label: 'Compliance', href: '/console/compliance', group: 'Policy and reference' },
-  { icon: LayersIcon, label: 'Taxonomies', href: '/console/taxonomies', group: 'Policy and reference' },
-  { icon: GlobeIcon, label: 'Market intelligence', href: '/console/market-intelligence', group: 'Policy and reference' },
+
+  { icon: ShieldCheckIcon, label: 'Requirements', href: '/console/requirements', group: 'Policy and reference' },
   { icon: ActivityIcon, label: 'Observatory', href: '/console/observatory', group: 'Policy and reference' },
-  { icon: HistoryIcon, label: 'Audit log', href: '/console/audit', group: 'Records' },
   { icon: SettingsIcon, label: 'Settings', href: '/console/settings', group: 'Account' }];
 
 

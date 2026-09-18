@@ -19,6 +19,7 @@ import {
   WalletIcon } from
 'lucide-react';
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
+import { observatoryTabs } from '../components/console/consoleTabs';
 import { useAuditLog, type AuditCategory } from '../lib/auditLog';
 import type { IconComponent } from '../types/icons';
 
@@ -49,7 +50,7 @@ export function ConsoleAudit() {
   const filtered = filter === 'all' ? entries : entries.filter((entry) => entry.category === filter);
 
   return (
-    <ConsoleLayout breadcrumb="Audit log">
+    <ConsoleLayout breadcrumb="Observatory · Audit log" tabs={observatoryTabs}>
       <div>
         <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-gray-900 sm:text-[34px]">Audit log</h1>
         <p className="mt-1.5 text-[14.5px] text-gray-600">

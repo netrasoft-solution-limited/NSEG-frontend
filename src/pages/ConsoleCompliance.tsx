@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AlertTriangleIcon, CalendarClockIcon, CheckCircleIcon, FilePenLineIcon, PlusIcon, StampIcon } from 'lucide-react';
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
+import { requirementTabs } from '../components/console/consoleTabs';
 import { StatCard } from '../components/console/StatCard';
 import { ComplianceRegister, type ComplianceFilterState } from '../components/console/ComplianceRegister';
 import { AuthoringPipeline } from '../components/console/AuthoringPipeline';
@@ -77,10 +78,10 @@ export function ConsoleCompliance() {
   };
 
   return (
-    <ConsoleLayout breadcrumb="Compliance" onExport={handleExport}>
+    <ConsoleLayout breadcrumb="Requirements" onExport={handleExport} tabs={requirementTabs}>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-gray-900 sm:text-[34px]">Compliance</h1>
+          <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-gray-900 sm:text-[34px]">Requirements</h1>
           <p className="mt-1.5 text-[14.5px] text-gray-600">
             The regulatory requirements register. Drafters write, competent authorities sign off, and only signed-off
             content reaches the exporter wizard.

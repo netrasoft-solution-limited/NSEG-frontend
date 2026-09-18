@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCheckIcon, ClockIcon, InboxIcon, ScaleIcon } from 'lucide-react';
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
+import { opportunityTabs } from '../components/console/consoleTabs';
 import { StatCard } from '../components/console/StatCard';
 import { SignalQueue, type DecisionRecord, type SignalDecision } from '../components/console/SignalQueue';
 import { ShortlistReview, type ShortlistDecision, type ShortlistRecord } from '../components/console/ShortlistReview';
@@ -78,7 +79,7 @@ export function ConsoleOpportunities() {
   };
 
   return (
-    <ConsoleLayout breadcrumb="Opportunities" onExport={handleExport}>
+    <ConsoleLayout breadcrumb="Opportunities" onExport={handleExport} tabs={opportunityTabs}>
       <div>
         <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-gray-900 sm:text-[34px]">Opportunities</h1>
         <p className="mt-1.5 text-[14.5px] text-gray-600">

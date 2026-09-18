@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BookOpenIcon, CheckCircleIcon, GlobeIcon, HistoryIcon } from 'lucide-react';
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
+import { opportunityTabs } from '../components/console/consoleTabs';
 import { StatCard } from '../components/console/StatCard';
 import { MarketIntelligenceLibrary } from '../components/console/MarketIntelligenceLibrary';
 import { marketIntelligenceBriefs, type IntelligenceStatus } from '../data/marketIntelligence';
@@ -49,7 +50,7 @@ export function ConsoleMarketIntelligence() {
   };
 
   return (
-    <ConsoleLayout breadcrumb="Market intelligence" onExport={handleExport}>
+    <ConsoleLayout breadcrumb="Opportunities · Market intelligence" onExport={handleExport} tabs={opportunityTabs}>
       <div>
         <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-gray-900 sm:text-[34px]">
           Market intelligence

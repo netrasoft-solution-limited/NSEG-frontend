@@ -104,9 +104,17 @@ function Console() {
       <Route path="registry/evidence" element={<ConsoleVault />} />
       <Route path="registry/evidence/certifications" element={<ConsoleCertifications />} />
       <Route path="registry/delegations" element={<ConsoleDelegations />} />
-      <Route path="trust-badging" element={<ConsoleTrustBadging />} />
+      <Route path="requirements" element={<ConsoleCompliance />} />
+      <Route path="requirements/reference" element={<ConsoleTaxonomies />} />
+      <Route path="requirements/tiers" element={<ConsoleTrustBadging />} />
+      <Route path="opportunities/intelligence" element={<ConsoleMarketIntelligence />} />
+      <Route path="observatory/audit" element={<ConsoleAudit />} />
       <Route path="opportunities" element={<ConsoleOpportunities />} />
-      <Route path="market-intelligence" element={<ConsoleMarketIntelligence />} />
+      <Route path="market-intelligence" element={<Navigate to="/console/opportunities/intelligence" replace />} />
+      <Route path="compliance" element={<Navigate to="/console/requirements" replace />} />
+      <Route path="taxonomies" element={<Navigate to="/console/requirements/reference" replace />} />
+      <Route path="trust-badging" element={<Navigate to="/console/requirements/tiers" replace />} />
+      <Route path="audit" element={<Navigate to="/console/observatory/audit" replace />} />
       <Route path="engagements" element={<ConsoleEngagements />} />
       <Route path="engagements/consent" element={<ConsoleConsent />} />
       <Route path="engagements/outcomes" element={<ConsoleOutcomes />} />
@@ -118,14 +126,11 @@ function Console() {
       <Route path="vault" element={<Navigate to="/console/registry/evidence" replace />} />
       <Route path="certifications" element={<Navigate to="/console/registry/evidence/certifications" replace />} />
       <Route path="delegations" element={<Navigate to="/console/registry/delegations" replace />} />
-      <Route path="compliance" element={<ConsoleCompliance />} />
       <Route path="observatory" element={<ConsoleObservatory />} />
       {/* Earlier addresses, kept so saved links still land in the right place. */}
       <Route path="incentives" element={<Navigate to="/console/engagements/incentives" replace />} />
       <Route path="outcomes" element={<Navigate to="/console/engagements/outcomes" replace />} />
       <Route path="consent" element={<Navigate to="/console/engagements/consent" replace />} />
-      <Route path="taxonomies" element={<ConsoleTaxonomies />} />
-      <Route path="audit" element={<ConsoleAudit />} />
       <Route path="settings" element={<ConsoleSettings />} />
     </Routes>);
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArchiveIcon, BookMarkedIcon, LayersIcon, TagIcon } from 'lucide-react';
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
+import { requirementTabs } from '../components/console/consoleTabs';
 import { StatCard } from '../components/console/StatCard';
 import { TaxonomyRegistry } from '../components/console/TaxonomyRegistry';
 import { sectors } from '../data/sectors';
@@ -33,7 +34,7 @@ export function ConsoleTaxonomies() {
   };
 
   return (
-    <ConsoleLayout breadcrumb="Taxonomies" onExport={handleExport}>
+    <ConsoleLayout breadcrumb="Requirements · Reference data" onExport={handleExport} tabs={requirementTabs}>
       <div>
         <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-gray-900 sm:text-[34px]">Taxonomies</h1>
         <p className="mt-1.5 text-[14.5px] text-gray-600">

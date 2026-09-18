@@ -1,6 +1,7 @@
 import React from 'react';
 import { AwardIcon, PackageCheckIcon, ShieldCheckIcon, UserRoundIcon } from 'lucide-react';
 import { ConsoleLayout } from '../components/console/ConsoleLayout';
+import { requirementTabs } from '../components/console/consoleTabs';
 import { StatCard } from '../components/console/StatCard';
 import { TierReferenceCard } from '../components/console/TierReferenceCard';
 import { actors } from '../data/actors';
@@ -59,7 +60,7 @@ export function ConsoleTrustBadging() {
   };
 
   return (
-    <ConsoleLayout breadcrumb="Trust & badging" onExport={handleExport}>
+    <ConsoleLayout breadcrumb="Requirements · Tiers & badging" onExport={handleExport} tabs={requirementTabs}>
       <div>
         <h1 className="font-display text-[28px] font-semibold tracking-[-0.02em] text-gray-900 sm:text-[34px]">Trust & badging</h1>
         <p className="mt-1.5 text-[14.5px] text-gray-600">
