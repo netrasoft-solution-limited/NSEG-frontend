@@ -3,19 +3,48 @@ import { CheckIcon, RefreshCwIcon } from 'lucide-react';
 import type { Opportunity } from '../../data/opportunities';
 import type { Shortlist } from '../../data/shortlists';
 import { sectorLabel, modeLabel } from '../../lib/marketplaceLookups';
+import { AuditOnlyBadge } from './AuditOnlyBadge';
+import { ConsoleDialog, DialogNote, dialogFieldClass, dialogLabelClass } from './ConsoleDialog';
 
-export type ShortlistDecision = 'pending' | 'approved' | 'adjust';
+export type { ShortlistDecision } from '../../lib/caseDecisions';
+import type { DecisionRecord, ShortlistDecision } from '../../lib/caseDecisions';
+
+/** The rationale recorded with a shortlist decision. */
+export type ShortlistRecord = DecisionRecord;
+
+const MIN_REASON = 12;
 
 interface ShortlistCardProps {
   opportunity: Opportunity;
   shortlist: Shortlist;
   decision: ShortlistDecision;
-  onDecide: (opportunityId: string, decision: ShortlistDecision) => void;
+  record?: ShortlistRecord;
+  onDecide: (opportunityId: string, decision: ShortlistDecision, record: ShortlistRecord) => void;
+  canMutate: boolean;
 }
 
-function ShortlistCard({ opportunity, shortlist, decision, onDecide }: ShortlistCardProps) {
+function ShortlistCard({ opportunity, shortlist, decision, record, onDecide, canMutate }: ShortlistCardProps) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [pending, setPending] = useState<Exclude<ShortlistDecision, 'pending'> | null>(null);
+  const [reason, setReason] = useState('');
+  const [error, setError] = useState('');
   const active = shortlist.candidates[activeIndex];
+
+  const open = (next: Exclude<ShortlistDecision, 'pending'>) => {
+    setPending(next);
+    setReason('');
+    setError('');
+  };
+
+  const confirm = () => {
+    const trimmed = reason.trim();
+    if (trimmed.length < MIN_REASON) {
+      setError('A written rationale is required — an exporter left off can ask to see it.');
+      return;
+    }
+    if (pending) onDecide(opportunity.id, pending, { reason: trimmed });
+    setPending(null);
+  };
 
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5">
@@ -28,11 +57,12 @@ function ShortlistCard({ opportunity, shortlist, decision, onDecide }: Shortlist
           <p className="text-[12.5px] text-gray-400">{opportunity.buyerRegion}</p>
         </div>
 
-        {decision === 'pending' &&
+        {decision === 'pending' && !canMutate && <AuditOnlyBadge />}
+        {decision === 'pending' && canMutate &&
         <div className="flex shrink-0 items-center gap-2">
             <button
             type="button"
-            onClick={() => onDecide(opportunity.id, 'approved')}
+            onClick={() => open('approved')}
             className="inline-flex items-center gap-1.5 rounded-full bg-gray-900 px-3 py-1.5 text-[12px] font-semibold text-white transition-colors duration-150 ease-out hover:bg-black">
 
               <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
@@ -40,7 +70,7 @@ function ShortlistCard({ opportunity, shortlist, decision, onDecide }: Shortlist
             </button>
             <button
             type="button"
-            onClick={() => onDecide(opportunity.id, 'adjust')}
+            onClick={() => open('adjust')}
             className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1.5 text-[12px] font-medium text-gray-500 transition-colors duration-150 ease-out hover:border-gray-300 hover:text-gray-700">
 
               <RefreshCwIcon className="h-3.5 w-3.5" aria-hidden="true" />
@@ -110,6 +140,62 @@ function ShortlistCard({ opportunity, shortlist, decision, onDecide }: Shortlist
           </div>
         </div>
       </div>
+
+      <p className="mt-4 text-[12px] italic leading-relaxed text-gray-500">
+        Limits of this comparison: it reflects declared and evidenced information held on {shortlist.candidates.length}{' '}
+        {shortlist.candidates.length === 1 ? 'exporter' : 'exporters'} as at today. It does not assess price, cultural fit
+        or contractual terms.
+      </p>
+
+      {record &&
+      <p className="mt-2 border-t border-gray-200 pt-3 text-[12.5px] leading-relaxed text-gray-600">
+          <span className="font-medium text-gray-800">
+            {decision === 'approved' ? 'Approved' : 'Adjustment requested'}:
+          </span>{' '}
+          “{record.reason}”
+        </p>
+      }
+
+      <ConsoleDialog
+        open={Boolean(pending)}
+        title={pending === 'adjust' ? 'Request an adjustment' : 'Approve the shortlist'}
+        subtitle={opportunity.title}
+        confirmLabel={pending === 'adjust' ? 'Request adjustment' : 'Approve and request consent'}
+        onConfirm={confirm}
+        onClose={() => setPending(null)}>
+
+        <div className="space-y-4">
+          <DialogNote title="A named officer decides">
+            {pending === 'adjust' ?
+            'Say what the match missed, so the next pass can be run against it.' :
+            'Approving requests consent from each exporter. Nothing is disclosed to the buyer until they agree.'}
+          </DialogNote>
+
+          <div>
+            <label htmlFor={`shortlist-reason-${opportunity.id}`} className={dialogLabelClass}>
+              {pending === 'adjust' ? 'What needs to change' : 'Why these exporters, and why not the others'}
+            </label>
+            <textarea
+              id={`shortlist-reason-${opportunity.id}`}
+              rows={4}
+              value={reason}
+              onChange={(event) => {
+                setReason(event.target.value);
+                setError('');
+              }}
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? `shortlist-reason-${opportunity.id}-error` : undefined}
+              placeholder="Reference the factors above — evidence held, capacity, track record, and what excluded the rest."
+              className={dialogFieldClass} />
+
+            {error &&
+            <p id={`shortlist-reason-${opportunity.id}-error`} className="mt-1 text-[12.5px] text-rose-700">
+                {error}
+              </p>
+            }
+          </div>
+        </div>
+      </ConsoleDialog>
     </div>);
 
 }
@@ -117,10 +203,12 @@ function ShortlistCard({ opportunity, shortlist, decision, onDecide }: Shortlist
 interface ShortlistReviewProps {
   items: { opportunity: Opportunity; shortlist: Shortlist }[];
   decisions: Record<string, ShortlistDecision>;
-  onDecide: (opportunityId: string, decision: ShortlistDecision) => void;
+  records?: Record<string, ShortlistRecord>;
+  onDecide: (opportunityId: string, decision: ShortlistDecision, record: ShortlistRecord) => void;
+  canMutate: boolean;
 }
 
-export function ShortlistReview({ items, decisions, onDecide }: ShortlistReviewProps) {
+export function ShortlistReview({ items, decisions, records = {}, onDecide, canMutate }: ShortlistReviewProps) {
   return (
     <div>
       <div className="mb-3">
@@ -134,7 +222,9 @@ export function ShortlistReview({ items, decisions, onDecide }: ShortlistReviewP
           opportunity={opportunity}
           shortlist={shortlist}
           decision={decisions[opportunity.id] ?? 'pending'}
-          onDecide={onDecide} />
+          record={records[opportunity.id]}
+          onDecide={onDecide}
+          canMutate={canMutate} />
 
         )}
       </div>

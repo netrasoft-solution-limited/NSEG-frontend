@@ -3,21 +3,16 @@ import { useLocation } from 'react-router-dom';
 import { TopNav } from '../components/site/TopNav';
 import { SiteFooter } from '../components/site/SiteFooter';
 import { Hero, type HeroVariant } from '../components/landing/Hero';
-import { AgencyMarquee } from '../components/landing/AgencyMarquee';
-import { MandateStatement } from '../components/landing/MandateStatement';
-import { CapabilityGrid } from '../components/landing/CapabilityGrid';
-import { MarketplacePreview } from '../components/landing/MarketplacePreview';
-import { TrustLadder } from '../components/landing/TrustLadder';
-import { ObservatorySection } from '../components/landing/ObservatorySection';
-import { Guardrails } from '../components/landing/Guardrails';
-import { ClosingCta } from '../components/landing/ClosingCta';
+import { AudienceDoors } from '../components/landing/AudienceDoors';
+import { TrustRules } from '../components/landing/TrustRules';
+import { ProcessSection } from '../components/landing/ProcessSection';
 
 interface LandingProps {
   heroVariant: HeroVariant;
   liveDemos: boolean;
 }
 
-export function Landing({ heroVariant, liveDemos }: LandingProps) {
+export function Landing({ heroVariant }: LandingProps) {
   const { hash } = useLocation();
 
   useEffect(() => {
@@ -36,14 +31,9 @@ export function Landing({ heroVariant, liveDemos }: LandingProps) {
       <TopNav />
       <main>
         <Hero variant={heroVariant} />
-        <AgencyMarquee />
-        <MandateStatement />
-        <CapabilityGrid liveDemos={liveDemos} />
-        <MarketplacePreview />
-        <TrustLadder />
-        <ObservatorySection />
-        <Guardrails />
-        <ClosingCta />
+        <AudienceDoors />
+        <TrustRules />
+        <ProcessSection />
       </main>
       <SiteFooter />
     </div>);

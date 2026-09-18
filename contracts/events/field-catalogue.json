@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nseg.gov.ng/contracts/events/field-catalogue.json",
+  "title": "Field catalogue",
+  "description": "Every field consent can be asked about, with its classification. Consent operates over field names, so those names are a versioned catalogue rather than strings typed at each call site. The event lint reads this file: anything classified personal or sensitive may not appear on the bus, and a disclosure package may only carry fields its purpose allows.",
+  "version": 1,
+  "classifications": {
+    "public": "Published deliberately; no consent needed.",
+    "restricted": "Not public, but not personal data. Officer access is enough.",
+    "personal": "Personal data under NDPA 2023. Needs a lawful basis and, for disclosure, a consent grant.",
+    "sensitive": "Personal data with elevated risk — identifiers issued by the state, financial instruments."
+  },
+  "fields": [
+    { "field": "organisation.name", "classification": "restricted", "owner": "registry", "label": "Registered name" },
+    { "field": "organisation.natepId", "classification": "public", "owner": "registry", "label": "NATEP ID" },
+    { "field": "organisation.track", "classification": "restricted", "owner": "registry", "label": "Firm or individual" },
+    { "field": "organisation.registeredOn", "classification": "restricted", "owner": "registry", "label": "Registration date" },
+    { "field": "contact.name", "classification": "personal", "owner": "registry", "label": "Contact name" },
+    { "field": "contact.email", "classification": "personal", "owner": "registry", "label": "Contact email" },
+    { "field": "contact.phone", "classification": "personal", "owner": "registry", "label": "Contact telephone" },
+    { "field": "identifier.nin", "classification": "sensitive", "owner": "registry", "label": "National identification number" },
+    { "field": "identifier.tin", "classification": "sensitive", "owner": "registry", "label": "Tax identification number" },
+    { "field": "identifier.rc", "classification": "sensitive", "owner": "registry", "label": "CAC registration number" },
+    { "field": "identifier.lei", "classification": "restricted", "owner": "registry", "label": "Legal entity identifier" },
+    { "field": "identifier.bankAccount", "classification": "sensitive", "owner": "settlement", "label": "Settlement account" },
+    { "field": "capability.profile", "classification": "restricted", "owner": "supply", "label": "Capability profile" },
+    { "field": "capability.capacity", "classification": "restricted", "owner": "supply", "label": "Confirmed capacity" },
+    { "field": "capability.markets", "classification": "restricted", "owner": "supply", "label": "Markets served" },
+    { "field": "credentials.verified", "classification": "restricted", "owner": "supply", "label": "Verified credentials and their class" },
+    { "field": "credentials.evidenceReferences", "classification": "restricted", "owner": "vault", "label": "Evidence references" },
+    { "field": "readiness.tier", "classification": "restricted", "owner": "supply", "label": "Trust tier" },
+    { "field": "readiness.diagnosticScore", "classification": "restricted", "owner": "supply", "label": "Readiness diagnostic score" },
+    { "field": "inclusion.profile", "classification": "personal", "owner": "supply", "label": "Inclusion profile" },
+    { "field": "delivery.history", "classification": "restricted", "owner": "demand", "label": "Verified delivery history" }
+  ],
+  "purposes": [
+    {
+      "code": "shortlist-disclosure",
+      "label": "Introduction to a named buyer for one opportunity",
+      "lawfulBasis": "consent",
+      "defaultTtl": "P7D",
+      "allowedFields": [
+        "organisation.name", "organisation.natepId", "organisation.track",
+        "capability.profile", "capability.capacity", "capability.markets",
+        "credentials.verified", "credentials.evidenceReferences",
+        "readiness.tier", "delivery.history",
+        "contact.name", "contact.email", "inclusion.profile"
+      ]
+    },
+    {
+      "code": "administrative-review",
+      "label": "One-time administrative view by a named officer",
+      "lawfulBasis": "public-task",
+      "defaultTtl": "PT15M",
+      "allowedFields": [
+        "organisation.name", "organisation.natepId", "identifier.nin", "identifier.tin",
+        "identifier.rc", "readiness.tier", "readiness.diagnosticScore"
+      ]
+    },
+    {
+      "code": "public-register",
+      "label": "Published register entry",
+      "lawfulBasis": "public-task",
+      "defaultTtl": null,
+      "allowedFields": ["organisation.natepId", "readiness.tier"]
+    }
+  ]
+}

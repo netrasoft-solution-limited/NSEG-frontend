@@ -1,11 +1,13 @@
 import React from 'react';
 import { CheckIcon } from 'lucide-react';
 import type { InstitutionReconciliation, ReconciliationStatus } from '../../data/observatory';
+import { AuditOnlyBadge } from './AuditOnlyBadge';
 
 interface ReconciliationPanelProps {
   institutions: InstitutionReconciliation[];
   overrides: Record<string, ReconciliationStatus>;
   onResolve: (institution: string) => void;
+  canMutate: boolean;
 }
 
 const statusStyles: Record<ReconciliationStatus, string> = {
@@ -20,7 +22,7 @@ const statusLabels: Record<ReconciliationStatus, string> = {
   flagged: 'Flagged'
 };
 
-export function ReconciliationPanel({ institutions, overrides, onResolve }: ReconciliationPanelProps) {
+export function ReconciliationPanel({ institutions, overrides, onResolve, canMutate }: ReconciliationPanelProps) {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
       <h2 className="text-[16px] font-semibold text-gray-900">Institution reconciliation</h2>
@@ -52,7 +54,8 @@ export function ReconciliationPanel({ institutions, overrides, onResolve }: Reco
                     {item.flaggedClaims} flagged {item.flaggedClaims === 1 ? 'claim' : 'claims'}
                   </span>
                 }
-                {status !== 'reconciled' &&
+                {status !== 'reconciled' && !canMutate && <AuditOnlyBadge />}
+                {status !== 'reconciled' && canMutate &&
                 <button
                   type="button"
                   onClick={() => onResolve(item.institution)}

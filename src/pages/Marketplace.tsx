@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { LayersIcon } from 'lucide-react';
 import { TopNav } from '../components/site/TopNav';
 import { SiteFooter } from '../components/site/SiteFooter';
@@ -44,6 +45,12 @@ export function Marketplace() {
             <p className="mt-4 text-[15px] leading-relaxed text-chalk-muted">
               Every listing here has already passed officer review. Mandatory requirements are always visible so you
               can self-qualify — the rest unlocks as your NATEP profile earns trust.
+            </p>
+            <p className="mt-3 text-[14px] text-chalk-muted">
+              Sourcing services from Nigeria?{' '}
+              <Link to="/buyer/requests/new" className="font-semibold text-gate-soft underline-offset-4 hover:underline">
+                Post a request
+              </Link>
             </p>
           </div>
           <div className="shrink-0">

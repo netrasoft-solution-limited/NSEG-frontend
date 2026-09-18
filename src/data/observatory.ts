@@ -7,7 +7,7 @@ export const headlineMetric = {
 
 export const supportingMetrics = [
 { label: 'Active verified exporters', value: '1,420' },
-{ label: 'Qualified opportunities live', value: '318' },
+{ label: 'Qualified opportunities live', value: '20.1k' },
 { label: 'Median officer qualification time', value: '31 hrs' }];
 
 

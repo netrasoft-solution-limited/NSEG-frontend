@@ -1,24 +1,21 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ChevronDownIcon, MoreVerticalIcon, SearchIcon } from 'lucide-react';
 import type { Actor } from '../../data/actors';
-import { trustTiers } from '../../data/trustTiers';
+import { trackLabels, trustTiers } from '../../data/trustTiers';
+import { computeReadinessScore } from '../../lib/readinessScore';
 import { formatLastActive, type ActorFilterState } from '../../lib/actorFilters';
+import { initialsOf } from '../../lib/initials';
 
 interface ActorTableProps {
   actors: Actor[];
   total: number;
   filters: ActorFilterState;
   onChange: (filters: ActorFilterState) => void;
-}
-
-function initials(name: string): string {
-  return name.
-  split(' ').
-  filter(Boolean).
-  slice(0, 2).
-  map((part) => part[0]).
-  join('').
-  toUpperCase();
+  onSuspendToggle: (actorId: string, nextSuspended: boolean) => void;
+  /** Where an exporter's own record lives, when there is one to open. */
+  hrefFor?: (actorId: string) => string;
+  canMutate: boolean;
 }
 
 function StatusPill({ actor }: {actor: Actor;}) {
@@ -38,9 +35,9 @@ function StatusPill({ actor }: {actor: Actor;}) {
   }
   const tier = trustTiers.find((item) => item.id === actor.tier);
   const styles =
-  actor.tier === 'top-rated' ?
+  actor.tier === 'delivery-verified' ?
   'bg-amber-50 text-amber-700' :
-  actor.tier === 'verified' ?
+  actor.tier === 'identity-verified' ?
   'bg-emerald-50 text-emerald-700' :
   'bg-gray-100 text-gray-600';
   return (
@@ -50,7 +47,7 @@ function StatusPill({ actor }: {actor: Actor;}) {
 
 }
 
-export function ActorTable({ actors, total, filters, onChange }: ActorTableProps) {
+export function ActorTable({ actors, total, filters, onChange, onSuspendToggle, hrefFor, canMutate }: ActorTableProps) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   return (
@@ -126,6 +123,7 @@ export function ActorTable({ actors, total, filters, onChange }: ActorTableProps
               <th className="py-2.5 pr-3 font-medium">Registered</th>
               <th className="py-2.5 pr-3 font-medium">Last active</th>
               <th className="py-2.5 pr-3 font-medium">Matches</th>
+              <th className="py-2.5 pr-3 font-medium">Diagnostic</th>
               <th className="py-2.5 pr-3 font-medium">Status</th>
               <th className="py-2.5 pl-3 text-right font-medium">Actions</th>
             </tr>
@@ -136,11 +134,25 @@ export function ActorTable({ actors, total, filters, onChange }: ActorTableProps
                 <td className="py-3 pr-3">
                   <div className="flex items-center gap-2.5">
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-[11px] font-semibold text-gray-600">
-                      {initials(actor.name)}
+                      {initialsOf(actor.name)}
                     </span>
                     <div className="min-w-0">
+                      {hrefFor ?
+                      <Link
+                        to={hrefFor(actor.id)}
+                        className="block truncate font-medium text-gray-900 underline-offset-4 hover:underline">
+
+                          {actor.name}
+                        </Link> :
+
                       <p className="truncate font-medium text-gray-900">{actor.name}</p>
-                      <p className="truncate font-mono text-[10.5px] text-gray-400">{actor.natepId}</p>
+                      }
+                      <p className="truncate font-mono text-[10.5px] text-gray-400">
+                        {actor.natepId}
+                        {actor.track === 'individual' &&
+                        <span className="ml-1.5 font-sans text-gray-500">· {trackLabels.individual}</span>
+                        }
+                      </p>
                     </div>
                   </div>
                 </td>
@@ -149,7 +161,22 @@ export function ActorTable({ actors, total, filters, onChange }: ActorTableProps
                 <td className="py-3 pr-3 text-gray-500">{formatLastActive(actor.lastActiveDaysAgo)}</td>
                 <td className="py-3 pr-3 text-gray-500">{actor.matchCount}</td>
                 <td className="py-3 pr-3">
-                  <StatusPill actor={actor} />
+                  <div className="flex items-center gap-2">
+                    <span className="w-8 shrink-0 font-mono text-[11px] text-gray-500">{computeReadinessScore(actor.diagnostic)}</span>
+                    <span className="h-1.5 w-16 overflow-hidden rounded-full bg-gray-100">
+                      <span className="block h-full rounded-full bg-gray-900" style={{ width: `${computeReadinessScore(actor.diagnostic)}%` }} />
+                    </span>
+                  </div>
+                </td>
+                <td className="py-3 pr-3">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <StatusPill actor={actor} />
+                    {actor.credentialExpiresInDays !== undefined && actor.credentialExpiresInDays <= 30 &&
+                    <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[10.5px] font-medium text-amber-700">
+                        Credential expires in {actor.credentialExpiresInDays}d
+                      </span>
+                    }
+                  </div>
                 </td>
                 <td className="py-3 pl-3 text-right">
                   <div className="relative inline-block">
@@ -163,8 +190,24 @@ export function ActorTable({ actors, total, filters, onChange }: ActorTableProps
                       <MoreVerticalIcon className="h-4 w-4" aria-hidden="true" />
                     </button>
                     {openMenuId === actor.id &&
-                  <div className="absolute right-0 top-full z-10 mt-1 w-44 rounded-xl border border-gray-100 bg-white p-1.5 text-left shadow-lg">
-                        {['View profile', 'Message exporter', 'Suspend account'].map((label) =>
+                  <div className="absolute right-0 top-full z-10 mt-1 w-48 rounded-xl border border-gray-100 bg-white p-1.5 text-left shadow-lg">
+                        {canMutate ?
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onSuspendToggle(actor.id, !actor.suspended);
+                        setOpenMenuId(null);
+                      }}
+                      className="block w-full rounded-lg px-2.5 py-1.5 text-left text-[12.5px] text-gray-700 hover:bg-gray-50">
+
+                            {actor.suspended ? 'Reinstate account' : 'Suspend account'}
+                          </button> :
+
+                    <span className="block cursor-not-allowed rounded-lg px-2.5 py-1.5 text-[12.5px] text-gray-300">
+                            {actor.suspended ? 'Reinstate account' : 'Suspend account'} (audit view only)
+                          </span>
+                    }
+                        {['View profile', 'Message exporter'].map((label) =>
                     <span
                       key={label}
                       className="block cursor-not-allowed rounded-lg px-2.5 py-1.5 text-[12.5px] text-gray-300">
@@ -173,7 +216,7 @@ export function ActorTable({ actors, total, filters, onChange }: ActorTableProps
                           </span>
                     )}
                         <p className="border-t border-gray-50 px-2.5 pt-1.5 text-[10.5px] text-gray-300">
-                          Actions require sign-in
+                          Profile view and messaging require sign-in
                         </p>
                       </div>
                   }

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nseg.gov.ng/contracts/events/consent.granted.v1.json",
+  "title": "consent.granted.v1",
+  "description": "A subject released named fields to a named recipient for one purpose, until an expiry. The field names travel (they are catalogue codes, not values); the values never do.",
+  "allOf": [{ "$ref": "./envelope.schema.json" }],
+  "properties": {
+    "data": {
+      "type": "object",
+      "required": ["grantId", "requestId", "subjectUaid", "recipientUaid", "purpose", "fields", "expiresAt"],
+      "additionalProperties": false,
+      "properties": {
+        "grantId": { "type": "string", "format": "uuid" },
+        "requestId": { "type": "string", "format": "uuid" },
+        "subjectUaid": { "type": "string" },
+        "recipientUaid": { "type": "string" },
+        "purpose": { "type": "string" },
+        "fields": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "expiresAt": { "type": "string", "format": "date-time" },
+        "context": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "opportunityId": { "type": "string" },
+            "shortlistEntryId": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

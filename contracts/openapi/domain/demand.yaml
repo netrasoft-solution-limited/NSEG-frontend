@@ -1,0 +1,438 @@
+openapi: 3.1.0
+info:
+  license:
+    name: Federal Ministry of Industry, Trade and Investment
+    identifier: LicenseRef-FMITI-Internal
+  title: Demand
+  version: 1.0.0
+  description: >
+    Buyer demand from arrival to an approved shortlist. Two transitions here cannot be completed by
+    software: a named officer qualifies every signal with a recorded reason, and a named officer
+    approves every shortlist with a written rationale. Approving a shortlist discloses nothing —
+    it asks each exporter for consent, and only their grant releases anything.
+
+servers:
+  - url: /api/v1/demand
+
+tags:
+  - name: signals
+    description: Inbound demand, before qualification. Never visible to exporters.
+  - name: opportunities
+    description: One canonical record per qualified requirement, carried through to a verified outcome.
+  - name: shortlists
+    description: Matching results and the officer decision over them.
+
+paths:
+  /signals:
+    post:
+      tags: [signals]
+      operationId: submitSignal
+      summary: Submit demand for qualification
+      description: >
+        Lands as pending qualification with its route recorded. The buyer is taken from the token,
+        never the body. At least one mandatory criterion is required, so exporters can self-qualify.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SignalSubmission' }
+      responses:
+        '201':
+          description: Accepted into the qualification queue.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Signal' }
+        '422':
+          $ref: '#/components/responses/Problem'
+    get:
+      tags: [signals]
+      operationId: listSignals
+      summary: The qualification queue
+      parameters:
+        - name: status
+          in: query
+          schema: { enum: [pending_qualification, qualified, rejected, withdrawn] }
+        - name: cursor
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Signals, newest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Signal' }
+                  nextCursor: { type: string }
+
+  /signals/{signalId}/qualification:
+    post:
+      tags: [signals]
+      operationId: qualifySignal
+      summary: Qualify or reject a signal
+      description: >
+        The decision that creates a case. Qualifying copies the requirements in force into the new
+        opportunity at their current versions; a later revision flags the case rather than changing
+        it. A reason under twelve characters is refused, and the officer deciding may not be the
+        actor who submitted the signal.
+      parameters:
+        - $ref: '#/components/parameters/SignalId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/QualificationDecision' }
+      responses:
+        '201':
+          description: Decision recorded. An opportunity exists when the decision was to qualify.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/QualificationResult' }
+        '403':
+          description: The deciding officer initiated this signal, or lacks the role.
+          $ref: '#/components/responses/Problem'
+        '409':
+          description: Already decided, or a submitted requirement version is no longer published.
+          $ref: '#/components/responses/Problem'
+        '422':
+          description: The reason is too short to be an audit record.
+          $ref: '#/components/responses/Problem'
+
+  /opportunities/{opportunityId}:
+    get:
+      tags: [opportunities]
+      operationId: getOpportunity
+      summary: Read one opportunity
+      parameters:
+        - $ref: '#/components/parameters/OpportunityId'
+      responses:
+        '200':
+          description: The canonical record, with the rules pinned to it.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Opportunity' }
+        '404':
+          $ref: '#/components/responses/Problem'
+
+  /opportunities/{opportunityId}/match-runs:
+    post:
+      tags: [shortlists]
+      operationId: runMatching
+      summary: Compare evidenced capability against this opportunity
+      description: >
+        Produces ranked candidates with a per-factor explanation and the reason any candidate was
+        excluded. Advisory only: it proposes, an officer decides, and nothing here contacts anyone.
+      parameters:
+        - $ref: '#/components/parameters/OpportunityId'
+      responses:
+        '201':
+          description: A run with its candidates and the shortlist it proposes.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MatchRun' }
+        '409':
+          description: The opportunity is not in a state that can be matched.
+          $ref: '#/components/responses/Problem'
+
+  /shortlists/{shortlistId}/decision:
+    post:
+      tags: [shortlists]
+      operationId: decideShortlist
+      summary: Approve a shortlist, or send it back to matching
+      description: >
+        Requires a written rationale for who was included and who was not, because an exporter left
+        off may ask for it. Approving raises a consent request per included exporter and discloses
+        nothing. A candidate whose capacity declaration has gone stale cannot be included.
+      parameters:
+        - $ref: '#/components/parameters/ShortlistId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ShortlistDecision' }
+      responses:
+        '201':
+          description: Decision recorded; consent requested for each included exporter.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Shortlist' }
+        '403':
+          $ref: '#/components/responses/Problem'
+        '409':
+          $ref: '#/components/responses/Problem'
+        '422':
+          description: An included candidate's capacity confirmation has lapsed.
+          $ref: '#/components/responses/Problem'
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        Access token from the Gateway's identity provider, introspected at the gateway on every
+        call. Carries the actor's UAID, roles and, when acting under a delegation, the entity
+        being acted for.
+
+  parameters:
+    SignalId:
+      name: signalId
+      in: path
+      required: true
+      schema: { type: string, pattern: '^SIG-' }
+    OpportunityId:
+      name: opportunityId
+      in: path
+      required: true
+      schema: { type: string, pattern: '^OPP-' }
+    ShortlistId:
+      name: shortlistId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Repeating a command with the same key returns the first response rather than acting twice.
+      schema: { type: string, minLength: 16, maxLength: 128 }
+
+  responses:
+    Problem:
+      description: A typed problem document (RFC 9457).
+      content:
+        application/problem+json:
+          schema: { $ref: '../shared/problem.yaml#/components/schemas/Problem' }
+
+  schemas:
+    Criterion:
+      type: object
+      required: [kind, label]
+      properties:
+        kind:
+          enum: [mandatory, preferred, negotiable, informational]
+          description: Mandatory criteria are shown to exporters so they can rule themselves out.
+        label: { type: string, minLength: 3, maxLength: 200 }
+
+    SignalSubmission:
+      type: object
+      required: [title, summary, sectorCode, supplyMode, criteria]
+      properties:
+        title: { type: string, minLength: 3, maxLength: 200 }
+        summary: { type: string, minLength: 10, maxLength: 2000 }
+        sectorCode: { type: string, description: UN CPC code from the taxonomy service. }
+        supplyMode: { enum: [mode1, mode2, mode3, mode4] }
+        budget:
+          type: object
+          properties:
+            min: { type: number, minimum: 0 }
+            max: { type: number, minimum: 0 }
+            currency: { type: string, minLength: 3, maxLength: 3 }
+        targetCompletion: { type: string, format: date }
+        criteria:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/Criterion' }
+          description: At least one must be mandatory; the service refuses otherwise.
+
+    Signal:
+      type: object
+      required: [id, route, status, receivedAt]
+      properties:
+        id: { type: string, pattern: '^SIG-' }
+        route:
+          enum: [public_form, assisted_capture, partner_api, batch_upload, buyer_workspace]
+          description: How the demand arrived. Recorded because it bears on credibility.
+        buyerUaid: { type: string }
+        origin: { type: string, description: 'Buyer and region, for display in the queue.' }
+        title: { type: string }
+        summary: { type: string }
+        sectorCode: { type: string }
+        supplyMode: { type: string }
+        riskTier: { enum: [new, review, flagged] }
+        status: { enum: [pending_qualification, qualified, rejected, withdrawn] }
+        receivedAt: { type: string, format: date-time }
+        criteria:
+          type: array
+          items: { $ref: '#/components/schemas/Criterion' }
+
+    QualificationDecision:
+      type: object
+      required: [decision, reason]
+      properties:
+        decision: { enum: [qualified, rejected] }
+        reason:
+          type: string
+          minLength: 12
+          maxLength: 2000
+          description: >
+            Buyer authority, decision route, procurement model, value credibility, next action. This
+            is what makes the decision auditable, and the buyer or any affected exporter may request it.
+        confidence:
+          enum: [high, medium, low]
+          description: Required when qualifying.
+        pinnedRequirements:
+          type: array
+          description: >
+            The requirements in force for this sector and market, at the versions the officer saw.
+            The service re-checks each version is still published and refuses with 409 if not.
+          items:
+            type: object
+            required: [requirementId, version]
+            properties:
+              requirementId: { type: string }
+              version: { type: integer, minimum: 1 }
+
+    QualificationResult:
+      type: object
+      required: [decisionId, decision]
+      properties:
+        decisionId: { type: string, format: uuid }
+        decision: { enum: [qualified, rejected] }
+        opportunityId: { type: string, pattern: '^OPP-' }
+        criteriaVersion: { type: integer, minimum: 1 }
+        pinned:
+          type: array
+          items:
+            type: object
+            properties:
+              requirementId: { type: string }
+              version: { type: integer }
+              title: { type: string }
+
+    PinnedRequirement:
+      type: object
+      required: [requirementId, version]
+      properties:
+        requirementId: { type: string }
+        version: { type: integer, minimum: 1 }
+        title: { type: string }
+        flaggedSuperseded:
+          type: boolean
+          description: A newer version was published. The pin is unchanged; the case is flagged for review.
+        supersedingVersion: { type: integer }
+
+    Opportunity:
+      type: object
+      required: [id, title, state, criteriaVersion]
+      properties:
+        id: { type: string, pattern: '^OPP-' }
+        signalId: { type: string }
+        buyerUaid: { type: string }
+        title: { type: string }
+        sectorCode: { type: string }
+        supplyMode: { type: string }
+        buyerRegion: { type: string }
+        state:
+          enum: [draft, published, matching_active, shortlisting, awarded, fulfilled, closed, cancelled]
+        accessTier:
+          enum: [registered, identity-verified, delivery-verified]
+          description: The tier an exporter must hold to see the full terms.
+        criteriaVersion: { type: integer, minimum: 1 }
+        qualifiedAt: { type: string, format: date-time }
+        pinned:
+          type: array
+          items: { $ref: '#/components/schemas/PinnedRequirement' }
+
+    MatchFactor:
+      type: object
+      required: [label, met]
+      properties:
+        label: { type: string }
+        met: { type: boolean }
+        note: { type: string, description: 'Why it was met or not, in plain language.' }
+        weight: { type: number }
+        contribution: { type: number }
+
+    MatchCandidate:
+      type: object
+      required: [candidateId, actorUaid, score, factors]
+      properties:
+        candidateId: { type: string, format: uuid }
+        actorUaid: { type: string }
+        score: { type: number, minimum: 0, maximum: 100 }
+        rank: { type: integer, minimum: 1 }
+        factors:
+          type: array
+          items: { $ref: '#/components/schemas/MatchFactor' }
+        exclusions:
+          type: array
+          items: { type: string }
+          description: Why this candidate cannot be shortlisted — lapsed capacity, suspension, tier.
+        capacityDeclaredAt: { type: string, format: date-time }
+
+    MatchRun:
+      type: object
+      required: [matchRunId, opportunityId, shortlistId, candidates, limits]
+      properties:
+        matchRunId: { type: string, format: uuid }
+        opportunityId: { type: string }
+        shortlistId: { type: string, format: uuid }
+        criteriaVersion: { type: integer }
+        rulesetVersion: { type: string }
+        executedAt: { type: string, format: date-time }
+        candidates:
+          type: array
+          items: { $ref: '#/components/schemas/MatchCandidate' }
+        limits:
+          type: string
+          description: >
+            What this comparison does not cover, carried with the result so it is never read as more
+            than it is: declared and evidenced information as at the run, and nothing about price,
+            cultural fit or contractual terms.
+
+    ShortlistDecision:
+      type: object
+      required: [decision, rationale, entries]
+      properties:
+        decision: { enum: [approved, adjustment_requested] }
+        rationale:
+          type: string
+          minLength: 12
+          maxLength: 2000
+          description: Why these exporters and why not the others. An excluded exporter may ask to see it.
+        entries:
+          type: array
+          items:
+            type: object
+            required: [candidateId, included]
+            properties:
+              candidateId: { type: string, format: uuid }
+              included: { type: boolean }
+              exclusionReason: { type: string }
+
+    Shortlist:
+      type: object
+      required: [shortlistId, opportunityId, state, entries]
+      properties:
+        shortlistId: { type: string, format: uuid }
+        opportunityId: { type: string }
+        state: { enum: [proposed, approved, adjustment_requested] }
+        decidedBy: { type: string, description: Officer UAID. }
+        decidedAt: { type: string, format: date-time }
+        rationale: { type: string }
+        entries:
+          type: array
+          items:
+            type: object
+            properties:
+              entryId: { type: string, format: uuid }
+              actorUaid: { type: string }
+              included: { type: boolean }
+              exclusionReason: { type: string }
+              consentRequestId:
+                type: string
+                format: uuid
+                description: Raised on approval. Nothing is disclosed until the exporter grants it.

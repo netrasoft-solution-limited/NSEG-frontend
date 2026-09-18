@@ -1,20 +1,24 @@
+import type { ReadinessParameterScores } from '../lib/readinessScore';
+import { actors } from './actors';
+
 export type AssertionStatus = 'pending' | 'issued' | 'withheld';
 
 export interface ReadinessSubmission {
   id: string;
   actorId: string;
   submittedOn: string;
-  selfScore: number;
+  parameterScores: ReadinessParameterScores;
   evidenceGaps: string[];
   assertionStatus: AssertionStatus;
 }
 
-export const readinessSubmissions: ReadinessSubmission[] = [
+/** Scores come from the exporter's own diagnostic in actors.ts, so the console queue and
+ * the tier the exporter sees in their workspace can never disagree. */
+const submissionRecords: Omit<ReadinessSubmission, 'parameterScores'>[] = [
 {
   id: 'rs-01',
   actorId: 'act-04',
   submittedOn: '2026-09-11',
-  selfScore: 58,
   evidenceGaps: ['CAC registration certificate', 'Bank reference letter'],
   assertionStatus: 'pending'
 },
@@ -22,7 +26,6 @@ export const readinessSubmissions: ReadinessSubmission[] = [
   id: 'rs-02',
   actorId: 'act-07',
   submittedOn: '2026-09-10',
-  selfScore: 46,
   evidenceGaps: ['Sector regulatory clearance', 'Portfolio evidence', 'Tax identification number'],
   assertionStatus: 'pending'
 },
@@ -30,7 +33,6 @@ export const readinessSubmissions: ReadinessSubmission[] = [
   id: 'rs-03',
   actorId: 'act-02',
   submittedOn: '2026-09-08',
-  selfScore: 81,
   evidenceGaps: ['Cross-border delivery reference'],
   assertionStatus: 'pending'
 },
@@ -38,7 +40,6 @@ export const readinessSubmissions: ReadinessSubmission[] = [
   id: 'rs-04',
   actorId: 'act-09',
   submittedOn: '2026-09-07',
-  selfScore: 39,
   evidenceGaps: ['CAC registration certificate', 'Professional indemnity cover', 'Director ID verification'],
   assertionStatus: 'pending'
 },
@@ -46,7 +47,6 @@ export const readinessSubmissions: ReadinessSubmission[] = [
   id: 'rs-05',
   actorId: 'act-08',
   submittedOn: '2026-09-02',
-  selfScore: 88,
   evidenceGaps: [],
   assertionStatus: 'issued'
 },
@@ -54,7 +54,6 @@ export const readinessSubmissions: ReadinessSubmission[] = [
   id: 'rs-06',
   actorId: 'act-12',
   submittedOn: '2026-08-29',
-  selfScore: 52,
   evidenceGaps: ['Bank reference letter'],
   assertionStatus: 'withheld'
 },
@@ -62,7 +61,19 @@ export const readinessSubmissions: ReadinessSubmission[] = [
   id: 'rs-07',
   actorId: 'act-05',
   submittedOn: '2026-08-24',
-  selfScore: 92,
   evidenceGaps: [],
   assertionStatus: 'issued'
+},
+{
+  id: 'rs-08',
+  actorId: 'act-14',
+  submittedOn: '2026-09-14',
+  evidenceGaps: ['Professional credential confirmation'],
+  assertionStatus: 'pending'
 }];
+
+
+export const readinessSubmissions: ReadinessSubmission[] = submissionRecords.map((record) => ({
+  ...record,
+  parameterScores: actors.find((actor) => actor.id === record.actorId)!.diagnostic
+}));

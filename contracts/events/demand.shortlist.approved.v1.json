@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nseg.gov.ng/contracts/events/demand.shortlist.approved.v1.json",
+  "title": "demand.shortlist.approved.v1",
+  "description": "An officer approved a shortlist with a written rationale. Nothing has been disclosed: consent is requested from each shortlisted exporter next, and only a grant releases anything.",
+  "allOf": [{ "$ref": "./envelope.schema.json" }],
+  "properties": {
+    "data": {
+      "type": "object",
+      "required": ["opportunityId", "shortlistId", "decisionId", "includedActorUaids"],
+      "additionalProperties": false,
+      "properties": {
+        "opportunityId": { "type": "string", "pattern": "^OPP-" },
+        "shortlistId": { "type": "string", "format": "uuid" },
+        "decisionId": { "type": "string", "format": "uuid" },
+        "matchRunId": { "type": "string", "format": "uuid" },
+        "includedActorUaids": { "type": "array", "items": { "type": "string" } },
+        "excludedCount": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

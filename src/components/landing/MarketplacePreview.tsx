@@ -41,7 +41,7 @@ export function MarketplacePreview() {
         <div className="mt-8">
           <Link
             to="/marketplace"
-            className="inline-flex items-center gap-2 rounded-xl bg-gate px-5 py-3 text-[14px] font-semibold text-black transition-colors duration-150 ease-out hover:bg-gate-deep">
+            className="inline-flex items-center gap-2 rounded-xl bg-gate px-5 py-3 text-[14px] font-semibold text-white transition-colors duration-150 ease-out hover:bg-gate-deep">
 
             Browse the marketplace
             <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />

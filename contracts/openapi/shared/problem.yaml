@@ -1,0 +1,57 @@
+openapi: 3.1.0
+info:
+  title: Problem documents
+  version: 1.0.0
+  description: >
+    Every error the Gateway returns is a typed problem document (RFC 9457). The type is a stable
+    URN a client can branch on; the title and detail are written for the person reading the screen.
+    The registry below is the whole set — a service may not invent a type without adding it here.
+
+components:
+  schemas:
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type:
+          type: string
+          format: uri
+          description: Stable identifier for the failure. See the registry.
+          examples:
+            - urn:nseg:problem:consent-absent
+        title:
+          type: string
+          description: Short, human-readable, the same for every occurrence of this type.
+        status: { type: integer, minimum: 400, maximum: 599 }
+        detail:
+          type: string
+          description: What went wrong this time, and what to do about it. Safe to show a user.
+        instance: { type: string, description: The request this happened on. }
+        correlationId:
+          type: string
+          description: Carried from the request, so a report can be traced through every service.
+        errors:
+          type: array
+          description: Field-level failures, when the problem is validation.
+          items:
+            type: object
+            properties:
+              field: { type: string }
+              message: { type: string }
+
+    ProblemRegistry:
+      description: |
+        | type | status | Meaning |
+        |---|---|---|
+        | `urn:nseg:problem:validation` | 422 | The request does not satisfy the contract. `errors` names the fields. |
+        | `urn:nseg:problem:reason-required` | 422 | A decision was submitted without a reason long enough to be an audit record. |
+        | `urn:nseg:problem:capacity-stale` | 422 | An exporter's capacity confirmation has lapsed, so they cannot be shortlisted or matched. |
+        | `urn:nseg:problem:consent-absent` | 403 | No active grant covers this recipient, these fields and this purpose. |
+        | `urn:nseg:problem:segregation-of-duties` | 403 | The acting officer initiated this case, or holds the wrong role. The action needs a different person. |
+        | `urn:nseg:problem:not-entitled` | 403 | The caller's tier or entitlement does not reach this record. |
+        | `urn:nseg:problem:requirement-superseded` | 409 | A requirement version named in the request is no longer the published one. |
+        | `urn:nseg:problem:already-decided` | 409 | This case already carries a decision. Repeating it would overwrite an audit record. |
+        | `urn:nseg:problem:invalid-state` | 409 | The record is not in a state this transition can leave. |
+        | `urn:nseg:problem:package-expired` | 410 | The disclosure package's time to live has passed. Its grant may still be active. |
+        | `urn:nseg:problem:instruction-unacknowledged` | 423 | A settlement instruction has not been acknowledged, so dependent transitions are blocked. |
+      type: object

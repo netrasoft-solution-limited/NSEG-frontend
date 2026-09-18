@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nseg.gov.ng/contracts/events/regulatory.requirement.published.v1.json",
+  "title": "regulatory.requirement.published.v1",
+  "description": "A competent authority signed off a new version. Cases pinned to the version it supersedes are flagged for review; their pins are never rewritten (REG-02, REG-05).",
+  "allOf": [{ "$ref": "./envelope.schema.json" }],
+  "properties": {
+    "data": {
+      "type": "object",
+      "required": ["requirementId", "version"],
+      "additionalProperties": false,
+      "properties": {
+        "requirementId": { "type": "string" },
+        "version": { "type": "integer", "minimum": 1 },
+        "supersedesVersion": { "type": "integer", "minimum": 1 },
+        "authority": { "type": "string" },
+        "changedFields": { "type": "array", "items": { "type": "string" } },
+        "contentHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    }
+  }
+}
